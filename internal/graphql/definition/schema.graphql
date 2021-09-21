@@ -1,0 +1,10 @@
+# Root schema definition
+schema {
+    query: Query
+}
+
+# Entry points for querying the API
+type Query {
+    # version represents the API server version responding to your requests.
+    version: String!
+}
