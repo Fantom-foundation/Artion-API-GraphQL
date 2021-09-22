@@ -7,9 +7,9 @@ import (
 	"math/big"
 )
 
-// Proxy defines interface used to interact with the persistent storage
+// Repository defines interface used to interact with the persistent storage
 // and the blockchain node.
-type Proxy interface {
+type Repository interface {
 
 	StoreTokenEvent(*types.TokenEvent) error
 

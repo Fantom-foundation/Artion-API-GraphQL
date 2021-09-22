@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"math/big"
 	"time"
 )
 
@@ -40,8 +39,8 @@ type TokenEvent struct {
 
 	// subject of trade
 	Nft          common.Address      `bson:"nft"`
-	TokenId      common.Address      `bson:"tokenId"`
-	Quantity     big.Int             `bson:"quantity"`
+	TokenId      BigInt              `bson:"tokenId"`
+	Quantity     BigInt              `bson:"quantity"`
 
 	// parties
 	Seller       common.Address      `bson:"seller"`
@@ -49,9 +48,9 @@ type TokenEvent struct {
 
 	// money for the subject
 	PayToken     common.Address      `bson:"payToken"`
-	PricePerItem big.Int             `bson:"pricePerItem"`
+	PricePerItem BigInt              `bson:"pricePerItem"`
 
-	StartTime time.Time              `bson:"startTime"` // for postponed actions
+	StartTime    time.Time           `bson:"startTime"` // for postponed actions
 }
 
 func (e *TokenEvent) GenerateId(EventTime uint32, BlockNumber uint64, LogIndex uint) {

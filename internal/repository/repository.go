@@ -6,8 +6,16 @@ import (
 	"artion-api-graphql/internal/logger"
 	"artion-api-graphql/internal/repository/db"
 	"artion-api-graphql/internal/repository/rpc"
+	"fmt"
 	"sync"
 )
+
+// repo represents an instance of the Repository manager.
+var repo Repository
+
+// onceRepo is the sync object used to make sure the Repository
+// is instantiated only once on the first demand.
+var onceRepo sync.Once
 
 // config represents the configuration setup used by the repository
 // to establish and maintain required connectivity to external services
@@ -17,16 +25,26 @@ var cfg *config.Config
 // log represents the logger to be used by the repository.
 var log logger.Logger
 
-// instance is the singleton of the Proxy interface.
+// instance is the singleton of the Repository interface.
 var instance *proxy
 
-// oneInstance is the sync guarding Proxy singleton creation.
+// oneInstance is the sync guarding Repository singleton creation.
 var oneInstance sync.Once
 
-// proxy is the implementation of the Proxy interface
+// R provides access to the singleton instance of the Repository.
+func R() Repository {
+	// make sure to instantiate the Repository only once
+	onceRepo.Do(func() {
+		repo = newRepository()
+	})
+	return repo
+}
+
+// proxy is the implementation of the Repository interface
 type proxy struct {
 	rpc rpc.Blockchain
 	db    *db.MongoDbBridge
+	cfg *config.Config
 }
 
 // SetConfig sets the repository configuration to be used to establish
@@ -40,12 +58,40 @@ func SetLogger(l logger.Logger) {
 	log = l
 }
 
-// Do provide access to singleton instance of the repository Proxy.
-func Do() Proxy {
-	oneInstance.Do(func() {
-		instance = &proxy{
-			rpc: rpc.New(cfg),
-		}
-	})
-	return instance
+// newRepository creates new instance of Repository implementation, namely proxy structure.
+func newRepository() Repository {
+	if cfg == nil {
+		panic(fmt.Errorf("missing configuration"))
+	}
+	if log == nil {
+		panic(fmt.Errorf("missing logger"))
+	}
+
+	// create connections
+	dbBridge, err := connect(cfg, log)
+	if err != nil {
+		log.Fatal("repository init failed")
+		return nil
+	}
+
+	// construct the proxy instance
+	p := proxy{
+		db:    dbBridge,
+		cfg:   cfg,
+	}
+
+	// return the proxy
+	return &p
+}
+
+// connect opens connections to the external sources we need.
+func connect(cfg *config.Config, log logger.Logger) (*db.MongoDbBridge, error) {
+	// create new database connection bridge
+	dbBridge, err := db.New(cfg, log)
+	if err != nil {
+		log.Criticalf("can not connect backend persistent storage, %s", err.Error())
+		return nil, err
+	}
+
+	return dbBridge, nil
 }
