@@ -4,6 +4,7 @@ package repository
 import (
 	"artion-api-graphql/internal/config"
 	"artion-api-graphql/internal/logger"
+	"artion-api-graphql/internal/repository/db"
 	"artion-api-graphql/internal/repository/rpc"
 	"sync"
 )
@@ -25,6 +26,7 @@ var oneInstance sync.Once
 // proxy is the implementation of the Proxy interface
 type proxy struct {
 	rpc rpc.Blockchain
+	db    *db.MongoDbBridge
 }
 
 // SetConfig sets the repository configuration to be used to establish

@@ -19,7 +19,7 @@ BUILD_COMPILER := $(shell go version)
 BUILD_COMMIT := $(shell git show --format="%H" --no-patch)
 BUILD_COMMIT_TIME := $(shell git show --format="%cD" --no-patch)
 
-build/artionapi:
+build/artionapi: internal/graphql/schema/gen/schema.graphql
 	go build \
 	-gcflags="all=-N -l" \
 	-ldflags="-X 'artion-api-graphql/cmd/artionapi/build.Version=$(APP_VERSION)' -X 'artion-api-graphql/cmd/artionapi/build.Time=$(BUILD_DATE)' -X 'artion-api-graphql/cmd/artionapi/build.Compiler=$(BUILD_COMPILER)' -X 'artion-api-graphql/cmd/artionapi/build.Commit=$(BUILD_COMMIT)' -X 'artion-api-graphql/cmd/artionapi/build.CommitTime=$(BUILD_COMMIT_TIME)'" \
@@ -30,14 +30,12 @@ test:
 	go test ./...
 
 internal/graphql/schema/gen/schema.graphql: internal/graphql/definition
-	@bash tools/make_graphql_bundle.sh \
-		internal/graphql/schema/gen/schema.graphql \
-		internal/graphql/definition
+	@bash tools/make_graphql_bundle.sh $@ $<
 
 internal/repository/rpc/contracts/FantomMarketplace.go: internal/repository/rpc/contracts/abi/FantomMarketplace.json
 	abigen --type FantomMarketplace --pkg contracts --abi $< --out $@
 
-.PHONY: help test
+.PHONY: build/artionapi help test
 all: help
 help: Makefile
 	@echo
