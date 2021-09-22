@@ -11,6 +11,19 @@ import (
 type TokenEventType int8
 
 const (
+	// CoTokenEvents is the name of database collection.
+	CoTokenEvents = "token_events"
+
+	// BSON attributes names used in the database collection.
+	FiTokenEventId      = "_id"
+	FiTokenEventNft     = "nft"
+	FiTokenEventTokenId = "tokenId"
+	FiTokenEventSeller  = "seller"
+	FiTokenEventBuyer   = "buyer"
+	FiTokenEventTime    = "evtTime"
+)
+
+const (
 	EvtTpItemListed TokenEventType = iota
 	EvtTpItemUpdated
 	EvtTpItemCanceled
@@ -19,6 +32,7 @@ const (
 	EvtTpOfferCanceled
 )
 
+// TokenEvent represents marketplace related events on tokens - when they are sold etc.
 type TokenEvent struct {
 	Id            primitive.ObjectID `bson:"_id"`
 	EventTime     time.Time          `bson:"evtTime"`
