@@ -1,16 +1,11 @@
-/*
-Package repository implements repository for handling fast and efficient access to data required
-by the resolvers of the API server.
-
-Internally it utilizes RPC to access Opera/Lachesis full node for blockchain interaction. Mongo database
-for fast, robust and scalable off-chain data storage, especially for aggregated and pre-calculated data mining
-results. BigCache for in-memory object storage to speed up loading of frequently accessed entities.
-*/
+// Package repository implements persistent data access and processing.
 package repository
 
 import (
 	"artion-api-graphql/internal/config"
 	"artion-api-graphql/internal/logger"
+	"artion-api-graphql/internal/repository/rpc"
+	"sync"
 )
 
 // config represents the configuration setup used by the repository
@@ -21,6 +16,17 @@ var cfg *config.Config
 // log represents the logger to be used by the repository.
 var log logger.Logger
 
+// instance is the singleton of the Proxy interface.
+var instance *proxy
+
+// oneInstance is the sync guarding Proxy singleton creation.
+var oneInstance sync.Once
+
+// proxy is the implementation of the Proxy interface
+type proxy struct {
+	rpc rpc.Blockchain
+}
+
 // SetConfig sets the repository configuration to be used to establish
 // and maintain external repository connections.
 func SetConfig(c *config.Config) {
@@ -30,4 +36,14 @@ func SetConfig(c *config.Config) {
 // SetLogger sets the repository logger to be used to collect logging info.
 func SetLogger(l logger.Logger) {
 	log = l
+}
+
+// Do provide access to singleton instance of the repository Proxy.
+func Do() Proxy {
+	oneInstance.Do(func() {
+		instance = &proxy{
+			rpc: rpc.New(cfg),
+		}
+	})
+	return instance
 }
