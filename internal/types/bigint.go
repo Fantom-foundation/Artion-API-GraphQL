@@ -14,11 +14,18 @@ type BigInt big.Int
 
 // MarshalBSONValue converts the number into form to be stored in MongoDB (hex string).
 func (bi *BigInt) MarshalBSONValue() (bsontype.Type, []byte, error) {
-	return bson.MarshalValue(hexutil.EncodeBig((*big.Int)(bi)))
+	if bi == nil {
+		return bson.MarshalValue(bson.RawValue{Type: bson.TypeNull})
+	} else {
+		return bson.MarshalValue(hexutil.EncodeBig((*big.Int)(bi)))
+	}
 }
 
 // UnmarshalBSONValue converts the number from form in which it is stored in MongoDB (hex string).
 func (bi *BigInt) UnmarshalBSONValue(t bsontype.Type, data []byte) error {
+	if t != bson.TypeString {
+		return nil
+	}
 	rv := bson.RawValue{Type: t, Value: data}
 	var hexa string
 	err := rv.Unmarshal(&hexa)

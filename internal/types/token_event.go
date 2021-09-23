@@ -22,7 +22,8 @@ const (
 )
 
 const (
-	EvtTpItemListed TokenEventType = iota
+	EvtTpUnknown TokenEventType = iota
+	EvtTpItemListed
 	EvtTpItemUpdated
 	EvtTpItemCanceled
 	EvtTpItemSold
@@ -34,7 +35,7 @@ const (
 type TokenEvent struct {
 	Id            primitive.ObjectID `bson:"_id"`
 	EventTime     Time               `bson:"evtTime"`
-	Type          TokenEventType     `bson:"type"`
+	EventType     TokenEventType     `bson:"type"`
 
 	// subject of trade
 	Nft          common.Address      `bson:"nft"`
