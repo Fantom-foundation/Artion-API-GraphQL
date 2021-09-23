@@ -1,0 +1,11 @@
+# Time represents date and time including time zone information in RFC3339 format.
+scalar Time
+
+# Cursor is a string representing position in a sequential list of edges.
+scalar Cursor
+
+# BigInt is a large (256bits) integer value serialized as string.
+scalar BigInt
+
+# Address is a 20 byte Opera address, represented as 0x prefixed hexadecimal number.
+scalar Address

@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"time"
 )
 
 type TokenEventType int8
@@ -34,23 +33,23 @@ const (
 // TokenEvent represents marketplace related events on tokens - when they are sold etc.
 type TokenEvent struct {
 	Id            primitive.ObjectID `bson:"_id"`
-	EventTime     time.Time          `bson:"evtTime"`
+	EventTime     Time               `bson:"evtTime"`
 	Type          TokenEventType     `bson:"type"`
 
 	// subject of trade
 	Nft          common.Address      `bson:"nft"`
 	TokenId      BigInt              `bson:"tokenId"`
-	Quantity     BigInt              `bson:"quantity"`
+	Quantity     *BigInt             `bson:"quantity"`
 
 	// parties
-	Seller       common.Address      `bson:"seller"`
-	Buyer        common.Address      `bson:"buyer"` // or offer creator - who buys the NFT
+	Seller       *common.Address     `bson:"seller"` // owner before event
+	Buyer        *common.Address     `bson:"buyer"` // or offer creator (future buyer)
 
 	// money for the subject
-	PayToken     common.Address      `bson:"payToken"`
-	PricePerItem BigInt              `bson:"pricePerItem"`
+	PayToken     *common.Address     `bson:"payToken"`
+	PricePerItem *BigInt             `bson:"pricePerItem"`
 
-	StartTime    time.Time           `bson:"startTime"` // for postponed actions
+	StartTime    *Time               `bson:"startTime"` // for postponed actions
 }
 
 func (e *TokenEvent) GenerateId(EventTime uint32, BlockNumber uint64, LogIndex uint) {

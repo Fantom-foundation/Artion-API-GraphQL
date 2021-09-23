@@ -44,6 +44,7 @@ func R() Repository {
 type proxy struct {
 	rpc rpc.Blockchain
 	db    *db.MongoDbBridge
+	log   logger.Logger
 	cfg *config.Config
 }
 
@@ -77,6 +78,7 @@ func newRepository() Repository {
 	// construct the proxy instance
 	p := proxy{
 		db:    dbBridge,
+		log:   log,
 		cfg:   cfg,
 	}
 

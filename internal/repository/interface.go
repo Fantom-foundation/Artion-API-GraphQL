@@ -4,7 +4,6 @@ package repository
 import (
 	"artion-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
-	"math/big"
 )
 
 // Repository defines interface used to interact with the persistent storage
@@ -13,6 +12,6 @@ type Repository interface {
 
 	StoreTokenEvent(*types.TokenEvent) error
 
-	ListTokenEvents(nftAddr common.Address, tokenId big.Int, cursor string, count int) (out *types.TokenEventList, err error)
+	ListTokenEvents(nftAddr common.Address, tokenId types.BigInt, cursor string, count int) (out *types.TokenEventList, err error)
 
 }

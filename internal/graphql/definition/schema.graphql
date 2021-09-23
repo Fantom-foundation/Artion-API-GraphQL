@@ -7,4 +7,6 @@ schema {
 type Query {
     # version represents the API server version responding to your requests.
     version: String!
+
+    token(address: Address!, tokenId: BigInt!): Token
 }

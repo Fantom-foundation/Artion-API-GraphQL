@@ -1,0 +1,9 @@
+type Token {
+
+    address: Address!
+
+    tokenId: BigInt!
+
+    events(first: Int, after: Cursor, last: Int, before: Cursor): TokenEventConnection!
+
+}

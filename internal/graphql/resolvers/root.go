@@ -5,7 +5,9 @@ import (
 	"artion-api-graphql/cmd/artionapi/build"
 	"artion-api-graphql/internal/config"
 	"artion-api-graphql/internal/logger"
+	"artion-api-graphql/internal/types"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"golang.org/x/sync/singleflight"
 	"sync"
 )
@@ -92,4 +94,9 @@ func (rs *RootResolver) run() {
 // Version resolves the current version of the API server.
 func (rs *RootResolver) Version() string {
 	return build.Short(cfg)
+}
+
+func (rs *RootResolver) Token(args struct{ Address common.Address; TokenId types.BigInt }) (*Token, error) {
+	token := Token{ Address: args.Address, TokenId: args.TokenId }
+	return &token, nil
 }
