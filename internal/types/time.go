@@ -3,8 +3,6 @@ package types
 import (
 	"encoding/json"
 	"fmt"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/bsontype"
 	"time"
 )
 
@@ -51,15 +49,4 @@ func (t *Time) UnmarshalGraphQL(input interface{}) error {
 // MarshalJSON converts the time into form to be used in GraphQL (ISO string).
 func (t Time) MarshalJSON() ([]byte, error) {
 	return json.Marshal(time.Time(t))
-}
-
-// MarshalBSONValue converts the time into form to be stored in MongoDB (hex string).
-func (bi *Time) MarshalBSONValue() (bsontype.Type, []byte, error) {
-	return bson.MarshalValue((*time.Time)(bi))
-}
-
-// UnmarshalBSONValue decodes the time from MongoDB.
-func (bi *Time) UnmarshalBSONValue(t bsontype.Type, data []byte) error {
-	rv := bson.RawValue{Type: t, Value: data}
-	return rv.Unmarshal((*time.Time)(bi))
 }

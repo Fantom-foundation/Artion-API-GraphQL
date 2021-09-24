@@ -2,6 +2,7 @@ package resolvers
 
 import (
 	"artion-api-graphql/internal/types"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 type TokenEvent types.TokenEvent
@@ -16,7 +17,7 @@ func (edge TokenEventEdge) Cursor() (Cursor, error) {
 
 type TokenEventConnection struct {
 	Edges      []TokenEventEdge
-	TotalCount types.BigInt
+	TotalCount hexutil.Big
 	PageInfo   PageInfo
 }
 

@@ -2,14 +2,14 @@ package resolvers
 
 import (
 	"artion-api-graphql/internal/repository"
-	"artion-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
 )
 
 type Token struct {
 	Address common.Address
-	TokenId types.BigInt
+	TokenId hexutil.Big
 }
 
 func (t *Token) Events(args struct{ PaginationInput }) (list *TokenEventConnection, err error) {
@@ -20,7 +20,7 @@ func (t *Token) Events(args struct{ PaginationInput }) (list *TokenEventConnecti
 	out, err := repository.R().ListTokenEvents(t.Address, t.TokenId, cursor, count)
 
 	list = new(TokenEventConnection)
-	list.TotalCount = (types.BigInt)(*big.NewInt(out.TotalCount))
+	list.TotalCount = (hexutil.Big)(*big.NewInt(out.TotalCount))
 	list.Edges = make([]TokenEventEdge, len(out.Collection))
 	for i := 0; i < len(out.Collection); i++ {
 		list.Edges[i].Node = (*TokenEvent)(out.Collection[i])
