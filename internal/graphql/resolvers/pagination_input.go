@@ -14,10 +14,11 @@ type PaginationInput struct {
 	Before  *types.Cursor
 }
 
-func (input *PaginationInput) ToCursorCount() (cursor types.Cursor, count int, err error) {
+func (input *PaginationInput) ToCursorCount() (cursor types.Cursor, count int, backward bool, err error) {
 	if input == nil || (input.First == nil && input.Last == nil) {
 		cursor = ""
 		count = 10
+		backward = false
 		return
 	}
 
@@ -26,6 +27,7 @@ func (input *PaginationInput) ToCursorCount() (cursor types.Cursor, count int, e
 			cursor = *input.After
 		}
 		count = int(*input.First)
+		backward = false
 		return
 	}
 
@@ -33,7 +35,8 @@ func (input *PaginationInput) ToCursorCount() (cursor types.Cursor, count int, e
 		if input.Before != nil {
 			cursor = *input.Before
 		}
-		count = -int(*input.Last)
+		count = int(*input.Last)
+		backward = true
 		return
 	}
 

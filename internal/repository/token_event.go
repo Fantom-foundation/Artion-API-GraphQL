@@ -4,17 +4,12 @@ import (
 	"artion-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (p *proxy) StoreTokenEvent(event *types.TokenEvent) error {
 	return p.db.StoreTokenEvent(event)
 }
 
-func (p * proxy) ListTokenEvents(nftAddr common.Address, tokenId hexutil.Big, cursor types.Cursor, count int) (out *types.TokenEventList, err error) {
-	filter := bson.D{
-		{Key: types.FiTokenEventNft, Value: nftAddr.String() },
-		{Key: types.FiTokenEventTokenId, Value: tokenId.String() },
-	}
-	return p.db.ListTokenEvents(&filter, cursor, count)
+func (p * proxy) ListTokenEvents(nft *common.Address, tokenId *hexutil.Big, account *common.Address, cursor types.Cursor, count int, backward bool) (out *types.TokenEventList, err error) {
+	return p.db.ListTokenEvents(nft, tokenId, account, cursor, count, backward)
 }

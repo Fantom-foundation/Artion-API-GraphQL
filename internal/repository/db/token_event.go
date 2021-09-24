@@ -4,9 +4,11 @@ import (
 	"artion-api-graphql/internal/types"
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // initTokenEventCollection initializes collection with indexes and additional parameters.
@@ -48,43 +50,40 @@ func (db *MongoDbBridge) StoreTokenEvent(event *types.TokenEvent) error {
 	return nil
 }
 
-func (db *MongoDbBridge) ListTokenEvents(filter *bson.D, cursor types.Cursor, count int) (out *types.TokenEventList, err error) {
-	var list types.TokenEventList
-	ctx := context.Background()
-	col := db.client.Database(db.dbName).Collection(types.CoTokenEvents)
+func (db *MongoDbBridge) ListTokenEvents(nft *common.Address, tokenId *hexutil.Big, account *common.Address, cursor types.Cursor, count int, backward bool) (out *types.TokenEventList, err error) {
+	filter := bson.D{}
+	if nft != nil {
+		filter = append(filter, primitive.E{Key: types.FiTokenEventNft, Value: nft.String() })
+	}
+	if tokenId != nil {
+		filter = append(filter, primitive.E{Key: types.FiTokenEventTokenId, Value: tokenId.String() })
+	}
+	if account != nil {
+		filter = append(filter, bson.E{
+			Key: "$or",
+			Value: bson.A{bson.D{{
+				Key:   types.FiTokenEventSeller,
+				Value: account.String(),
+			}}, bson.D{{
+				Key:   types.FiTokenEventBuyer,
+				Value: account.String(),
+			}}},
+		})
+	}
+	return db.listTokenEvents(&filter, cursor, count, backward)
+}
 
-	list.TotalCount, err = col.CountDocuments(ctx, *filter)
+func (db *MongoDbBridge) listTokenEvents(filter *bson.D, cursor types.Cursor, count int, backward bool) (out *types.TokenEventList, err error) {
+	var list types.TokenEventList
+	col := db.client.Database(db.dbName).Collection(types.CoTokenEvents)
+	ctx := context.Background()
+
+	list.TotalCount, err = db.GetTotalCount(col, filter)
 	if err != nil {
-		db.log.Errorf("can not get total count of token events")
 		return nil, err
 	}
 
-	if cursor != "" {
-		cur, err := cursor.ToObjectId()
-		if err != nil {
-			db.log.Errorf("unable to decode cursor %s to ObjectId; %s", cursor, err)
-			return nil, err
-		}
-
-		if count > 0 {
-			*filter = append(*filter, bson.E{Key: types.FiTokenEventId, Value: bson.D{{Key: "$lt", Value: cur }}})
-		} else {
-			*filter = append(*filter, bson.E{Key: types.FiTokenEventId, Value: bson.D{{Key: "$gt", Value: cur }}})
-		}
-	}
-
-	var countAbs int
-	opt := options.Find()
-	if count >= 0 {
-		countAbs = count
-		opt.SetSort(bson.D{{Key: types.FiTokenEventId, Value: -1 }})
-	} else {
-		countAbs = -count
-		opt.SetSort(bson.D{{Key: types.FiTokenEventId, Value: 1 }})
-	}
-	opt.SetLimit(int64(countAbs + 1))
-
-	ld, err := col.Find(ctx, filter, opt)
+	ld, err := db.FindPaginated(col, filter, cursor, count, backward)
 	if err != nil {
 		db.log.Errorf("error loading token events list; %s", err.Error())
 		return nil, err
@@ -99,7 +98,7 @@ func (db *MongoDbBridge) ListTokenEvents(filter *bson.D, cursor types.Cursor, co
 	}()
 
 	for ld.Next(ctx) {
-		if len(list.Collection) < countAbs {
+		if len(list.Collection) < count {
 			var row types.TokenEvent
 			if err = ld.Decode(&row); err != nil {
 				db.log.Errorf("can not decode the token event in list; %s", err.Error())
@@ -111,7 +110,7 @@ func (db *MongoDbBridge) ListTokenEvents(filter *bson.D, cursor types.Cursor, co
 		}
 	}
 
-	if count < 0 {
+	if backward {
 		list.Reverse()
 	}
 	return &list, nil
