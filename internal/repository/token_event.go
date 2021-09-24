@@ -11,7 +11,7 @@ func (p *proxy) StoreTokenEvent(event *types.TokenEvent) error {
 	return p.db.StoreTokenEvent(event)
 }
 
-func (p * proxy) ListTokenEvents(nftAddr common.Address, tokenId hexutil.Big, cursor string, count int) (out *types.TokenEventList, err error) {
+func (p * proxy) ListTokenEvents(nftAddr common.Address, tokenId hexutil.Big, cursor types.Cursor, count int) (out *types.TokenEventList, err error) {
 	filter := bson.D{
 		{Key: types.FiTokenEventNft, Value: nftAddr.String() },
 		{Key: types.FiTokenEventTokenId, Value: tokenId.String() },

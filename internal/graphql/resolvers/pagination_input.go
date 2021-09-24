@@ -1,17 +1,20 @@
 package resolvers
 
-import "errors"
+import (
+	"artion-api-graphql/internal/types"
+	"errors"
+)
 
-// input type for GraphQL cursor pagination
+// PaginationInput represents input type for GraphQL cursor pagination
 // specified by https://relay.dev/graphql/connections.htm
 type PaginationInput struct {
 	First   *int32
-	After   *Cursor
+	After   *types.Cursor
 	Last    *int32
-	Before  *Cursor
+	Before  *types.Cursor
 }
 
-func (input *PaginationInput) ToCursorCount() (cursor string, count int, err error) {
+func (input *PaginationInput) ToCursorCount() (cursor types.Cursor, count int, err error) {
 	if input == nil || (input.First == nil && input.Last == nil) {
 		cursor = ""
 		count = 10
@@ -20,7 +23,7 @@ func (input *PaginationInput) ToCursorCount() (cursor string, count int, err err
 
 	if input.First != nil && *input.First > 0 && input.Last == nil && input.Before == nil {
 		if input.After != nil {
-			cursor = string(*input.After)
+			cursor = *input.After
 		}
 		count = int(*input.First)
 		return
@@ -28,7 +31,7 @@ func (input *PaginationInput) ToCursorCount() (cursor string, count int, err err
 
 	if input.Last != nil && *input.Last > 0 && input.First == nil && input.After == nil {
 		if input.Before != nil {
-			cursor = string(*input.Before)
+			cursor = *input.Before
 		}
 		count = -int(*input.Last)
 		return

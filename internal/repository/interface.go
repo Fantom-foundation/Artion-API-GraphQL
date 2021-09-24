@@ -13,6 +13,6 @@ type Repository interface {
 
 	StoreTokenEvent(*types.TokenEvent) error
 
-	ListTokenEvents(nftAddr common.Address, tokenId hexutil.Big, cursor string, count int) (out *types.TokenEventList, err error)
+	ListTokenEvents(nftAddr common.Address, tokenId hexutil.Big, cursor types.Cursor, count int) (out *types.TokenEventList, err error)
 
 }

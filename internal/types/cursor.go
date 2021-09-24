@@ -1,9 +1,7 @@
-// Package resolvers implements GraphQL resolvers to incoming API requests.
-package resolvers
+package types
 
 import (
 	"errors"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"strconv"
 )
@@ -13,7 +11,11 @@ type Cursor string
 
 // CursorFromObjectId converts MongoDB ObjectID to GraphQL Cursor type.
 func CursorFromObjectId(id primitive.ObjectID) Cursor {
-	return Cursor(hexutil.Encode(id[:]))
+	return Cursor(id.Hex())
+}
+
+func (c Cursor) ToObjectId() (primitive.ObjectID, error) {
+	return primitive.ObjectIDFromHex(string(c))
 }
 
 // ImplementsGraphQLType notifies the GraphQL that this type resolves Cursor scalar.

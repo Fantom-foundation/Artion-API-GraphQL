@@ -11,8 +11,8 @@ type TokenEventEdge struct {
 	Node *TokenEvent
 }
 
-func (edge TokenEventEdge) Cursor() (Cursor, error) {
-	return CursorFromObjectId(edge.Node.Id), nil
+func (edge TokenEventEdge) Cursor() (types.Cursor, error) {
+	return types.CursorFromObjectId(edge.Node.Id), nil
 }
 
 type TokenEventConnection struct {

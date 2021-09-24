@@ -18,6 +18,9 @@ func (t *Token) Events(args struct{ PaginationInput }) (list *TokenEventConnecti
 		return nil, err
 	}
 	out, err := repository.R().ListTokenEvents(t.Address, t.TokenId, cursor, count)
+	if err != nil {
+		return nil, err
+	}
 
 	list = new(TokenEventConnection)
 	list.TotalCount = (hexutil.Big)(*big.NewInt(out.TotalCount))

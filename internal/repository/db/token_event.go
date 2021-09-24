@@ -48,7 +48,7 @@ func (db *MongoDbBridge) StoreTokenEvent(event *types.TokenEvent) error {
 	return nil
 }
 
-func (db *MongoDbBridge) ListTokenEvents(filter *bson.D, cursor string, count int) (out *types.TokenEventList, err error) {
+func (db *MongoDbBridge) ListTokenEvents(filter *bson.D, cursor types.Cursor, count int) (out *types.TokenEventList, err error) {
 	var list types.TokenEventList
 	ctx := context.Background()
 	col := db.client.Database(db.dbName).Collection(types.CoTokenEvents)
@@ -60,10 +60,16 @@ func (db *MongoDbBridge) ListTokenEvents(filter *bson.D, cursor string, count in
 	}
 
 	if cursor != "" {
+		cur, err := cursor.ToObjectId()
+		if err != nil {
+			db.log.Errorf("unable to decode cursor %s to ObjectId; %s", cursor, err)
+			return nil, err
+		}
+
 		if count > 0 {
-			*filter = append(*filter, bson.E{Key: types.FiTokenEventId, Value: bson.D{{Key: "$lt", Value: cursor}}})
+			*filter = append(*filter, bson.E{Key: types.FiTokenEventId, Value: bson.D{{Key: "$lt", Value: cur }}})
 		} else {
-			*filter = append(*filter, bson.E{Key: types.FiTokenEventId, Value: bson.D{{Key: "$gt", Value: cursor}}})
+			*filter = append(*filter, bson.E{Key: types.FiTokenEventId, Value: bson.D{{Key: "$gt", Value: cur }}})
 		}
 	}
 
