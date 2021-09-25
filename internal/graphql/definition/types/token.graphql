@@ -4,6 +4,10 @@ type Token {
 
     tokenId: BigInt!
 
+    name: String!
+
+    description: String!
+
     events(first: Int, after: Cursor, last: Int, before: Cursor): TokenEventConnection!
 
 }

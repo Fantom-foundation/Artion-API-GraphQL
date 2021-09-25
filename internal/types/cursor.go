@@ -2,7 +2,7 @@ package types
 
 import (
 	"errors"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"strconv"
 )
 
@@ -10,12 +10,12 @@ import (
 type Cursor string
 
 // CursorFromObjectId converts MongoDB ObjectID to GraphQL Cursor type.
-func CursorFromObjectId(id primitive.ObjectID) Cursor {
-	return Cursor(id.Hex())
+func CursorFromObjectId(id []byte) Cursor {
+	return Cursor(hexutil.Encode(id))
 }
 
-func (c Cursor) ToObjectId() (primitive.ObjectID, error) {
-	return primitive.ObjectIDFromHex(string(c))
+func (c Cursor) ToObjectId() ([]byte, error) {
+	return hexutil.Decode(string(c))
 }
 
 // ImplementsGraphQLType notifies the GraphQL that this type resolves Cursor scalar.

@@ -17,6 +17,7 @@ type MongoDbBridge struct {
 
 	// init state marks
 	initTokenEvents *sync.Once
+	initTokens *sync.Once
 }
 
 // New creates a new Mongo Db connection bridge.

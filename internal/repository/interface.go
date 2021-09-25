@@ -13,6 +13,12 @@ type Repository interface {
 
 	StoreTokenEvent(*types.TokenEvent) error
 
-	ListTokenEvents(nft *common.Address, tokenId *hexutil.Big, account *common.Address, cursor types.Cursor, count int, backward bool) (list *types.TokenEventList, err error)
+	ListTokenEvents(nft *common.Address, tokenId *hexutil.Big, account *common.Address, cursor types.Cursor, count int, backward bool) (*types.TokenEventList, error)
+
+	StoreToken(*types.Token) error
+
+	GetToken(nft common.Address, tokenId hexutil.Big) (*types.Token, error)
+
+	ListTokens(cursor types.Cursor, count int, backward bool) (*types.TokenList, error)
 
 }

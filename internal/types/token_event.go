@@ -6,7 +6,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
 
@@ -17,7 +16,6 @@ const (
 	CoTokenEvents = "TokenEvents"
 
 	// BSON attributes names used in the database collection.
-	FiTokenEventId      = "_id"
 	FiTokenEventNft     = "nft"
 	FiTokenEventTokenId = "tokenId"
 	FiTokenEventSeller  = "seller"
@@ -37,7 +35,7 @@ const (
 
 // TokenEvent represents marketplace related events on tokens - when they are sold etc.
 type TokenEvent struct {
-	Id            primitive.ObjectID
+	Id            []byte
 	EventTime     Time
 	EventType     TokenEventType
 
@@ -57,21 +55,16 @@ type TokenEvent struct {
 	StartTime    *Time // for postponed actions
 }
 
-func (e *TokenEvent) GenerateId(EventTime uint32, BlockNumber uint64, LogIndex uint) {
-	var b primitive.ObjectID
-	logIndex := make([]byte, 4)
-	binary.BigEndian.PutUint32(b[0:4], EventTime) // from Mongo ObjectID impl
-	binary.BigEndian.PutUint64(b[4:12], BlockNumber)
-	binary.BigEndian.PutUint32(logIndex, uint32(LogIndex))
-	b[4] = b[4] ^ logIndex[3]
-	b[5] = b[5] ^ logIndex[2]
-	b[6] = b[6] ^ logIndex[1]
-	b[7] = b[7] ^ logIndex[0]
-	e.Id = b
+func (e *TokenEvent) GenerateId(EventTime uint64, BlockNumber uint64, LogIndex uint) {
+	id := make([]byte, 20, 20)
+	binary.BigEndian.PutUint64(id[0:8], EventTime) // time prefix for sorting
+	binary.BigEndian.PutUint64(id[8:16], BlockNumber)
+	binary.BigEndian.PutUint32(id[16:20], uint32(LogIndex))
+	e.Id = id
 }
 
 type tokenEventBson struct {
-	Id            primitive.ObjectID `bson:"_id"`
+	Id            []byte             `bson:"_id"`
 	EventTime     time.Time          `bson:"evtTime"`
 	EventType     int32              `bson:"type"`
 	Nft          string              `bson:"nft"`
