@@ -8,6 +8,7 @@ import (
 	"artion-api-graphql/internal/handlers"
 	"artion-api-graphql/internal/logger"
 	"artion-api-graphql/internal/repository"
+	"artion-api-graphql/internal/svc"
 	"flag"
 	"log"
 	"net/http"
@@ -21,7 +22,6 @@ import (
 type apiServer struct {
 	cfg          *config.Config
 	log          logger.Logger
-	api          *resolvers.RootResolver
 	srv          *http.Server
 	isVersionReq bool
 }
@@ -47,6 +47,8 @@ func (app *apiServer) init() {
 	repository.SetLogger(app.log)
 	resolvers.SetConfig(app.cfg)
 	resolvers.SetLogger(app.log)
+	svc.SetConfig(app.cfg)
+	svc.SetLogger(app.log)
 
 	// make the HTTP server
 	app.makeHttpServer()
@@ -60,17 +62,24 @@ func (app *apiServer) run() {
 		return
 	}
 
+	// start the services
+	svc.Mgr()
+
 	// make sure to capture terminate signals
 	app.observeSignals()
 
 	// start responding to requests
-	app.log.Infof("welcome to Fantom GraphQL API server")
+	app.log.Infof("welcome to Artion GraphQL server")
 	app.log.Infof("listening for requests on %s", app.cfg.Server.BindAddress)
 
 	// listen the interface
 	err := app.srv.ListenAndServe()
 	if err != nil {
-		app.log.Errorf(err.Error())
+		if err == http.ErrServerClosed {
+			app.log.Notice("HTTP server closed")
+		} else {
+			app.log.Error(err)
+		}
 	}
 
 	// terminate the app
@@ -98,14 +107,10 @@ func (app *apiServer) makeHttpServer() {
 
 // setupHandlers initializes an array of handlers for our HTTP API end-points.
 func (app *apiServer) setupHandlers(mux *http.ServeMux) {
-	// create root resolver
-	app.api = resolvers.New()
-
 	// setup GraphQL API handler
 	h := http.TimeoutHandler(
-		handlers.Api(app.cfg, app.log, app.api),
-		time.Second*time.Duration(app.cfg.Server.ResolverTimeout),
-		"Service timeout.",
+		handlers.Api(app.cfg, app.log),
+		time.Second*time.Duration(app.cfg.Server.ResolverTimeout), "Service timeout.",
 	)
 	mux.Handle("/api", h)
 	mux.Handle("/graphql", h)
@@ -125,11 +130,7 @@ func (app *apiServer) observeSignals() {
 
 	// start monitoring
 	go func() {
-		// wait for the signal
 		<-ts
-
-		// terminate HTTP responder
-		app.log.Notice("closing HTTP server")
 		if err := app.srv.Close(); err != nil {
 			app.log.Errorf("could not terminate HTTP listener")
 			os.Exit(0)
@@ -141,19 +142,13 @@ func (app *apiServer) observeSignals() {
 func (app *apiServer) terminate() {
 	// close resolvers
 	app.log.Notice("closing resolver")
-	app.api.Close()
+	resolvers.Resolver().Close()
 
-	/*
-	// terminate observers, scanners and dispatchers, etc.
+	// terminate services
 	app.log.Notice("closing services")
-	if mgr := svc.Manager(); mgr != nil {
-		mgr.Close()
-	}
+	svc.Close()
 
 	// terminate connections to DB, blockchain, etc.
 	app.log.Notice("closing repository")
-	if repo := repository.R(); repo != nil {
-		repo.Close()
-	}
-	 */
+	repository.Close()
 }

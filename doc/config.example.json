@@ -1,0 +1,20 @@
+{
+  "server": {
+    "bind": "0.0.0.0:7373",
+    "cors": [
+      "*"
+    ],
+    "write_timeout": 30,
+    "resolver_timeout": 240
+  },
+  "node": {
+    "url": "/var/opera/mainnet/opera.ipc"
+  },
+  "db": {
+    "url": "mongodb://127.0.0.1:27017",
+    "db": "artion"
+  },
+  "log": {
+    "level": "Info"
+  }
+}
