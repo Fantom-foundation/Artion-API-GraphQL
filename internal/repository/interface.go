@@ -10,6 +10,8 @@ import (
 // Repository defines interface used to interact with the persistent storage
 // and the blockchain node.
 type Repository interface {
+	// Close terminates the repository instance.
+	Close()
 
 	StoreTokenEvent(*types.TokenEvent) error
 
