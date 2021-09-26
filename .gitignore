@@ -16,4 +16,7 @@ build
 *.out
 
 # Dependency directories (remove the comment below to include it)
-# vendor/
+vendor/
+
+# Exclude debuging related files
+doc/debug*
