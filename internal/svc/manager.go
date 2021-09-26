@@ -31,7 +31,8 @@ func (mgr *Manager) load() {
 	// load block scanner
 
 	// load block observer
-
+	(&blkObserver{}).init(mgr)
+	
 	// load event observer
 }
 

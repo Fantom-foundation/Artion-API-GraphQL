@@ -5,7 +5,6 @@ import (
 	"artion-api-graphql/internal/repository"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"math/big"
 	"time"
 )
 
@@ -38,7 +37,7 @@ type blkObserver struct {
 	topics []common.Hash
 
 	// lastObservedBlock contains the number of the last observed block
-	lastObservedBlock *big.Int
+	lastObservedBlock *types.Header
 }
 
 // name provides the name of the service
@@ -101,7 +100,7 @@ func (bo *blkObserver) process(hdr *types.Header) {
 	}
 
 	// keep the last observed block number handy for notification
-	bo.lastObservedBlock = hdr.Number
+	bo.lastObservedBlock = hdr
 }
 
 // isObservedEvent checks if the given event log should be investigated and processed.
@@ -120,5 +119,5 @@ func (bo *blkObserver) notify() {
 
 	// send the notification and log the situation
 	repository.R().NotifyLastObservedBlock(bo.lastObservedBlock)
-	log.Infof("last observed block is #%d", bo.lastObservedBlock.Uint64())
+	log.Infof("last observed block is #%d", bo.lastObservedBlock.Number.Uint64())
 }

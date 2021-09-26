@@ -1,3 +1,4 @@
+// Package db provides access to the persistent storage.
 package db
 
 import (

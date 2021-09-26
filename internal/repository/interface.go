@@ -17,6 +17,10 @@ type Repository interface {
 	// BlockLogs provides list of event logs for the given block and list of topics.
 	BlockLogs(*common.Hash, []common.Hash) ([]eth.Log, error)
 
+	// NotifyLastObservedBlock stores information about last seen block into persistent storage
+	// so the API server can start where it left off thr last time.
+	NotifyLastObservedBlock(*eth.Header)
+
 	// ListTokenEvents provides a list of events filtered by NFT contract, specific token and owner's account.
 	ListTokenEvents(nft *common.Address, tokenId *hexutil.Big, account *common.Address, cursor types.Cursor, count int, backward bool) (list *types.TokenEventList, err error)
 }
