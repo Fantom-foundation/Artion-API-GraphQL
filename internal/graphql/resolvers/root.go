@@ -31,9 +31,15 @@ var log logger.Logger
 // as needed.
 var cfg *config.Config
 
+// instance represents a singleton instance of the root resolver
+var instance *RootResolver
+
+// oneInstance is the sync guarding root resolver singleton creation.
+var oneInstance sync.Once
+
 // SetLogger sets the repository logger to be used to collect logging info.
 func SetLogger(l logger.Logger) {
-	log = l
+	log = l.ModuleLogger("graphql")
 }
 
 // SetConfig sets the repository configuration to be used to establish
@@ -42,8 +48,17 @@ func SetConfig(c *config.Config) {
 	cfg = c
 }
 
-// New creates a new root resolver instance and initializes its internal structure.
-func New() *RootResolver {
+// Resolver returns a singleton instance fo the root instance.
+func Resolver() *RootResolver {
+	// make sure to instantiate the Repository only once
+	oneInstance.Do(func() {
+		instance = newResolver()
+	})
+	return instance
+}
+
+// new creates an instance of root resolver and initializes its internal structure.
+func newResolver() *RootResolver {
 	if cfg == nil {
 		panic(fmt.Errorf("missing configuration"))
 	}
@@ -97,12 +112,11 @@ func (rs *RootResolver) run() {
 
 // Version resolves the current version of the API server.
 func (rs *RootResolver) Version() string {
-
-	testAddr := common.Address([20]byte{ 0x99, 0x88, 0x77, 0x66 })
+	testAddr := common.Address([20]byte{0x99, 0x88, 0x77, 0x66})
 	event := types.TokenEvent{
-		Nft: common.Address([20]byte{ 0x01, 0xAB }),
-		TokenId: hexutil.Big(*big.NewInt(0x123456789)),
-		Buyer: &testAddr,
+		Nft:       common.Address([20]byte{0x01, 0xAB}),
+		TokenId:   hexutil.Big(*big.NewInt(0x123456789)),
+		Buyer:     &testAddr,
 		EventTime: types.Time(time.Now()),
 		EventType: types.EvtTpItemSold,
 	}
@@ -115,7 +129,10 @@ func (rs *RootResolver) Version() string {
 	return build.Short(cfg)
 }
 
-func (rs *RootResolver) Token(args struct{ Address common.Address; TokenId hexutil.Big }) (*Token, error) {
-	token := Token{ Address: args.Address, TokenId: args.TokenId }
+func (rs *RootResolver) Token(args struct {
+	Address common.Address
+	TokenId hexutil.Big
+}) (*Token, error) {
+	token := Token{Address: args.Address, TokenId: args.TokenId}
 	return &token, nil
 }

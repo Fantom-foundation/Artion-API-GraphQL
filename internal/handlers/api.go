@@ -3,7 +3,6 @@ package handlers
 
 import (
 	"artion-api-graphql/internal/config"
-	"artion-api-graphql/internal/graphql/resolvers"
 	"artion-api-graphql/internal/graphql/schema"
 	"artion-api-graphql/internal/logger"
 	"github.com/graph-gophers/graphql-go/relay"
@@ -13,8 +12,8 @@ import (
 )
 
 // Api constructs and return the API HTTP handlers chain for serving GraphQL API calls.
-func Api(cfg *config.Config, log logger.Logger, rs *resolvers.RootResolver) http.Handler {
-	// Create new CORS handler and attach the logger into it so we get information on Debug level if needed
+func Api(cfg *config.Config, log logger.Logger) http.Handler {
+	// create new CORS handler and attach the GraphQL resolver
 	corsHandler := cors.New(corsOptions(cfg))
 	corsHandler.Log = log
 
@@ -26,10 +25,7 @@ func Api(cfg *config.Config, log logger.Logger, rs *resolvers.RootResolver) http
 	}
 
 	// return the constructed API handler chain
-	return &LoggingHandler{
-		logger:  log,
-		handler: corsHandler.Handler(graphqlws.NewHandlerFunc(sch, &relay.Handler{Schema: sch})),
-	}
+	return corsHandler.Handler(graphqlws.NewHandlerFunc(sch, &relay.Handler{Schema: sch}))
 }
 
 // corsOptions constructs new set of options for the CORS handler based on provided configuration.
