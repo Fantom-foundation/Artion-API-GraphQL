@@ -6,12 +6,10 @@ import (
 	"artion-api-graphql/internal/config"
 	"artion-api-graphql/internal/logger"
 	"artion-api-graphql/internal/repository"
-	"artion-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"golang.org/x/sync/singleflight"
-	"math/big"
 	"sync"
 )
 
@@ -96,23 +94,22 @@ func (rs *RootResolver) run() {
 
 // Version resolves the current version of the API server.
 func (rs *RootResolver) Version() string {
-
-	event := types.Token{
-		Nft: common.Address([20]byte{ 0x01, 0xAB }),
-		TokenId: hexutil.Big(*big.NewInt(0x123456789)),
-		Name: "Test",
-		Description: "Test desc",
-	}
-	event.GenerateId()
-	err := repository.R().StoreToken(&event)
-	if err != nil {
-		log.Errorf("error in storing token event %s", err)
-	}
-
 	return build.Short(cfg)
 }
 
 func (rs *RootResolver) Token(args struct{ Address common.Address; TokenId hexutil.Big }) (*Token, error) {
 	token := Token{ Address: args.Address, TokenId: args.TokenId }
 	return &token, nil
+}
+
+func (rs *RootResolver) Tokens(args struct{ PaginationInput }) (con *TokenConnection, err error) {
+	cursor, count, backward, err := args.ToRepositoryInput()
+	if err != nil {
+		return nil, err
+	}
+	list, err := repository.R().ListTokens(cursor, count, backward)
+	if err != nil {
+		return nil, err
+	}
+	return NewTokenConnection(list)
 }

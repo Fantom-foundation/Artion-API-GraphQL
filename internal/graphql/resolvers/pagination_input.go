@@ -14,7 +14,7 @@ type PaginationInput struct {
 	Before  *types.Cursor
 }
 
-func (input *PaginationInput) ToCursorCount() (cursor types.Cursor, count int, backward bool, err error) {
+func (input *PaginationInput) ToRepositoryInput() (cursor types.Cursor, count int, backward bool, err error) {
 	if input == nil || (input.First == nil && input.Last == nil) {
 		cursor = ""
 		count = 10

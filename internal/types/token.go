@@ -28,11 +28,15 @@ type Token struct {
 	Description   string
 }
 
-func (t *Token) GenerateId() {
+func TokenIdFromAddress(Nft *common.Address, TokenId *big.Int) []byte {
 	hash := md5.New()
-	hash.Write(t.Nft.Bytes())
-	hash.Write((*big.Int)(&t.TokenId).Bytes())
-	t.Id = hash.Sum(nil)
+	hash.Write(Nft.Bytes())
+	hash.Write(TokenId.Bytes())
+	return hash.Sum(nil)
+}
+
+func (t *Token) GenerateId() {
+	t.Id = TokenIdFromAddress(&t.Nft, (*big.Int)(&t.TokenId))
 }
 
 type tokenBson struct {
@@ -55,7 +59,7 @@ func (t *Token) MarshalBSON() ([]byte, error) {
 }
 
 // UnmarshalBSON parses data from MongoDB.
-func (ev *Token) UnmarshalBSON(data []byte) (err error) {
+func (t *Token) UnmarshalBSON(data []byte) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("can not decode TokenEvent; %s", err.Error())
@@ -68,10 +72,10 @@ func (ev *Token) UnmarshalBSON(data []byte) (err error) {
 		return err
 	}
 
-	ev.Id = row.Id
-	ev.Nft = common.HexToAddress(row.Nft)
-	ev.TokenId = (hexutil.Big)(*hexutil.MustDecodeBig(row.TokenId))
-	ev.Name = row.Name
-	ev.Description = row.Description
+	t.Id = row.Id
+	t.Nft = common.HexToAddress(row.Nft)
+	t.TokenId = (hexutil.Big)(*hexutil.MustDecodeBig(row.TokenId))
+	t.Name = row.Name
+	t.Description = row.Description
 	return nil
 }

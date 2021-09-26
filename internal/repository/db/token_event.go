@@ -78,12 +78,12 @@ func (db *MongoDbBridge) listTokenEvents(filter *bson.D, cursor types.Cursor, co
 	col := db.client.Database(db.dbName).Collection(types.CoTokenEvents)
 	ctx := context.Background()
 
-	list.TotalCount, err = db.GetTotalCount(col, filter)
+	list.TotalCount, err = db.getTotalCount(col, filter)
 	if err != nil {
 		return nil, err
 	}
 
-	ld, err := db.FindPaginated(col, filter, cursor, count, backward)
+	ld, err := db.findPaginated(col, filter, cursor, count, backward)
 	if err != nil {
 		db.log.Errorf("error loading token events list; %s", err.Error())
 		return nil, err
@@ -110,6 +110,9 @@ func (db *MongoDbBridge) listTokenEvents(filter *bson.D, cursor types.Cursor, co
 		}
 	}
 
+	if cursor != "" {
+		list.HasPrev = true
+	}
 	if backward {
 		list.Reverse()
 	}

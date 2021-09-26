@@ -9,4 +9,7 @@ type Query {
     version: String!
 
     token(address: Address!, tokenId: BigInt!): Token
+
+    tokens(first: Int, after: Cursor, last: Int, before: Cursor): TokenConnection!
+
 }

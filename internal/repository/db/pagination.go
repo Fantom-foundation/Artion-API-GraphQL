@@ -10,8 +10,8 @@ import (
 
 const fieldId = "_id"
 
-// GetTotalCount obtains count of documents in MongoDB collection corresponding the filter.
-func (db *MongoDbBridge) GetTotalCount(col *mongo.Collection, filter *bson.D) (int64, error) {
+// getTotalCount obtains count of documents in MongoDB collection corresponding the filter.
+func (db *MongoDbBridge) getTotalCount(col *mongo.Collection, filter *bson.D) (int64, error) {
 	ctx := context.Background()
 	totalCount, err := col.CountDocuments(ctx, *filter)
 	if err != nil {
@@ -20,8 +20,8 @@ func (db *MongoDbBridge) GetTotalCount(col *mongo.Collection, filter *bson.D) (i
 	return totalCount, err
 }
 
-// FindPaginated obtains one page of filtered results from given collection of MongoDB.
-func (db *MongoDbBridge) FindPaginated(col *mongo.Collection, inputFilter *bson.D, cursor types.Cursor, count int, backward bool) (mc *mongo.Cursor, err error) {
+// findPaginated obtains one page of filtered results from given collection of MongoDB.
+func (db *MongoDbBridge) findPaginated(col *mongo.Collection, inputFilter *bson.D, cursor types.Cursor, count int, backward bool) (mc *mongo.Cursor, err error) {
 	ctx := context.Background()
 	filter := *inputFilter
 

@@ -75,12 +75,12 @@ func (db *MongoDbBridge) listTokens(filter *bson.D, cursor types.Cursor, count i
 	col := db.client.Database(db.dbName).Collection(types.CoTokens)
 	ctx := context.Background()
 
-	list.TotalCount, err = db.GetTotalCount(col, filter)
+	list.TotalCount, err = db.getTotalCount(col, filter)
 	if err != nil {
 		return nil, err
 	}
 
-	ld, err := db.FindPaginated(col, filter, cursor, count, backward)
+	ld, err := db.findPaginated(col, filter, cursor, count, backward)
 	if err != nil {
 		db.log.Errorf("error loading tokens list; %s", err.Error())
 		return nil, err
@@ -107,6 +107,9 @@ func (db *MongoDbBridge) listTokens(filter *bson.D, cursor types.Cursor, count i
 		}
 	}
 
+	if cursor != "" {
+		list.HasPrev = true
+	}
 	if backward {
 		list.Reverse()
 	}
