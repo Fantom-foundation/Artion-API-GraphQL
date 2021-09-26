@@ -8,8 +8,6 @@ const (
 	// configuration options
 	keyAppName                  = "app_name"
 	keyConfigFilePath           = "cfg"
-	keyConfigCmdBlockScanReScan = "cmd.rescan"
-	keyConfigCmdRestoreStake    = "cmd.fix_stake"
 
 	// server related keys
 	keyBindAddress      = "server.bind"
@@ -25,16 +23,12 @@ const (
 	keyTimeoutHeader   = "server.header_timeout"
 	keyTimeoutResolver = "server.resolver_timeout"
 
-	// API server signature related keys
-	keySignatureAddress    = "me.address"
-	keySignaturePrivateKey = "me.pkey"
-
 	// logging related options
 	keyLoggingLevel  = "log.level"
 	keyLoggingFormat = "log.format"
 
 	// node connection related options
-	keyLachesisUrl = "lachesis.url"
+	keyLachesisUrl = "node.url"
 
 	// off-chain database related options
 	keyMongoUrl      = "db.url"
