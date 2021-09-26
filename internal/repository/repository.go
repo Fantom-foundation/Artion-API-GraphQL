@@ -7,6 +7,7 @@ import (
 	"artion-api-graphql/internal/repository/db"
 	"artion-api-graphql/internal/repository/rpc"
 	"fmt"
+	"golang.org/x/sync/singleflight"
 	"sync"
 )
 
@@ -43,9 +44,10 @@ func R() Repository {
 // proxy is the implementation of the Repository interface
 type proxy struct {
 	rpc rpc.Blockchain
-	db    *db.MongoDbBridge
-	log   logger.Logger
-	cfg *config.Config
+	db        *db.MongoDbBridge
+	log       logger.Logger
+	cfg       *config.Config
+	callGroup *singleflight.Group
 }
 
 // SetConfig sets the repository configuration to be used to establish
@@ -80,6 +82,7 @@ func newRepository() Repository {
 		db:    dbBridge,
 		log:   log,
 		cfg:   cfg,
+		callGroup: new(singleflight.Group),
 	}
 
 	// return the proxy
