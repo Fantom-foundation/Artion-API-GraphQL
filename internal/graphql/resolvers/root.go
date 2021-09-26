@@ -5,15 +5,11 @@ import (
 	"artion-api-graphql/cmd/artionapi/build"
 	"artion-api-graphql/internal/config"
 	"artion-api-graphql/internal/logger"
-	"artion-api-graphql/internal/repository"
-	"artion-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"golang.org/x/sync/singleflight"
-	"math/big"
 	"sync"
-	"time"
 )
 
 // RootResolver is GraphQL resolver of root namespace.
@@ -112,20 +108,6 @@ func (rs *RootResolver) run() {
 
 // Version resolves the current version of the API server.
 func (rs *RootResolver) Version() string {
-	testAddr := common.Address([20]byte{0x99, 0x88, 0x77, 0x66})
-	event := types.TokenEvent{
-		Nft:       common.Address([20]byte{0x01, 0xAB}),
-		TokenId:   hexutil.Big(*big.NewInt(0x123456789)),
-		Buyer:     &testAddr,
-		EventTime: types.Time(time.Now()),
-		EventType: types.EvtTpItemSold,
-	}
-	event.GenerateId(uint32(time.Now().Unix()), 0x987654, 0x123)
-	err := repository.R().StoreTokenEvent(&event)
-	if err != nil {
-		log.Errorf("error in storing token event %s", err)
-	}
-
 	return build.Short(cfg)
 }
 

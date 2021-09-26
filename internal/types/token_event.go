@@ -16,7 +16,7 @@ const (
 	// CoTokenEvents is the name of database collection.
 	CoTokenEvents = "TokenEvents"
 
-	// BSON attributes names used in the database collection.
+	// FiTokenEventId BSON attributes names used in the database collection.
 	FiTokenEventId      = "_id"
 	FiTokenEventNft     = "nft"
 	FiTokenEventTokenId = "tokenId"
@@ -57,7 +57,7 @@ type TokenEvent struct {
 	StartTime    *Time // for postponed actions
 }
 
-func (e *TokenEvent) GenerateId(EventTime uint32, BlockNumber uint64, LogIndex uint) {
+func (tev *TokenEvent) GenerateId(EventTime uint32, BlockNumber uint64, LogIndex uint) {
 	var b primitive.ObjectID
 	logIndex := make([]byte, 4)
 	binary.BigEndian.PutUint32(b[0:4], EventTime) // from Mongo ObjectID impl
@@ -67,7 +67,7 @@ func (e *TokenEvent) GenerateId(EventTime uint32, BlockNumber uint64, LogIndex u
 	b[5] = b[5] ^ logIndex[2]
 	b[6] = b[6] ^ logIndex[1]
 	b[7] = b[7] ^ logIndex[0]
-	e.Id = b
+	tev.Id = b
 }
 
 type tokenEventBson struct {
@@ -85,40 +85,40 @@ type tokenEventBson struct {
 }
 
 // MarshalBSON prepares data to be stored in MongoDB.
-func (ev *TokenEvent) MarshalBSON() ([]byte, error) {
+func (tev *TokenEvent) MarshalBSON() ([]byte, error) {
 	row := tokenEventBson {
-		Id: ev.Id,
-		EventTime: time.Time(ev.EventTime),
-		EventType: int32(ev.EventType),
-		Nft: ev.Nft.String(),
-		TokenId: (&ev.TokenId).String(),
+		Id:        tev.Id,
+		EventTime: time.Time(tev.EventTime),
+		EventType: int32(tev.EventType),
+		Nft:       tev.Nft.String(),
+		TokenId:   (&tev.TokenId).String(),
 	}
-	if ev.Quantity != nil {
-		quantity := ev.Quantity.String()
+	if tev.Quantity != nil {
+		quantity := tev.Quantity.String()
 		row.Quantity = &quantity
 	}
-	if ev.Seller != nil {
-		seller := ev.Seller.String()
+	if tev.Seller != nil {
+		seller := tev.Seller.String()
 		row.Seller = &seller
 	}
-	if ev.Buyer != nil {
-		buyer := ev.Buyer.String()
+	if tev.Buyer != nil {
+		buyer := tev.Buyer.String()
 		row.Buyer = &buyer
 	}
-	if ev.PayToken != nil {
-		payToken := ev.PayToken.String()
+	if tev.PayToken != nil {
+		payToken := tev.PayToken.String()
 		row.PayToken = &payToken
 	}
-	if ev.PricePerItem != nil {
-		price := ev.PricePerItem.String()
+	if tev.PricePerItem != nil {
+		price := tev.PricePerItem.String()
 		row.PricePerItem = &price
 	}
-	row.StartTime = (*time.Time)(ev.StartTime)
+	row.StartTime = (*time.Time)(tev.StartTime)
 	return bson.Marshal(row)
 }
 
 // UnmarshalBSON parses data from MongoDB.
-func (ev *TokenEvent) UnmarshalBSON(data []byte) (err error) {
+func (tev *TokenEvent) UnmarshalBSON(data []byte) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("can not decode TokenEvent; %s", err.Error())
@@ -131,31 +131,31 @@ func (ev *TokenEvent) UnmarshalBSON(data []byte) (err error) {
 		return err
 	}
 
-	ev.Id = row.Id
-	ev.EventTime = Time(row.EventTime)
-	ev.EventType = TokenEventType(row.EventType)
-	ev.Nft = common.HexToAddress(row.Nft)
-	ev.TokenId = (hexutil.Big)(*hexutil.MustDecodeBig(row.TokenId))
+	tev.Id = row.Id
+	tev.EventTime = Time(row.EventTime)
+	tev.EventType = TokenEventType(row.EventType)
+	tev.Nft = common.HexToAddress(row.Nft)
+	tev.TokenId = (hexutil.Big)(*hexutil.MustDecodeBig(row.TokenId))
 	if row.Quantity != nil {
 		quantity := (hexutil.Big)(*hexutil.MustDecodeBig(*row.Quantity))
-		ev.Quantity = &quantity
+		tev.Quantity = &quantity
 	}
 	if row.Seller != nil {
 		seller := common.HexToAddress(*row.Seller)
-		ev.Seller = &seller
+		tev.Seller = &seller
 	}
 	if row.Buyer != nil {
 		buyer := common.HexToAddress(*row.Buyer)
-		ev.Buyer = &buyer
+		tev.Buyer = &buyer
 	}
 	if row.PayToken != nil {
 		payToken := common.HexToAddress(*row.PayToken)
-		ev.PayToken = &payToken
+		tev.PayToken = &payToken
 	}
 	if row.PricePerItem != nil {
 		price := (hexutil.Big)(*hexutil.MustDecodeBig(*row.PricePerItem))
-		ev.PricePerItem = &price
+		tev.PricePerItem = &price
 	}
-	ev.StartTime = (*Time)(row.StartTime)
+	tev.StartTime = (*Time)(row.StartTime)
 	return nil
 }

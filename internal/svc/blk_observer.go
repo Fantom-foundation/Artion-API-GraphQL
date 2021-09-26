@@ -86,12 +86,17 @@ func (bo *blkObserver) close() {
 // process an incoming block header by investigating its events.
 func (bo *blkObserver) process(hdr *types.Header) {
 	// pull events for the block
-	logs := repository.R().BlockLogs(hdr.Number, bo.topics)
+	blk := hdr.Hash()
+	logs, err := repository.R().BlockLogs(&blk, bo.topics)
+	if err != nil {
+		log.Errorf("block #%d event logs not available; %s", hdr.Number.Uint64(), err.Error())
+		return
+	}
 
 	// push interesting events into the output queue, if any
 	for _, evt := range logs {
-		if bo.isObservedEvent(evt) {
-			bo.outEvent <- evt
+		if bo.isObservedEvent(&evt) {
+			bo.outEvent <- &evt
 		}
 	}
 
