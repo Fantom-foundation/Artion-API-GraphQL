@@ -23,11 +23,11 @@ func (db *MongoDbBridge) initTokenEventCollection(col *mongo.Collection) {
 
 	// create indexes
 	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
-		db.log.Panicf("can not create indexes for transaction collection; %s", err.Error())
+		log.Panicf("can not create indexes for transaction collection; %s", err.Error())
 	}
 
 	// log we are done that
-	db.log.Debugf("transactions collection initialized")
+	log.Debugf("transactions collection initialized")
 }
 
 func (db *MongoDbBridge) StoreTokenEvent(event *types.TokenEvent) error {
@@ -40,7 +40,7 @@ func (db *MongoDbBridge) StoreTokenEvent(event *types.TokenEvent) error {
 
 	// try to do the insert
 	if _, err := col.InsertOne(context.Background(), event); err != nil {
-		db.log.Errorf("can not store TokenEvent; %s", err)
+		log.Errorf("can not store TokenEvent; %s", err)
 		return err
 	}
 	// make sure gas price collection is initialized
@@ -85,7 +85,7 @@ func (db *MongoDbBridge) listTokenEvents(filter *bson.D, cursor types.Cursor, co
 
 	ld, err := db.FindPaginated(col, filter, cursor, count, backward)
 	if err != nil {
-		db.log.Errorf("error loading token events list; %s", err.Error())
+		log.Errorf("error loading token events list; %s", err.Error())
 		return nil, err
 	}
 
@@ -93,7 +93,7 @@ func (db *MongoDbBridge) listTokenEvents(filter *bson.D, cursor types.Cursor, co
 	defer func() {
 		err = ld.Close(ctx)
 		if err != nil {
-			db.log.Errorf("error closing token events list cursor; %s", err.Error())
+			log.Errorf("error closing token events list cursor; %s", err.Error())
 		}
 	}()
 
@@ -101,7 +101,7 @@ func (db *MongoDbBridge) listTokenEvents(filter *bson.D, cursor types.Cursor, co
 		if len(list.Collection) < count {
 			var row types.TokenEvent
 			if err = ld.Decode(&row); err != nil {
-				db.log.Errorf("can not decode the token event in list; %s", err.Error())
+				log.Errorf("can not decode the token event in list; %s", err.Error())
 				return nil, err
 			}
 			list.Collection = append(list.Collection, &row)
