@@ -20,13 +20,19 @@ func newManager() *Manager {
 	// init & start services
 	mgr.load()
 
-	log.Notice("services are running")
+	log.Notice("all services are running")
 	return &mgr
 }
 
 // load initializes the services in the correct order.
 func (mgr *Manager) load() {
+	// load block router
 
+	// load block scanner
+
+	// load block observer
+
+	// load event observer
 }
 
 // add managed service instance to the Manager and run it.
@@ -37,13 +43,22 @@ func (mgr *Manager) add(s service) {
 	// run the service
 	mgr.wg.Add(1)
 	go s.run()
+	log.Noticef("service %s started", s.name())
+}
+
+// closed signals the manager a service terminated.
+func (mgr *Manager) closed(s service) {
+	mgr.wg.Done()
+	log.Noticef("service %s stopped", s.name())
 }
 
 // Close terminates the service manager
 // and all the managed services along with it.
 func (mgr *Manager) Close() {
-	log.Notice("closing services")
+	log.Notice("services are being terminated")
+
 	for _, s := range mgr.svc {
+		log.Noticef("closing %s", s.name())
 		s.close()
 	}
 
