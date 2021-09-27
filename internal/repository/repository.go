@@ -18,8 +18,8 @@ var cfg *config.Config
 // log represents the logger to be used by the repository.
 var log logger.Logger
 
-// instance is the singleton of the proxy, implementing Repository interface.
-var instance *proxy
+// instance is the singleton of the Proxy, implementing Repository interface.
+var instance *Proxy
 
 // oneInstance is the sync guarding Repository singleton creation.
 var oneInstance sync.Once
@@ -27,14 +27,14 @@ var oneInstance sync.Once
 // instanceMux controls access to the repository instance
 var instanceMux sync.Mutex
 
-// proxy is the implementation of the Repository interface
-type proxy struct {
-	rpc rpc.Blockchain
+// Proxy is the implementation of the Repository interface
+type Proxy struct {
+	rpc *rpc.Opera
 	db  *db.MongoDbBridge
 }
 
 // R provides access to the singleton instance of the Repository.
-func R() Repository {
+func R() *Proxy {
 	instanceMux.Lock()
 	defer instanceMux.Unlock()
 
@@ -84,13 +84,13 @@ func passEnvironment() {
 	db.SetConfig(cfg)
 }
 
-// newProxy creates new instance of proxy, implementing the Repository interface.
-func newProxy() *proxy {
+// newProxy creates new instance of Proxy, implementing the Repository interface.
+func newProxy() *Proxy {
 	// pass environment to the sub-modules
 	passEnvironment()
 
-	// make proxy instance
-	p := proxy{
+	// make Proxy instance
+	p := Proxy{
 		db:  db.New(),
 		rpc: rpc.New(),
 	}
@@ -105,7 +105,7 @@ func newProxy() *proxy {
 }
 
 // Close terminates repository connections.
-func (p *proxy) Close() {
+func (p *Proxy) Close() {
 	if p.rpc != nil {
 		p.rpc.Close()
 	}
