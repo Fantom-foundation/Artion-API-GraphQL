@@ -24,8 +24,8 @@ var cfg *config.Config
 // log represents the logger to be used by the repository.
 var log logger.Logger
 
-// opera represents the implementation of the Blockchain interface for Fantom Opera node.
-type opera struct {
+// Opera represents the implementation of the Blockchain interface for Fantom Opera node.
+type Opera struct {
 	rpc *client.Client
 	ftm *ethclient.Client
 
@@ -35,14 +35,14 @@ type opera struct {
 }
 
 // New provides a new instance of the RPC access point.
-func New() Blockchain {
+func New() *Opera {
 	con, err := connect()
 	if err != nil {
 		log.Criticalf("can not connect Opera node; %s", err.Error())
 		return nil
 	}
 
-	op := &opera{
+	op := &Opera{
 		rpc: con,
 		ftm: ethclient.NewClient(con),
 
@@ -72,7 +72,7 @@ func connect() (*client.Client, error) {
 }
 
 // Close terminates the node connection.
-func (o *opera) Close() {
+func (o *Opera) Close() {
 	// stop block observer
 	o.sigClose <- true
 	o.wg.Wait()
@@ -81,8 +81,8 @@ func (o *opera) Close() {
 	log.Noticef("blockchain connection closed")
 }
 
-// HeaderObserver provides a channel receiving new observed blockchain headers.
-func (o *opera) HeaderObserver() chan *eth.Header {
+// NewHeaders provides a channel receiving new blockchain headers.
+func (o *Opera) NewHeaders() chan *eth.Header {
 	return o.headers
 }
 

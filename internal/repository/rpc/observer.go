@@ -14,7 +14,7 @@ const (
 )
 
 // observe executes the headers' observer proxy through subscription.
-func (o *opera) observe() {
+func (o *Opera) observe() {
 	var sub ethereum.Subscription
 	defer func() {
 		if sub != nil {
@@ -47,7 +47,7 @@ func (o *opera) observe() {
 }
 
 // subscribe creates a new subscription for the observer.
-func (o *opera) subscribe() ethereum.Subscription {
+func (o *Opera) subscribe() ethereum.Subscription {
 	sub, err := o.rpc.EthSubscribe(context.Background(), o.headers, "newHeads")
 	if err != nil {
 		log.Criticalf("can not observe new blocks; %s", err.Error())

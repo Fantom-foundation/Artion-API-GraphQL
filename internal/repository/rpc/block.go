@@ -10,9 +10,14 @@ import (
 )
 
 // BlockLogs provides list of event logs for the given block number and list of topics.
-func (o *opera) BlockLogs(blk *common.Hash, topics []common.Hash) ([]types.Log, error) {
+func (o *Opera) BlockLogs(blk *common.Hash, topics []common.Hash) ([]types.Log, error) {
 	return o.ftm.FilterLogs(context.Background(), ethereum.FilterQuery{
 		BlockHash: blk,
 		Topics:    [][]common.Hash{topics},
 	})
+}
+
+// CurrentHead provides the ID of the latest known block.
+func (o *Opera) CurrentHead() (uint64, error) {
+	return o.ftm.BlockNumber(context.Background())
 }
