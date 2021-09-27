@@ -36,11 +36,11 @@ func (p *proxy) GetTokenJsonMetadata(uri string) (*types.JsonMetadata, error) {
 	return jsonMetadata.(*types.JsonMetadata), err
 }
 
-func (p *proxy) GetTokenImage(uri string) ([]byte, error) {
+func (p *proxy) GetTokenImage(uri string) (image *types.Image, err error) {
 	// TODO: in-memory cache
 	key := "GetTokenImage" + uri
 	data, err, _ := p.callGroup.Do(key, func() (interface{}, error) {
 		return p.uri.GetImage(uri)
 	})
-	return data.([]byte), err
+	return data.(*types.Image), err
 }

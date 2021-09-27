@@ -102,16 +102,19 @@ func (app *apiServer) setupHandlers(mux *http.ServeMux) {
 	app.api = resolvers.New()
 
 	// setup GraphQL API handler
-	h := http.TimeoutHandler(
+	graphqlHandler := http.TimeoutHandler(
 		handlers.Api(app.cfg, app.log, app.api),
 		time.Second*time.Duration(app.cfg.Server.ResolverTimeout),
 		"Service timeout.",
 	)
-	mux.Handle("/api", h)
-	mux.Handle("/graphql", h)
+	mux.Handle("/api", graphqlHandler)
+	mux.Handle("/graphql", graphqlHandler)
 
 	// handle GraphiQL interface
 	mux.Handle("/graphi", handlers.GraphiHandler(app.cfg.Server.DomainAddress, app.log))
+
+	// handle GraphiQL interface
+	mux.Handle("/token-images/", handlers.TokenImage(app.log))
 }
 
 // observeSignals setups terminate signals observation.

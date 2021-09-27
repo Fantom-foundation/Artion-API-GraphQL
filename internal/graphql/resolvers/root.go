@@ -131,6 +131,20 @@ func (rs *RootResolver) PushTestingData() (*string, error) {
 	if err != nil {
 		log.Errorf("error in storing token", err)
 	}
+
+	tok = types.Token{
+		Nft: common.HexToAddress("0x61af4d29f672e27a097291f72fc571304bc93521"),
+		TokenId: hexutil.Big(*big.NewInt(3224)),
+		Name: "Artion",
+		Description: "Description",
+		Uri: "https://artion1.mypinata.cloud/ipfs/QmcAtMen7niz53eHpnehWJvYPVEMkxaT1y8mtkPjz5rAwf",
+	}
+	tok.GenerateId()
+	err = repository.R().StoreToken(&tok)
+	if err != nil {
+		log.Errorf("error in storing token", err)
+	}
+
 	out := "Loaded OK"
 	return &out, nil
 }
