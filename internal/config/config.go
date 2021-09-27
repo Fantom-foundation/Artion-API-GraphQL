@@ -25,6 +25,9 @@ type Config struct {
 	// Lachesis represents the node structure
 	Lachesis Lachesis `mapstructure:"node"`
 
+	// IPFS represents the node structure
+	Ipfs Ipfs `mapstructure:"ipfs"`
+
 	// Database configuration
 	Db Database `mapstructure:"db"`
 
@@ -82,6 +85,11 @@ type Log struct {
 
 // Lachesis represents the Lachesis node access configuration
 type Lachesis struct {
+	Url string `mapstructure:"url"`
+}
+
+// Ipfs represents the IPFS node access configuration
+type Ipfs struct {
 	Url string `mapstructure:"url"`
 }
 

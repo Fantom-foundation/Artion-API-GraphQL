@@ -12,7 +12,8 @@ import (
 type Token struct {
 	Address common.Address
 	TokenId hexutil.Big
-	loaded *types.Token
+	dbToken *types.Token // data for token loaded from Mongo
+	jsonMeta *types.JsonMetadata // data loaded from URI
 }
 
 type TokenEdge struct {
@@ -37,7 +38,7 @@ func NewTokenConnection(list *types.TokenList) (con *TokenConnection, err error)
 		resolverToken := Token{
 			Address: list.Collection[i].Nft,
 			TokenId: list.Collection[i].TokenId,
-			loaded: list.Collection[i],
+			dbToken: list.Collection[i],
 		}
 		con.Edges[i].Node = &resolverToken
 	}
@@ -59,28 +60,37 @@ func NewTokenConnection(list *types.TokenList) (con *TokenConnection, err error)
 }
 
 func (t *Token) load() error {
-	if t.loaded == nil { // TODO: need to add synchronization to prevent concurrent loads!
+	if t.dbToken == nil {
 		tok, err := repository.R().GetToken(t.Address, t.TokenId)
 		if err != nil {
 			return err
 		}
-		t.loaded = tok
+		t.dbToken = tok
+	}
+	if t.jsonMeta == nil {
+		jsonMeta, err := repository.R().GetTokenJsonMetadata(t.dbToken.Uri)
+		if err != nil {
+			return err
+		}
+		t.jsonMeta = jsonMeta
 	}
 	return nil
 }
 
 func (t *Token) Name() (string, error) {
-	err := t.load(); if err != nil {
+	err := t.load()
+	if err != nil {
 		return "", err
 	}
-	return t.loaded.Name, nil
+	return t.jsonMeta.Name, nil
 }
 
 func (t *Token) Description() (string, error) {
-	err := t.load(); if err != nil {
+	err := t.load()
+	if err != nil {
 		return "", err
 	}
-	return t.loaded.Description, nil
+	return t.jsonMeta.Description, nil
 }
 
 func (t *Token) Events(args struct{ PaginationInput }) (con *TokenEventConnection, err error) {

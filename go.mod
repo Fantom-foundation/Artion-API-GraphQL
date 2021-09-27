@@ -18,6 +18,7 @@ require (
 	github.com/gopherjs/gopherjs v0.0.0-20210722203344-69c5ea87048d // indirect
 	github.com/graph-gophers/graphql-go v1.1.0
 	github.com/graph-gophers/graphql-transport-ws v0.0.1
+	github.com/ipfs/go-ipfs-api v0.2.0
 	github.com/jackpal/go-nat-pmp v1.0.2 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect

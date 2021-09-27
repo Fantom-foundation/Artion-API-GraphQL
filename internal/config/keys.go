@@ -36,6 +36,9 @@ const (
 	// node connection related options
 	keyLachesisUrl = "lachesis.url"
 
+	// IPFS node connection related options
+	keyIpfsUrl = "ipfs.url"
+
 	// off-chain database related options
 	keyMongoUrl      = "db.url"
 	keyMongoDatabase = "db.db"

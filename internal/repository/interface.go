@@ -19,6 +19,10 @@ type Repository interface {
 
 	GetToken(nft common.Address, tokenId hexutil.Big) (*types.Token, error)
 
+	GetTokenJsonMetadata(uri string) (*types.JsonMetadata, error)
+
+	GetTokenImage(uri string) ([]byte, error)
+
 	ListTokens(cursor types.Cursor, count int, backward bool) (*types.TokenList, error)
 
 }

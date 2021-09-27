@@ -26,3 +26,21 @@ func (p *proxy) ListTokens(cursor types.Cursor, count int, backward bool) (list 
 	})
 	return tokens.(*types.TokenList), err
 }
+
+func (p *proxy) GetTokenJsonMetadata(uri string) (*types.JsonMetadata, error) {
+	// TODO: in-memory cache
+	key := "GetTokenJsonMetadata" + uri
+	jsonMetadata, err, _ := p.callGroup.Do(key, func() (interface{}, error) {
+		return p.uri.GetJsonMetadata(uri)
+	})
+	return jsonMetadata.(*types.JsonMetadata), err
+}
+
+func (p *proxy) GetTokenImage(uri string) ([]byte, error) {
+	// TODO: in-memory cache
+	key := "GetTokenImage" + uri
+	data, err, _ := p.callGroup.Do(key, func() (interface{}, error) {
+		return p.uri.GetImage(uri)
+	})
+	return data.([]byte), err
+}

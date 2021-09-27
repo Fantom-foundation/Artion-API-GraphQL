@@ -1,6 +1,7 @@
 # Root schema definition
 schema {
     query: Query
+    mutation: Mutation
 }
 
 # Entry points for querying the API
@@ -12,4 +13,11 @@ type Query {
 
     tokens(first: Int, after: Cursor, last: Int, before: Cursor): TokenConnection!
 
+}
+
+# Mutation endpoints for modifying the data
+type Mutation {
+    # SendTransaction submits a raw signed transaction into the block chain.
+    # The tx parameter represents raw signed and RLP encoded transaction data.
+    pushTestingData: String
 }

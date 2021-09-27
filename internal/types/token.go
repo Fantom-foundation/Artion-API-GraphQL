@@ -26,6 +26,7 @@ type Token struct {
 	TokenId       hexutil.Big
 	Name          string
 	Description   string
+	Uri           string
 }
 
 func TokenIdFromAddress(Nft *common.Address, TokenId *big.Int) []byte {
@@ -45,6 +46,7 @@ type tokenBson struct {
 	TokenId      string   `bson:"tokenId"`
 	Name         string   `bson:"name"`
 	Description  string   `bson:"description"`
+	Uri          string   `bson:"uri"`
 }
 
 // MarshalBSON prepares data to be stored in MongoDB.
@@ -55,6 +57,7 @@ func (t *Token) MarshalBSON() ([]byte, error) {
 		TokenId:     (&t.TokenId).String(),
 		Name:        t.Name,
 		Description: t.Description,
+		Uri:         t.Uri,
 	})
 }
 
@@ -77,5 +80,6 @@ func (t *Token) UnmarshalBSON(data []byte) (err error) {
 	t.TokenId = (hexutil.Big)(*hexutil.MustDecodeBig(row.TokenId))
 	t.Name = row.Name
 	t.Description = row.Description
+	t.Uri = row.Uri
 	return nil
 }

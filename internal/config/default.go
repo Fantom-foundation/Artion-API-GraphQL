@@ -43,6 +43,9 @@ const (
 	// defLachesisUrl holds default Lachesis connection string
 	defLachesisUrl = "~/.lachesis/data/lachesis.ipc"
 
+	// defIpfsUrl holds default IPFS connection string
+	defIpfsUrl = "localhost:5001"
+
 	// defMongoUrl holds default MongoDB connection string
 	defMongoUrl = "mongodb://localhost:27017"
 
@@ -82,6 +85,7 @@ func applyDefaults(cfg *viper.Viper) {
 	cfg.SetDefault(keyLoggingLevel, defLoggingLevel)
 	cfg.SetDefault(keyLoggingFormat, defLoggingFormat)
 	cfg.SetDefault(keyLachesisUrl, defLachesisUrl)
+	cfg.SetDefault(keyIpfsUrl, defIpfsUrl)
 	cfg.SetDefault(keyMongoUrl, defMongoUrl)
 	cfg.SetDefault(keyMongoDatabase, defMongoDatabase)
 	cfg.SetDefault(keyApiPeers, defApiPeers)
