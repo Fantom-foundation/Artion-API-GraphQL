@@ -5,6 +5,7 @@ import (
 	"context"
 	eth "github.com/ethereum/go-ethereum/core/types"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
@@ -47,4 +48,27 @@ func (db *MongoDbBridge) UpdateLastSeenBlock(blk *eth.Header) {
 	if re.UpsertedCount > 0 {
 		log.Debugf("last seen block updated to #%d", blk.Number.Uint64())
 	}
+}
+
+// LastSeenBlockNumber pulls the ID of the last known block from the database.
+func (db *MongoDbBridge) LastSeenBlockNumber() (uint64, error) {
+	col := db.client.Database(db.dbName).Collection(coSystemStateCollection)
+	fi := col.FindOne(context.Background(), bson.D{{Key: fieldId, Value: keyLastSeenBlock}})
+	if fi.Err() != nil {
+		// no match?
+		if fi.Err() == mongo.ErrNoDocuments {
+			log.Errorf("previous state not known")
+			return 0, nil
+		}
+		return 0, fi.Err()
+	}
+
+	// decode
+	var row struct {
+		Num int64 `bson:"number"`
+	}
+	if err := fi.Decode(&row); err != nil {
+		return 0, err
+	}
+	return uint64(row.Num), nil
 }
