@@ -4,7 +4,7 @@ package svc
 import (
 	"artion-api-graphql/internal/repository"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
+	eth "github.com/ethereum/go-ethereum/core/types"
 	"time"
 )
 
@@ -27,17 +27,27 @@ type blkObserver struct {
 	sigStop chan bool
 
 	// inBlock represents an input channel receiving block headers to be observed
-	inBlock chan *types.Header
+	inBlocks chan *eth.Header
 
 	// outEvent represents an output channel being fed
 	// with recognized block events for processing
-	outEvent chan *types.Log
+	outEvents chan *eth.Log
 
 	// topics represents the topics observed by the API server
 	topics []common.Hash
 
 	// lastObservedBlock contains the number of the last observed block
-	lastObservedBlock *types.Header
+	lastObservedBlock *eth.Header
+}
+
+// newBlkObserver creates a new instance of the block observer service.
+func newBlkObserver(mgr *Manager) *blkObserver {
+	return &blkObserver{
+		mgr:               mgr,
+		sigStop:           make(chan bool, 1),
+		outEvents:         make(chan *eth.Log, logEventQueueCapacity),
+		topics:            nil,
+	}
 }
 
 // name provides the name of the service
@@ -46,13 +56,9 @@ func (bo *blkObserver) name() string {
 }
 
 // init prepares the block observer to capture blocks.
-func (bo *blkObserver) init(mgr *Manager) {
-	bo.sigStop = make(chan bool, 1)
-	bo.outEvent = make(chan *types.Log, logEventQueueCapacity)
-
-	// inform manager we are ready to go
-	bo.mgr = mgr
-	mgr.add(bo)
+func (bo *blkObserver) init() {
+	bo.inBlocks = bo.mgr.blkRouter.outBlocks
+	bo.mgr.add(bo)
 }
 
 // run pulls block headers from the input queue and processes them.
@@ -71,7 +77,7 @@ func (bo *blkObserver) run() {
 			return
 		case <-tick.C:
 			bo.notify()
-		case hdr := <-bo.inBlock:
+		case hdr := <-bo.inBlocks:
 			bo.process(hdr)
 		}
 	}
@@ -83,7 +89,7 @@ func (bo *blkObserver) close() {
 }
 
 // process an incoming block header by investigating its events.
-func (bo *blkObserver) process(hdr *types.Header) {
+func (bo *blkObserver) process(hdr *eth.Header) {
 	// pull events for the block
 	blk := hdr.Hash()
 	logs, err := repository.R().BlockLogs(&blk, bo.topics)
@@ -95,7 +101,12 @@ func (bo *blkObserver) process(hdr *types.Header) {
 	// push interesting events into the output queue, if any
 	for _, evt := range logs {
 		if bo.isObservedEvent(&evt) {
-			bo.outEvent <- &evt
+			select {
+			case bo.outEvents <- &evt:
+			case <-bo.sigStop:
+				bo.sigStop <- true
+				return
+			}
 		}
 	}
 
@@ -105,7 +116,7 @@ func (bo *blkObserver) process(hdr *types.Header) {
 
 // isObservedEvent checks if the given event log should be investigated and processed.
 // We should not need to check the topic since we pull logs already filtered by topics list.
-func (bo *blkObserver) isObservedEvent(evt *types.Log) bool {
+func (bo *blkObserver) isObservedEvent(evt *eth.Log) bool {
 	// does the event belong a contract of interest?
 	panic("implement")
 	return false

@@ -7,6 +7,11 @@ import "sync"
 type Manager struct {
 	wg  *sync.WaitGroup
 	svc []service
+
+	// managed services
+	blkRouter   *blkRouter
+	blkScanner  *blkScanner
+	blkObserver *blkObserver
 }
 
 // newManager creates a new instance of the svc Manager.
@@ -18,22 +23,20 @@ func newManager() *Manager {
 	}
 
 	// init & start services
-	mgr.load()
+	mgr.blkRouter = newBlkRouter(&mgr)
+	mgr.blkScanner = newBlkScanner(&mgr)
+	mgr.blkObserver = newBlkObserver(&mgr)
+	mgr.init()
 
 	log.Notice("all services are running")
 	return &mgr
 }
 
-// load initializes the services in the correct order.
-func (mgr *Manager) load() {
-	// load block router
-
-	// load block scanner
-
-	// load block observer
-	(&blkObserver{}).init(mgr)
-	
-	// load event observer
+// init initializes the services in the correct order.
+func (mgr *Manager) init() {
+	mgr.blkRouter.init()
+	mgr.blkScanner.init()
+	mgr.blkObserver.init()
 }
 
 // add managed service instance to the Manager and run it.

@@ -4,7 +4,7 @@ package svc
 // service represents a Service run by the Manager.
 type service interface {
 	// init initializes the service
-	init(*Manager)
+	init()
 
 	// run executes the service
 	run()
