@@ -122,8 +122,6 @@ func (rs *RootResolver) PushTestingData() (*string, error) {
 	tok := types.Token{
 		Nft: common.HexToAddress("0xf41270836dF4Db1D28F7fd0935270e3A603e78cC"),
 		TokenId: hexutil.Big(*big.NewInt(9292)),
-		Name: "ContractName",
-		Description: "Description",
 		Uri: "ipfs://QmTetVgMNVGj88s9NQuANyVmjMtZqhZDp8T21huiVGbfAi",
 	}
 	tok.GenerateId()
@@ -135,8 +133,6 @@ func (rs *RootResolver) PushTestingData() (*string, error) {
 	tok = types.Token{
 		Nft: common.HexToAddress("0x61af4d29f672e27a097291f72fc571304bc93521"),
 		TokenId: hexutil.Big(*big.NewInt(3224)),
-		Name: "Artion",
-		Description: "Description",
 		Uri: "https://artion1.mypinata.cloud/ipfs/QmcAtMen7niz53eHpnehWJvYPVEMkxaT1y8mtkPjz5rAwf",
 	}
 	tok.GenerateId()

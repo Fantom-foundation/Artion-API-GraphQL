@@ -24,8 +24,6 @@ type Token struct {
 	Id            []byte
 	Nft           common.Address
 	TokenId       hexutil.Big
-	Name          string
-	Description   string
 	Uri           string
 }
 
@@ -55,8 +53,6 @@ func (t *Token) MarshalBSON() ([]byte, error) {
 		Id:          t.Id,
 		Nft:         t.Nft.String(),
 		TokenId:     (&t.TokenId).String(),
-		Name:        t.Name,
-		Description: t.Description,
 		Uri:         t.Uri,
 	})
 }
@@ -78,8 +74,6 @@ func (t *Token) UnmarshalBSON(data []byte) (err error) {
 	t.Id = row.Id
 	t.Nft = common.HexToAddress(row.Nft)
 	t.TokenId = (hexutil.Big)(*hexutil.MustDecodeBig(row.TokenId))
-	t.Name = row.Name
-	t.Description = row.Description
 	t.Uri = row.Uri
 	return nil
 }
