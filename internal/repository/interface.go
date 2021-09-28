@@ -23,14 +23,26 @@ type Repository interface {
 	// GetToken obtains token info stored in database.
 	GetToken(nft common.Address, tokenId hexutil.Big) (*types.Token, error)
 
-	// StoreListing stores the token listing into database.
-	StoreListing(listing *types.Listing) error
+	// AddListing stores the token listing into database.
+	AddListing(listing *types.Listing) error
+
+	// UpdateListing updates existing token listing in database.
+	UpdateListing(listing *types.Listing) error
+
+	// RemoveListing removes token listing from database.
+	RemoveListing(owner common.Address, nft common.Address, tokenId hexutil.Big) error
 
 	// ListListings allows to browse all tokens listings, preferably filtered.
 	ListListings(nft *common.Address, tokenId *hexutil.Big, owner *common.Address, cursor types.Cursor, count int, backward bool) (*types.ListingList, error)
 
-	// StoreOffer stores the token offer into database.
-	StoreOffer(offer *types.Offer) error
+	// AddOffer stores the token offer into database.
+	AddOffer(offer *types.Offer) error
+
+	// UpdateOffer updates existing token offer in database.
+	UpdateOffer(offer *types.Offer) error
+
+	// RemoveOffer removes token offer from database.
+	RemoveOffer(creator common.Address, nft common.Address, tokenId hexutil.Big) error
 
 	// ListOffers allows to browse all tokens offers, preferably filtered.
 	ListOffers(nft *common.Address, tokenId *hexutil.Big, owner *common.Address, cursor types.Cursor, count int, backward bool) (*types.OfferList, error)

@@ -29,7 +29,7 @@ func (db *MongoDbBridge) initOfferCollection(col *mongo.Collection) {
 	db.log.Debugf("transactions collection initialized")
 }
 
-func (db *MongoDbBridge) StoreOffer(event *types.Offer) error {
+func (db *MongoDbBridge) AddOffer(event *types.Offer) error {
 	if event == nil {
 		return fmt.Errorf("no value to store")
 	}
@@ -45,6 +45,41 @@ func (db *MongoDbBridge) StoreOffer(event *types.Offer) error {
 	// make sure gas price collection is initialized
 	if db.initOffers != nil {
 		db.initOffers.Do(func() { db.initOfferCollection(col); db.initOffers = nil })
+	}
+	return nil
+}
+
+func (db *MongoDbBridge) UpdateOffer(Offer *types.Offer) error {
+	if Offer == nil {
+		return fmt.Errorf("no value to store")
+	}
+	col := db.client.Database(db.dbName).Collection(types.CoOffers)
+
+	filter := bson.D{
+		{ Key: types.FiOfferCreator, Value: Offer.Creator.String() },
+		{ Key: types.FiOfferNft, Value: Offer.Nft.String() },
+		{ Key: types.FiOfferTokenId, Value: Offer.TokenId.String() },
+	}
+
+	if _, err := col.ReplaceOne(context.Background(), filter, Offer); err != nil {
+		db.log.Errorf("can not update Offer; %s", err)
+		return err
+	}
+	return nil
+}
+
+func (db *MongoDbBridge) RemoveOffer(creator common.Address, nft common.Address, tokenId hexutil.Big) error {
+	col := db.client.Database(db.dbName).Collection(types.CoOffers)
+
+	filter := bson.D{
+		{ Key: types.FiOfferCreator, Value: creator.String() },
+		{ Key: types.FiOfferNft, Value: nft.String() },
+		{ Key: types.FiOfferTokenId, Value: tokenId.String() },
+	}
+
+	if _, err := col.DeleteOne(context.Background(), filter); err != nil {
+		db.log.Errorf("can not update Offer; %s", err)
+		return err
 	}
 	return nil
 }

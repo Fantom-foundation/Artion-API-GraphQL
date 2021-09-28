@@ -44,7 +44,7 @@ func (rs *RootResolver) PushTestingData() (*string, error) {
 		StartTime: types.Time(time.Now()),
 	}
 	listing.GenerateId()
-	err = repository.R().StoreListing(&listing)
+	err = repository.R().AddListing(&listing)
 	if err != nil {
 		log.Errorf("error in storing listing", err)
 	}
@@ -60,7 +60,7 @@ func (rs *RootResolver) PushTestingData() (*string, error) {
 		Deadline: types.Time(time.Now().Add(time.Hour * 48)),
 	}
 	offer.GenerateId()
-	err = repository.R().StoreOffer(&offer)
+	err = repository.R().AddOffer(&offer)
 	if err != nil {
 		log.Errorf("error in storing offer", err)
 	}

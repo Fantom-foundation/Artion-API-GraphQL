@@ -29,8 +29,8 @@ func (db *MongoDbBridge) initListingCollection(col *mongo.Collection) {
 	db.log.Debugf("transactions collection initialized")
 }
 
-func (db *MongoDbBridge) StoreListing(event *types.Listing) error {
-	if event == nil {
+func (db *MongoDbBridge) AddListing(listing *types.Listing) error {
+	if listing == nil {
 		return fmt.Errorf("no value to store")
 	}
 
@@ -38,13 +38,48 @@ func (db *MongoDbBridge) StoreListing(event *types.Listing) error {
 	col := db.client.Database(db.dbName).Collection(types.CoListings)
 
 	// try to do the insert
-	if _, err := col.InsertOne(context.Background(), event); err != nil {
-		db.log.Errorf("can not store Listing; %s", err)
+	if _, err := col.InsertOne(context.Background(), listing); err != nil {
+		db.log.Errorf("can not add Listing; %s", err)
 		return err
 	}
-	// make sure gas price collection is initialized
+
 	if db.initListings != nil {
 		db.initListings.Do(func() { db.initListingCollection(col); db.initListings = nil })
+	}
+	return nil
+}
+
+func (db *MongoDbBridge) UpdateListing(listing *types.Listing) error {
+	if listing == nil {
+		return fmt.Errorf("no value to store")
+	}
+	col := db.client.Database(db.dbName).Collection(types.CoListings)
+
+	filter := bson.D{
+		{ Key: types.FiListingOwner, Value: listing.Owner.String() },
+		{ Key: types.FiListingNft, Value: listing.Nft.String() },
+		{ Key: types.FiListingTokenId, Value: listing.TokenId.String() },
+	}
+
+	if _, err := col.ReplaceOne(context.Background(), filter, listing); err != nil {
+		db.log.Errorf("can not update Listing; %s", err)
+		return err
+	}
+	return nil
+}
+
+func (db *MongoDbBridge) RemoveListing(owner common.Address, nft common.Address, tokenId hexutil.Big) error {
+	col := db.client.Database(db.dbName).Collection(types.CoListings)
+
+	filter := bson.D{
+		{ Key: types.FiListingOwner, Value: owner.String() },
+		{ Key: types.FiListingNft, Value: nft.String() },
+		{ Key: types.FiListingTokenId, Value: tokenId.String() },
+	}
+
+	if _, err := col.DeleteOne(context.Background(), filter); err != nil {
+		db.log.Errorf("can not update Listing; %s", err)
+		return err
 	}
 	return nil
 }
@@ -52,13 +87,13 @@ func (db *MongoDbBridge) StoreListing(event *types.Listing) error {
 func (db *MongoDbBridge) ListListings(nft *common.Address, tokenId *hexutil.Big, owner *common.Address, cursor types.Cursor, count int, backward bool) (out *types.ListingList, err error) {
 	filter := bson.D{}
 	if nft != nil {
-		filter = append(filter, primitive.E{Key: types.FiListingNft, Value: nft.String() })
+		filter = append(filter, primitive.E{ Key: types.FiListingNft, Value: nft.String() })
 	}
 	if tokenId != nil {
-		filter = append(filter, primitive.E{Key: types.FiListingTokenId, Value: tokenId.String() })
+		filter = append(filter, primitive.E{ Key: types.FiListingTokenId, Value: tokenId.String() })
 	}
 	if owner != nil {
-		filter = append(filter, primitive.E{Key: types.FiListingOwner, Value: owner.String() })
+		filter = append(filter, primitive.E{ Key: types.FiListingOwner, Value: owner.String() })
 	}
 	return db.listListings(&filter, cursor, count, backward)
 }
