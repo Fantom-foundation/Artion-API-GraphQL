@@ -21,7 +21,7 @@ type TokenEdge struct {
 }
 
 func (edge TokenEdge) Cursor() (types.Cursor, error) {
-	return types.CursorFromObjectId(types.TokenIdFromAddress(&edge.Node.Address, (*big.Int)(&edge.Node.TokenId))), nil
+	return types.CursorFromId(types.TokenIdFromAddress(&edge.Node.Address, (*big.Int)(&edge.Node.TokenId))), nil
 }
 
 type TokenConnection struct {
@@ -103,4 +103,28 @@ func (t *Token) Events(args struct{ PaginationInput }) (con *TokenEventConnectio
 		return nil, err
 	}
 	return NewTokenEventConnection(list)
+}
+
+func (t *Token) Listings(args struct{ PaginationInput }) (con *ListingConnection, err error) {
+	cursor, count, backward, err := args.ToRepositoryInput()
+	if err != nil {
+		return nil, err
+	}
+	list, err := repository.R().ListListings(&t.Address, &t.TokenId, nil, cursor, count, backward)
+	if err != nil {
+		return nil, err
+	}
+	return NewListingConnection(list)
+}
+
+func (t *Token) Offers(args struct{ PaginationInput }) (con *OfferConnection, err error) {
+	cursor, count, backward, err := args.ToRepositoryInput()
+	if err != nil {
+		return nil, err
+	}
+	list, err := repository.R().ListOffers(&t.Address, &t.TokenId, nil, cursor, count, backward)
+	if err != nil {
+		return nil, err
+	}
+	return NewOfferConnection(list)
 }

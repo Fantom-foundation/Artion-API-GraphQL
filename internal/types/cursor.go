@@ -9,8 +9,8 @@ import (
 // Cursor represents a string key of an element position in a sequential list of edges.
 type Cursor string
 
-// CursorFromObjectId converts MongoDB ObjectID to GraphQL Cursor type.
-func CursorFromObjectId(id []byte) Cursor {
+// CursorFromId converts MongoDB ObjectID to GraphQL Cursor type.
+func CursorFromId(id []byte) Cursor {
 	return Cursor(hexutil.Encode(id))
 }
 

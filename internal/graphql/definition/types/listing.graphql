@@ -1,0 +1,26 @@
+# Listing represents offer for anybody to buy given token from the owner.
+type Listing {
+    owner: Address!
+    nft: Address!
+    tokenId: BigInt!
+    quantity: BigInt!
+    payToken: Address!
+    pricePerItem: BigInt!
+    startTime: Time!
+}
+
+type ListingEdge {
+    cursor: Cursor!
+    node: Listing!
+}
+
+type ListingConnection {
+    # Edges contains provided edges of the sequential list.
+    edges: [ListingEdge!]!
+
+    # TotalCount is the total amount of items in the list.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of the list.
+    pageInfo: PageInfo!
+}

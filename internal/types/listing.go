@@ -21,7 +21,7 @@ const (
 	FiListingOwner   = "owner"
 )
 
-// Listing represents offer to buy given token from given owner.
+// Listing represents offer for anybody to buy given token from the owner.
 type Listing struct {
 	Id           []byte
 	Owner        common.Address

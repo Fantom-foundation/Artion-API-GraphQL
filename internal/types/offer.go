@@ -21,7 +21,7 @@ const (
 	FiOfferCreator   = "creator"
 )
 
-// Offer represents offer to buy given token from given owner.
+// Offer represents offer to buy given token from any current owner.
 type Offer struct {
 	Id           []byte
 	Creator      common.Address

@@ -13,7 +13,7 @@ type TokenEventEdge struct {
 }
 
 func (edge TokenEventEdge) Cursor() (types.Cursor, error) {
-	return types.CursorFromObjectId(edge.Node.Id), nil
+	return types.CursorFromId(edge.Node.Id), nil
 }
 
 type TokenEventConnection struct {

@@ -1,0 +1,27 @@
+# Offer represents offer to buy given token from any current owner.
+type Offer {
+    creator: Address!
+    nft: Address!
+    tokenId: BigInt!
+    quantity: BigInt!
+    payToken: Address!
+    pricePerItem: BigInt!
+    startTime: Time!
+    deadline: Time!
+}
+
+type OfferEdge {
+    cursor: Cursor!
+    node: Offer!
+}
+
+type OfferConnection {
+    # Edges contains provided edges of the sequential list.
+    edges: [OfferEdge!]!
+
+    # TotalCount is the total amount of items in the list.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of the list.
+    pageInfo: PageInfo!
+}

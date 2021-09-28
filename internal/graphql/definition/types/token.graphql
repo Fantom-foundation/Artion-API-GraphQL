@@ -10,6 +10,10 @@ type Token {
 
     events(first: Int, after: Cursor, last: Int, before: Cursor): TokenEventConnection!
 
+    listings(first: Int, after: Cursor, last: Int, before: Cursor): ListingConnection!
+
+    offers(first: Int, after: Cursor, last: Int, before: Cursor): OfferConnection!
+
 }
 
 type TokenEdge {
