@@ -31,13 +31,12 @@ type blkScanner struct {
 	// sigStop represents the signal for closing the router
 	sigStop chan bool
 
-	// outBlocks represents a channel fed with historical
-	// block headers being scanned.
-	outBlocks chan *eth.Header
-
 	// inObservedBlocks is a channel receiving IDs of observed blocks
 	// we track the observed heads to recognize if we need to switch back to scan from idle
 	inObservedBlocks chan uint64
+
+	// outBlocks represents a channel fed with past block headers being scanned.
+	outBlocks chan *eth.Header
 
 	// outStateChange represents the channel being fed
 	// with internal state change of the scanner.
@@ -71,12 +70,12 @@ func (bs *blkScanner) name() string {
 
 // init initializes the block scanner and registers it with the manager.
 func (bs *blkScanner) init() {
-	// get last known block
+	bs.inObservedBlocks = bs.mgr.blkObserver.outObservedBlocks
 	bs.current, bs.target = bs.start(), bs.top()
 	bs.mgr.add(bs)
 }
 
-// top provides the current end target for the scanner.
+// top provides the number of the target block for the scanner.
 func (bs *blkScanner) top() uint64 {
 	cur, err := repository.R().CurrentHead()
 	if err != nil {
@@ -99,17 +98,19 @@ func (bs *blkScanner) start() uint64 {
 	if lnb == 0 {
 		return defStartingBlockNumber
 	}
-	return lnb
+	return lnb - 1
 }
 
-// run pulls block headers from multiple sources and routes based on the API server state.
+// run scans past blocks one by one until it reaches top
+// after the top is reached, it idles and checks the head state to make sure
+// the API server keeps up with the most recent block
 func (bs *blkScanner) run() {
 	// make tickers
-	tgTick := time.NewTicker(2 * time.Second)
+	topTick := time.NewTicker(2 * time.Second)
 	logTick := time.NewTicker(10 * time.Second)
 
 	defer func() {
-		tgTick.Stop()
+		topTick.Stop()
 		logTick.Stop()
 		bs.mgr.closed(bs)
 	}()
@@ -119,7 +120,7 @@ func (bs *blkScanner) run() {
 		select {
 		case <-bs.sigStop:
 			return
-		case <-tgTick.C:
+		case <-topTick.C:
 			bs.target = bs.top()
 		case <-logTick.C:
 			log.Infof("block scanner at #%d of #%d", bs.current, bs.target)
@@ -139,8 +140,8 @@ func (bs *blkScanner) run() {
 // scanNext tries to advance the scanner to the next block, if possible
 func (bs *blkScanner) scanNext() {
 	// if we are scanning and below target; get next one
-	if bs.state == blkIsScanning && bs.current < bs.target {
-		hdr, err := repository.R().PullHeader(bs.current)
+	if bs.state == blkIsScanning && bs.current <= bs.target {
+		hdr, err := repository.R().GetHeader(bs.current)
 		if err != nil {
 			log.Errorf("block header #%s not available; %s", bs.current, err.Error())
 			select {
@@ -169,11 +170,12 @@ func (bs *blkScanner) checkTarget() {
 		diff := bs.target - bs.current
 		if diff >= 0 && diff < blkScannerHysteresis {
 			bs.state = blkIsIdling
-			log.Noticef("scanner reached head; idling")
+			log.Noticef("scanner target reached")
 
 			select {
 			case bs.outStateChange <- bs.state:
-			default:
+			case <-bs.sigStop:
+				bs.sigStop <- true
 			}
 		}
 	}
@@ -188,11 +190,12 @@ func (bs *blkScanner) checkIdle() {
 	diff := bs.target - bs.current
 	if diff > blkScannerHysteresis {
 		bs.state = blkIsScanning
-		log.Noticef("scanner lost head; re-scan started")
+		log.Noticef("scanner lost head")
 
 		select {
 		case bs.outStateChange <- bs.state:
-		default:
+		case <-bs.sigStop:
+			bs.sigStop <- true
 		}
 	}
 }

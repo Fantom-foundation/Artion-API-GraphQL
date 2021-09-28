@@ -9,7 +9,7 @@ import (
 
 const (
 	// outBlockQueueCapacity represents the size of outgoing block queue.
-	outBlockQueueCapacity = 1000
+	outBlockQueueCapacity = 10000
 
 	// blkCacheCapacity represents the amount of blocks kept in cache to prevent head miss
 	blkCacheCapacity = 25
@@ -39,6 +39,9 @@ type blkRouter struct {
 
 	// cache is a circular cache used to store incoming blocks on scan state to prevent block loss
 	cache *blkcache.Cache
+
+	// state represents the routing state received from the block scanner
+	state int
 }
 
 // newBlkRouter creates a new instance of the block router service.
@@ -64,12 +67,59 @@ func (br *blkRouter) init() {
 	br.mgr.add(br)
 }
 
-// run pulls block headers from multiple sources and routes based on the API server state.
-func (br *blkRouter) run() {
-
-}
-
 // close signals the block observer to terminate
 func (br *blkRouter) close() {
 	br.sigStop <- true
+}
+
+// run pulls block headers from multiple sources and routes based on the API server state.
+func (br *blkRouter) run() {
+	defer func() {
+		br.mgr.closed(br)
+	}()
+
+	for {
+		select {
+		case <-br.sigStop:
+			return
+		case st := <-br.inScanStateChange:
+			br.state = st
+			if st == blkIsIdling {
+				br.cleanCache()
+			}
+		case hdr := <-br.inNewBlocks:
+			if br.state == blkIsScanning {
+				br.cache.Add(hdr)
+				log.Debugf("block #%d cached", hdr.Number.Uint64())
+			} else {
+				br.push(hdr)
+			}
+		case hdr := <-br.inScanBlocks:
+			br.push(hdr)
+		}
+	}
+}
+
+// push the given block header to the output channel, make sure not to mis stop signal.
+func (br *blkRouter) push(hdr *eth.Header) {
+	select {
+	case <-br.sigStop:
+		br.sigStop <- true
+	case br.outBlocks <- hdr:
+		log.Debugf("block #%d pushed for processing", hdr.Number.Uint64())
+	}
+}
+
+// cleanCache cleans the block headers cache into the output channel on scanner idle state switch.
+func (br *blkRouter) cleanCache() {
+	cl := br.cache.Pull()
+	for _, hdr := range cl {
+		select {
+		case <-br.sigStop:
+			br.sigStop <- true
+			return
+		case br.outBlocks <- hdr:
+			log.Debugf("block #%d unloaded from cache", hdr.Number.Uint64())
+		}
+	}
 }

@@ -10,11 +10,10 @@ import (
 
 const (
 	// logEventQueueCapacity represents the log events queue capacity.
-	logEventQueueCapacity = 1000
+	logEventQueueCapacity = 10000
 
-	// obsBlocksNotificationTickInterval represents the interval
-	// in which observed blocks are notified to repository.
-	obsBlocksNotificationTickInterval = 5 * time.Second
+	// observedBlocksCapacity represents the capacity of channel for observed block IDs.
+	observedBlocksCapacity = 1000
 )
 
 // blkObserver represents a service monitoring incoming blocks
@@ -36,8 +35,8 @@ type blkObserver struct {
 	// topics represents the topics observed by the API server
 	topics []common.Hash
 
-	// lastObservedBlock contains the number of the last observed block
-	lastObservedBlock *eth.Header
+	// outObservedBlock is fed with numbers of processed blocks.
+	outObservedBlocks chan uint64
 }
 
 // newBlkObserver creates a new instance of the block observer service.
@@ -46,6 +45,7 @@ func newBlkObserver(mgr *Manager) *blkObserver {
 		mgr:               mgr,
 		sigStop:           make(chan bool, 1),
 		outEvents:         make(chan *eth.Log, logEventQueueCapacity),
+		outObservedBlocks: make(chan uint64, observedBlocksCapacity),
 		topics:            nil,
 	}
 }
@@ -58,6 +58,7 @@ func (bo *blkObserver) name() string {
 // init prepares the block observer to capture blocks.
 func (bo *blkObserver) init() {
 	bo.inBlocks = bo.mgr.blkRouter.outBlocks
+	bo.topics = bo.mgr.logObserver.topicsList()
 	bo.mgr.add(bo)
 }
 
@@ -75,8 +76,6 @@ func (bo *blkObserver) run() {
 		select {
 		case <-bo.sigStop:
 			return
-		case <-tick.C:
-			bo.notify()
 		case hdr := <-bo.inBlocks:
 			bo.process(hdr)
 		}
@@ -99,36 +98,21 @@ func (bo *blkObserver) process(hdr *eth.Header) {
 	}
 
 	// push interesting events into the output queue, if any
+	log.Debugf("processing %d events on block #%d", len(logs), hdr.Number.Uint64())
 	for _, evt := range logs {
-		if bo.isObservedEvent(&evt) {
-			select {
-			case bo.outEvents <- &evt:
-			case <-bo.sigStop:
-				bo.sigStop <- true
-				return
-			}
+		select {
+		case bo.outEvents <- &evt:
+		case <-bo.sigStop:
+			bo.sigStop <- true
+			return
 		}
 	}
 
-	// keep the last observed block number handy for notification
-	bo.lastObservedBlock = hdr
-}
-
-// isObservedEvent checks if the given event log should be investigated and processed.
-// We should not need to check the topic since we pull logs already filtered by topics list.
-func (bo *blkObserver) isObservedEvent(evt *eth.Log) bool {
-	// does the event belong a contract of interest?
-	panic("implement")
-	return false
-}
-
-// notify the repository about the latest observed block, if any.
-func (bo *blkObserver) notify() {
-	if nil == bo.lastObservedBlock {
-		return
+	// notify the scanner we did process this block
+	// the scanner uses the info to decide if the server keeps up
+	// with the top head of the blockchain
+	select {
+	case bo.outObservedBlocks <- hdr.Number.Uint64():
+	default:
 	}
-
-	// send the notification and log the situation
-	repository.R().NotifyLastObservedBlock(bo.lastObservedBlock)
-	log.Infof("last observed block is #%d", bo.lastObservedBlock.Number.Uint64())
 }
