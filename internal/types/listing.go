@@ -1,7 +1,7 @@
 package types
 
 import (
-	"encoding/binary"
+	"crypto/md5"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -38,13 +38,13 @@ type Listing struct {
 	StartTime    Time
 }
 
-// GenerateId generates unique listing ID from ItemListed event attributes
-func (e *Listing) GenerateId(EventTime uint64, BlockNumber uint64, LogIndex uint) {
-	id := make([]byte, 20, 20)
-	binary.BigEndian.PutUint64(id[0:8], EventTime) // time prefix for sorting
-	binary.BigEndian.PutUint64(id[8:16], BlockNumber)
-	binary.BigEndian.PutUint32(id[16:20], uint32(LogIndex))
-	e.Id = id
+// GenerateId generates unique listing ID
+func (l *Listing) GenerateId() {
+	hash := md5.New()
+	hash.Write(l.Nft.Bytes())
+	hash.Write(l.TokenId.ToInt().Bytes())
+	hash.Write(l.Owner.Bytes())
+	l.Id = hash.Sum(nil)
 }
 
 type ListingBson struct {
@@ -59,22 +59,22 @@ type ListingBson struct {
 }
 
 // MarshalBSON prepares data to be stored in MongoDB.
-func (ev *Listing) MarshalBSON() ([]byte, error) {
+func (l *Listing) MarshalBSON() ([]byte, error) {
 	row := ListingBson {
-		Id: ev.Id,
-		Owner: ev.Owner.String(),
-		Nft: ev.Nft.String(),
-		TokenId: ev.TokenId.String(),
-		Quantity: ev.Quantity.String(),
-		PayToken: ev.PayToken.String(),
-		PricePerItem: ev.PricePerItem.String(),
-		StartTime: time.Time(ev.StartTime),
+		Id:           l.Id,
+		Owner:        l.Owner.String(),
+		Nft:          l.Nft.String(),
+		TokenId:      l.TokenId.String(),
+		Quantity:     l.Quantity.String(),
+		PayToken:     l.PayToken.String(),
+		PricePerItem: l.PricePerItem.String(),
+		StartTime:    time.Time(l.StartTime),
 	}
 	return bson.Marshal(row)
 }
 
 // UnmarshalBSON parses data from MongoDB.
-func (ev *Listing) UnmarshalBSON(data []byte) (err error) {
+func (l *Listing) UnmarshalBSON(data []byte) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("can not decode Listing; %s", err.Error())
@@ -87,13 +87,13 @@ func (ev *Listing) UnmarshalBSON(data []byte) (err error) {
 		return err
 	}
 
-	ev.Id = row.Id
-	ev.Owner = common.HexToAddress(row.Owner)
-	ev.Nft = common.HexToAddress(row.Nft)
-	ev.TokenId = (hexutil.Big)(*hexutil.MustDecodeBig(row.TokenId))
-	ev.Quantity = (hexutil.Big)(*hexutil.MustDecodeBig(row.Quantity))
-	ev.PayToken = common.HexToAddress(row.PayToken)
-	ev.PricePerItem = (hexutil.Big)(*hexutil.MustDecodeBig(row.PricePerItem))
-	ev.StartTime = Time(row.StartTime)
+	l.Id = row.Id
+	l.Owner = common.HexToAddress(row.Owner)
+	l.Nft = common.HexToAddress(row.Nft)
+	l.TokenId = (hexutil.Big)(*hexutil.MustDecodeBig(row.TokenId))
+	l.Quantity = (hexutil.Big)(*hexutil.MustDecodeBig(row.Quantity))
+	l.PayToken = common.HexToAddress(row.PayToken)
+	l.PricePerItem = (hexutil.Big)(*hexutil.MustDecodeBig(row.PricePerItem))
+	l.StartTime = Time(row.StartTime)
 	return nil
 }

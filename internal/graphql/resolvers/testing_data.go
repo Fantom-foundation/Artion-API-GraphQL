@@ -43,7 +43,7 @@ func (rs *RootResolver) PushTestingData() (*string, error) {
 		PricePerItem: hexutil.Big(*big.NewInt(15876900)),
 		StartTime: types.Time(time.Now()),
 	}
-	listing.GenerateId(0x1234, 0x58, 0x99)
+	listing.GenerateId()
 	err = repository.R().StoreListing(&listing)
 	if err != nil {
 		log.Errorf("error in storing listing", err)
@@ -59,7 +59,7 @@ func (rs *RootResolver) PushTestingData() (*string, error) {
 		StartTime: types.Time(time.Now()),
 		Deadline: types.Time(time.Now().Add(time.Hour * 48)),
 	}
-	offer.GenerateId(0x2234, 0x69, 0x88)
+	offer.GenerateId()
 	err = repository.R().StoreOffer(&offer)
 	if err != nil {
 		log.Errorf("error in storing offer", err)

@@ -1,7 +1,7 @@
 package types
 
 import (
-	"encoding/binary"
+	"crypto/md5"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -39,13 +39,13 @@ type Offer struct {
 	Deadline     Time
 }
 
-// GenerateId generates unique Offer ID from OfferCreated event attributes
-func (e *Offer) GenerateId(EventTime uint64, BlockNumber uint64, LogIndex uint) {
-	id := make([]byte, 20, 20)
-	binary.BigEndian.PutUint64(id[0:8], EventTime) // time prefix for sorting
-	binary.BigEndian.PutUint64(id[8:16], BlockNumber)
-	binary.BigEndian.PutUint32(id[16:20], uint32(LogIndex))
-	e.Id = id
+// GenerateId generates unique Offer ID
+func (o *Offer) GenerateId() {
+	hash := md5.New()
+	hash.Write(o.Nft.Bytes())
+	hash.Write(o.TokenId.ToInt().Bytes())
+	hash.Write(o.Creator.Bytes())
+	o.Id = hash.Sum(nil)
 }
 
 type OfferBson struct {
@@ -61,23 +61,23 @@ type OfferBson struct {
 }
 
 // MarshalBSON prepares data to be stored in MongoDB.
-func (ev *Offer) MarshalBSON() ([]byte, error) {
+func (o *Offer) MarshalBSON() ([]byte, error) {
 	row := OfferBson {
-		Id: ev.Id,
-		Creator: ev.Creator.String(),
-		Nft: ev.Nft.String(),
-		TokenId: ev.TokenId.String(),
-		Quantity: ev.Quantity.String(),
-		PayToken: ev.PayToken.String(),
-		PricePerItem: ev.PricePerItem.String(),
-		StartTime: time.Time(ev.StartTime),
-		Deadline: time.Time(ev.Deadline),
+		Id:           o.Id,
+		Creator:      o.Creator.String(),
+		Nft:          o.Nft.String(),
+		TokenId:      o.TokenId.String(),
+		Quantity:     o.Quantity.String(),
+		PayToken:     o.PayToken.String(),
+		PricePerItem: o.PricePerItem.String(),
+		StartTime:    time.Time(o.StartTime),
+		Deadline:     time.Time(o.Deadline),
 	}
 	return bson.Marshal(row)
 }
 
 // UnmarshalBSON parses data from MongoDB.
-func (ev *Offer) UnmarshalBSON(data []byte) (err error) {
+func (o *Offer) UnmarshalBSON(data []byte) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("can not decode Offer; %s", err.Error())
@@ -90,14 +90,14 @@ func (ev *Offer) UnmarshalBSON(data []byte) (err error) {
 		return err
 	}
 
-	ev.Id = row.Id
-	ev.Creator = common.HexToAddress(row.Creator)
-	ev.Nft = common.HexToAddress(row.Nft)
-	ev.TokenId = (hexutil.Big)(*hexutil.MustDecodeBig(row.TokenId))
-	ev.Quantity = (hexutil.Big)(*hexutil.MustDecodeBig(row.Quantity))
-	ev.PayToken = common.HexToAddress(row.PayToken)
-	ev.PricePerItem = (hexutil.Big)(*hexutil.MustDecodeBig(row.PricePerItem))
-	ev.StartTime = Time(row.StartTime)
-	ev.Deadline = Time(row.Deadline)
+	o.Id = row.Id
+	o.Creator = common.HexToAddress(row.Creator)
+	o.Nft = common.HexToAddress(row.Nft)
+	o.TokenId = (hexutil.Big)(*hexutil.MustDecodeBig(row.TokenId))
+	o.Quantity = (hexutil.Big)(*hexutil.MustDecodeBig(row.Quantity))
+	o.PayToken = common.HexToAddress(row.PayToken)
+	o.PricePerItem = (hexutil.Big)(*hexutil.MustDecodeBig(row.PricePerItem))
+	o.StartTime = Time(row.StartTime)
+	o.Deadline = Time(row.Deadline)
 	return nil
 }
