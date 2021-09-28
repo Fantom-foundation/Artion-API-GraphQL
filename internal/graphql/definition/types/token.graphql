@@ -12,6 +12,12 @@ type Token {
     # Description of the token
     description: String!
 
+    # URL of the token image
+    image: String
+
+    # URL of the token image on the proxy
+    imageProxy: String
+
     # Events on given token
     events(first: Int, after: Cursor, last: Int, before: Cursor): TokenEventConnection!
 

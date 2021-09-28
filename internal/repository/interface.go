@@ -56,8 +56,8 @@ type Repository interface {
 	// GetTokenJsonMetadata obtains token metadata from JSON at given URI
 	GetTokenJsonMetadata(uri string) (*types.JsonMetadata, error)
 
-	// GetTokenImage obtains image (including mimetype) from given URI
-	GetTokenImage(uri string) (image *types.Image, err error)
+	// GetImage obtains image (including mimetype) from given URI
+	GetImage(uri string) (image *types.Image, err error)
 
 	// ListTokens allows to browse all tokens available for Artion.
 	ListTokens(cursor types.Cursor, count int, backward bool) (*types.TokenList, error)

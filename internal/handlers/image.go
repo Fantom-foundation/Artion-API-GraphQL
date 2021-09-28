@@ -11,18 +11,18 @@ import (
 	"strings"
 )
 
-// TokenImage builds a HTTP handler function for Token images.
-func TokenImage(log logger.Logger) http.Handler {
+// ImageHandler builds a HTTP handler function for Token images.
+func ImageHandler(log logger.Logger, resolver func(path string)(string, error)) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		defer func() {
 			if r := recover(); r != nil {
-				log.Errorf("Panic in TokenImage handler; %s", r)
+				log.Errorf("Panic in ImageHandler handler; %s", r)
 				w.WriteHeader(500)
 				w.Write([]byte("Request handling failed"))
 			}
 		}()
 
-		uri, err := resolveUri(req.URL.Path)
+		uri, err := resolver(req.URL.Path)
 		if err != nil {
 			log.Errorf("token image request handling failed; %s", err)
 			w.WriteHeader(500)
@@ -30,15 +30,15 @@ func TokenImage(log logger.Logger) http.Handler {
 			return
 		}
 
-		image, err := repository.R().GetTokenImage(uri)
+		image, err := repository.R().GetImage(uri)
 		if err != nil {
-			log.Errorf("unable to get token image; %s", err)
+			log.Errorf("unable to get image; %s", err)
 			w.WriteHeader(500)
-			_,_ = w.Write([]byte("Obtaining token image failed: " + err.Error()))
+			_,_ = w.Write([]byte("Obtaining image failed: " + err.Error()))
 		}
-		if image == nil {
+		if image == nil || len(image.Data) == 0 {
 			w.WriteHeader(404)
-			_,_ = w.Write([]byte("The token has no image"))
+			_,_ = w.Write([]byte("No image available"))
 			return
 		}
 
@@ -46,12 +46,13 @@ func TokenImage(log logger.Logger) http.Handler {
 		w.WriteHeader(200)
 		_, err = w.Write(image.Data)
 		if err != nil {
-			log.Errorf("writing token image response failed; %s", err)
+			log.Errorf("writing image response failed; %s", err)
 		}
 	})
 }
 
-func resolveUri(path string) (imageUri string, err error) {
+// TokenImageResolver resolves /token-image/{nft}/{tokenId} to token image URI
+func TokenImageResolver(path string) (imageUri string, err error) {
 	pathParts := strings.Split(path, "/")
 	if len(pathParts) != 4 {
 		return "", errors.New("invalid amount of slash delimiters in URL")
@@ -75,4 +76,21 @@ func resolveUri(path string) (imageUri string, err error) {
 		return "", fmt.Errorf("token has no image; %s", err)
 	}
 	return *jsonMetadata.Image, nil
+}
+
+// UserAvatarResolver resolves /user-avatar/{address} to user avatar URI
+func UserAvatarResolver(path string) (imageUri string, err error) {
+	pathParts := strings.Split(path, "/")
+	if len(pathParts) != 3 {
+		return "", errors.New("invalid amount of slash delimiters in URL")
+	}
+	userAddress := common.HexToAddress(pathParts[2])
+	user, err := repository.R().GetUser(userAddress)
+	if err != nil {
+		return "", fmt.Errorf("unable to find user in db; %s", err)
+	}
+	if user == nil || user.Avatar == "" {
+		return "", fmt.Errorf("user has no avatar; %s", err)
+	}
+	return user.Avatar, nil
 }

@@ -37,8 +37,15 @@ func (user User) Avatar() (*string, error) {
 	if user.dbUser == nil || user.dbUser.Avatar == "" {
 		return nil, nil
 	}
-	// TODO: replace IPFS links by proxy?
 	return &user.dbUser.Avatar, nil
+}
+
+func (user User) AvatarProxy() (*string, error) {
+	if user.dbUser == nil || user.dbUser.Avatar == "" {
+		return nil, nil
+	}
+	url := "/user-avatar/" + user.Address.String()
+	return &url, nil
 }
 
 func (rs *RootResolver) User(args struct{ Address common.Address }) (user User, err error) {

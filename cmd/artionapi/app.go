@@ -113,8 +113,9 @@ func (app *apiServer) setupHandlers(mux *http.ServeMux) {
 	// handle GraphiQL interface
 	mux.Handle("/graphi", handlers.GraphiHandler(app.cfg.Server.DomainAddress, app.log))
 
-	// handle GraphiQL interface
-	mux.Handle("/token-images/", handlers.TokenImage(app.log))
+	// handle images
+	mux.Handle("/token-image/", handlers.ImageHandler(app.log, handlers.TokenImageResolver))
+	mux.Handle("/user-avatar/", handlers.ImageHandler(app.log, handlers.UserAvatarResolver))
 }
 
 // observeSignals setups terminate signals observation.

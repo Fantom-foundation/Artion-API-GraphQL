@@ -70,6 +70,7 @@ func (rs *RootResolver) PushTestingData() (*string, error) {
 		Username: "Honza",
 		Bio: "Testing bio",
 		Email: "test@test.com",
+		Avatar: "",
 	}
 	err = repository.R().UpsertUser(&user)
 	if err != nil {

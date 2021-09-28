@@ -93,6 +93,23 @@ func (t Token) Description() (string, error) {
 	return t.jsonMeta.Description, nil
 }
 
+func (t Token) Image() (*string, error) {
+	err := t.load()
+	if err != nil {
+		return nil, err
+	}
+	return t.jsonMeta.Image, nil
+}
+
+func (t Token) ImageProxy() (*string, error) {
+	err := t.load()
+	if err != nil || t.jsonMeta.Image == nil {
+		return nil, err
+	}
+	url := "/token-image/" + t.Address.String() + "/" + t.TokenId.String()
+	return &url, nil
+}
+
 func (t Token) Events(args struct{ PaginationInput }) (con *TokenEventConnection, err error) {
 	cursor, count, backward, err := args.ToRepositoryInput()
 	if err != nil {
