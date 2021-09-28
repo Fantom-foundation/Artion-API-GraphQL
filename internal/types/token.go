@@ -19,7 +19,7 @@ const (
 	FiTokenName    = "name"
 )
 
-// Token represents item listed in marketplace.
+// Token represents item list-able in the marketplace.
 type Token struct {
 	Id            []byte
 	Nft           common.Address

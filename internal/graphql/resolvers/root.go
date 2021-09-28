@@ -97,9 +97,8 @@ func (rs *RootResolver) Version() string {
 	return build.Short(cfg)
 }
 
-func (rs *RootResolver) Token(args struct{ Address common.Address; TokenId hexutil.Big }) (*Token, error) {
-	token := Token{ Address: args.Address, TokenId: args.TokenId }
-	return &token, nil
+func (rs *RootResolver) Token(args struct{ Address common.Address; TokenId hexutil.Big }) (Token, error) {
+	return Token{ Address: args.Address, TokenId: args.TokenId }, nil
 }
 
 func (rs *RootResolver) Tokens(args struct{ PaginationInput }) (con *TokenConnection, err error) {

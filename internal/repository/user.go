@@ -1,0 +1,18 @@
+package repository
+
+import (
+	"artion-api-graphql/internal/types"
+	"github.com/ethereum/go-ethereum/common"
+)
+
+func (p *proxy) GetUser(address common.Address) (*types.User, error) {
+	key := "GetUser-" + address.String()
+	user, err, _ := p.callGroup.Do(key, func() (interface{}, error) {
+		return p.db.GetUser(address)
+	})
+	return user.(*types.User), err
+}
+
+func (p *proxy) UpsertUser(User *types.User) error {
+	return p.db.UpsertUser(User)
+}

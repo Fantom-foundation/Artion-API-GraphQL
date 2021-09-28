@@ -9,8 +9,6 @@ import (
 	"time"
 )
 
-type OfferType int8
-
 const (
 	// CoOffers is the name of database collection.
 	CoOffers = "Offers"

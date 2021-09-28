@@ -1,0 +1,35 @@
+# User represents user account/profile.
+type User {
+    # Address of the user wallet
+    address: Address!
+
+    # Name/Nickname
+    username: String
+
+    # User bio (description)
+    bio: String
+
+    # User email (null when not set or visible)
+    email: String
+
+    # URL of the user avatar image
+    avatar: String
+}
+
+# User represents user account/profile.
+input InputUser {
+    # Address of the user wallet
+    address: Address!
+
+    # Name/Nickname
+    username: String!
+
+    # User bio (description)
+    bio: String!
+
+    # User email
+    email: String!
+
+    # URL of the user avatar image
+    avatar: String!
+}

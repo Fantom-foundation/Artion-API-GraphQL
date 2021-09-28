@@ -9,7 +9,7 @@ type Query {
     # version represents the API server version responding to your requests.
     version: String!
 
-    token(address: Address!, tokenId: BigInt!): Token
+    token(address: Address!, tokenId: BigInt!): Token!
 
     tokens(first: Int, after: Cursor, last: Int, before: Cursor): TokenConnection!
 
@@ -17,11 +17,16 @@ type Query {
 
     offers(first: Int, after: Cursor, last: Int, before: Cursor): OfferConnection!
 
+    user(address: Address!): User!
+
 }
 
 # Mutation endpoints for modifying the data
 type Mutation {
-    # SendTransaction submits a raw signed transaction into the block chain.
-    # The tx parameter represents raw signed and RLP encoded transaction data.
+    # Load testing data into database
     pushTestingData: String
+
+    # Update user profile
+    updateUser(user: InputUser!): Boolean!
+
 }

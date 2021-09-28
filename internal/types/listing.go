@@ -9,8 +9,6 @@ import (
 	"time"
 )
 
-type ListingType int8
-
 const (
 	// CoListings is the name of database collection.
 	CoListings = "Listings"

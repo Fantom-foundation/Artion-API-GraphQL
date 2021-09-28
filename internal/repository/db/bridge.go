@@ -20,6 +20,7 @@ type MongoDbBridge struct {
 	initTokens *sync.Once
 	initListings *sync.Once
 	initOffers *sync.Once
+	initUsers *sync.Once
 }
 
 // New creates a new Mongo Db connection bridge.

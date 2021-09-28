@@ -47,6 +47,12 @@ type Repository interface {
 	// ListOffers allows to browse all tokens offers, preferably filtered.
 	ListOffers(nft *common.Address, tokenId *hexutil.Big, owner *common.Address, cursor types.Cursor, count int, backward bool) (*types.OfferList, error)
 
+	// GetUser obtains user by address from database.
+	GetUser(address common.Address) (user *types.User, err error)
+
+	// UpsertUser stores profiles of existing of new user.
+	UpsertUser(User *types.User) error
+
 	// GetTokenJsonMetadata obtains token metadata from JSON at given URI
 	GetTokenJsonMetadata(uri string) (*types.JsonMetadata, error)
 

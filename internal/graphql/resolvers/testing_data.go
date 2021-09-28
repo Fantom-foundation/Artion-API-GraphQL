@@ -65,6 +65,17 @@ func (rs *RootResolver) PushTestingData() (*string, error) {
 		log.Errorf("error in storing offer", err)
 	}
 
+	user := types.User {
+		Address: common.HexToAddress("0x83A6524Be9213B1Ce36bCc0DCEfb5eb51D87aD10"),
+		Username: "Honza",
+		Bio: "Testing bio",
+		Email: "test@test.com",
+	}
+	err = repository.R().UpsertUser(&user)
+	if err != nil {
+		log.Errorf("error in storing offer", err)
+	}
+
 	out := "Loaded OK"
 	return &out, nil
 }

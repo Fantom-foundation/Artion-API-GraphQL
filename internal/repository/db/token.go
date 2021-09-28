@@ -58,7 +58,7 @@ func (db *MongoDbBridge) GetToken(nft common.Address, tokenId hexutil.Big) (toke
 
 	var row types.Token
 	if err = result.Decode(&row); err != nil {
-		db.log.Errorf("can not decode the token event in list; %s", err.Error())
+		db.log.Errorf("can not decode token; %s", err.Error())
 		return nil, err
 	}
 
@@ -98,7 +98,7 @@ func (db *MongoDbBridge) listTokens(filter *bson.D, cursor types.Cursor, count i
 		if len(list.Collection) < count {
 			var row types.Token
 			if err = ld.Decode(&row); err != nil {
-				db.log.Errorf("can not decode the token event in list; %s", err.Error())
+				db.log.Errorf("can not decode the token in list; %s", err.Error())
 				return nil, err
 			}
 			list.Collection = append(list.Collection, &row)

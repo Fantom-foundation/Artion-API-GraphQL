@@ -1,19 +1,25 @@
+# Token represents item, which can be listed or offered in the marketplace.
 type Token {
-
+    # Address of the token contract
     address: Address!
 
+    # ID of the token (in given token contract)
     tokenId: BigInt!
 
+    # Name of the token
     name: String!
 
+    # Description of the token
     description: String!
 
+    # Events on given token
     events(first: Int, after: Cursor, last: Int, before: Cursor): TokenEventConnection!
 
+    # Current listings of the token
     listings(first: Int, after: Cursor, last: Int, before: Cursor): ListingConnection!
 
+    # Current offers of the token
     offers(first: Int, after: Cursor, last: Int, before: Cursor): OfferConnection!
-
 }
 
 type TokenEdge {
