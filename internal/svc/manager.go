@@ -12,6 +12,7 @@ type Manager struct {
 	blkRouter   *blkRouter
 	blkScanner  *blkScanner
 	blkObserver *blkObserver
+	logObserver *logObserver
 }
 
 // newManager creates a new instance of the svc Manager.
@@ -26,6 +27,7 @@ func newManager() *Manager {
 	mgr.blkRouter = newBlkRouter(&mgr)
 	mgr.blkScanner = newBlkScanner(&mgr)
 	mgr.blkObserver = newBlkObserver(&mgr)
+	mgr.logObserver = newLogObserver(&mgr)
 	mgr.init()
 
 	log.Notice("all services are running")
