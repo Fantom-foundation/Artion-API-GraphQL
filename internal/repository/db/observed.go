@@ -16,6 +16,9 @@ const (
 
 	// fiContractAddress is the name of the field keeping the contract address.
 	fiContractAddress = "_id"
+
+	// fiContractType is the name of the field keeping the contract type.
+	fiContractType = "type"
 )
 
 // AddObservedContract adds the specified observed contract record to the collection.
@@ -76,5 +79,50 @@ func (db *MongoDbBridge) ObservedContractsAddressList() []common.Address {
 		}
 		list = append(list, common.HexToAddress(row.Addr))
 	}
+	return list
+}
+
+// NFTContractsTypeMap provides a map of observed contract addresses to corresponding
+// contract type for ERC721 and ERC1155 contracts including their factory.
+// In case of a factory contract, we need the deployed NFT type for processing.
+func (db *MongoDbBridge) NFTContractsTypeMap() map[common.Address]string {
+	col := db.client.Database(db.dbName).Collection(coObservedContracts)
+	list := make(map[common.Address]string, 0)
+
+	fi, err := col.Find(
+		context.Background(),
+		bson.D{{Key: "$or", Value: bson.A{
+			bson.E{Key: fiContractType, Value: types.ContractTypeERC721},
+			bson.E{Key: fiContractType, Value: types.ContractTypeERC1155},
+		}}},
+		options.Find().SetProjection(
+			bson.D{
+				{Key: fiContractAddress, Value: true},
+				{Key: fiContractType, Value: true},
+			}),
+	)
+	if err != nil {
+		log.Errorf("can not pull observed contracts; %s", err.Error())
+		return list
+	}
+
+	defer func() {
+		if err := fi.Close(context.Background()); err != nil {
+			log.Errorf("can not close observed contracts map cursor; %s", err.Error())
+		}
+	}()
+
+	var row struct {
+		Addr string `bson:"_id"`
+		Type string `bson:"type"`
+	}
+	for fi.Next(context.Background()) {
+		if err := fi.Decode(&row); err != nil {
+			log.Errorf("failed to decode observed contract; %s", err.Error())
+			break
+		}
+		list[common.HexToAddress(row.Addr)] = row.Type
+	}
+
 	return list
 }

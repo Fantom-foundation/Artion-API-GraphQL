@@ -7,6 +7,14 @@ import (
 	"time"
 )
 
+const (
+	// ContractTypeERC721 represents an NFT contract type ERC-721
+	ContractTypeERC721 = "erc721"
+
+	// ContractTypeERC1155 represents an NFT contract type ERC-1155
+	ContractTypeERC1155 = "erc1155"
+)
+
 // ObservedContract represents a contract observed by the API server.
 type ObservedContract struct {
 	Address     common.Address

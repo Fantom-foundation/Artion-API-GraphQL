@@ -3,6 +3,7 @@ package svc
 
 import (
 	"artion-api-graphql/internal/repository"
+	"artion-api-graphql/internal/types"
 	"bytes"
 	"github.com/ethereum/go-ethereum/common"
 	eth "github.com/ethereum/go-ethereum/core/types"
@@ -42,6 +43,9 @@ type logObserver struct {
 
 	// contracts represents a list of observed contracts.
 	contracts []common.Address
+
+	// nftTypes represents a map of types of observed NFT contracts.
+	nftTypes map[common.Address]string
 }
 
 // newLogObserver creates a new instance of the event logs observer service.
@@ -65,6 +69,7 @@ func (lo *logObserver) name() string {
 func (lo *logObserver) init() {
 	lo.inEvents = lo.mgr.blkObserver.outEvents
 	lo.contracts = repository.R().ObservedContractsAddressList()
+	lo.nftTypes = repository.R().NFTContractsTypeMap()
 	lo.mgr.add(lo)
 }
 
@@ -140,9 +145,15 @@ func (lo *logObserver) isObservedContract(evt *eth.Log) bool {
 
 // addObservedContract is used to extend the list of observed contracts
 // with a newly created NFT contract address; subsequent NFT events should be observed on it.
-func (lo *logObserver) addObservedContract(adr *common.Address) {
-	lo.contracts = append(lo.contracts, *adr)
-	log.Infof("new contract %s is now observed", adr.String())
+func (lo *logObserver) addObservedContract(oc *types.ObservedContract) {
+	lo.contracts = append(lo.contracts, oc.Address)
+
+	// an NFT contract? add it to the types map as well
+	if oc.Type == types.ContractTypeERC721 || oc.Type == types.ContractTypeERC1155 {
+		lo.nftTypes[oc.Address] = oc.Type
+	}
+
+	log.Infof("new contract %s is now observed", oc.Address.String())
 }
 
 // topicsList provides a list of observed topics for blocks event filtering

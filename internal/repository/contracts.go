@@ -8,3 +8,10 @@ import "github.com/ethereum/go-ethereum/common"
 func (p *Proxy) ObservedContractsAddressList() []common.Address {
 	return p.db.ObservedContractsAddressList()
 }
+
+// NFTContractsTypeMap provides a map of observed contract addresses to corresponding
+// contract type for ERC721 and ERC1155 contracts including their factory.
+// In case of a factory contract, we need the deployed NFT type for processing.
+func (p *Proxy) NFTContractsTypeMap() map[common.Address]string {
+	return p.db.NFTContractsTypeMap()
+}
