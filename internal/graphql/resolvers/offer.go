@@ -8,6 +8,13 @@ import (
 
 type Offer types.Offer
 
+func (o Offer) Token() (Token, error) {
+	return Token{
+		Address: o.Nft,
+		TokenId: o.TokenId,
+	}, nil
+}
+
 type OfferEdge struct {
 	Node *Offer
 }

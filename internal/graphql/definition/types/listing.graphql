@@ -3,6 +3,7 @@ type Listing {
     owner: Address!
     nft: Address!
     tokenId: BigInt!
+    token: Token!
     quantity: BigInt!
     payToken: Address!
     pricePerItem: BigInt!

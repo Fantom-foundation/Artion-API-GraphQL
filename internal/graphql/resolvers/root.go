@@ -113,3 +113,27 @@ func (rs *RootResolver) Tokens(args struct{ PaginationInput }) (con *TokenConnec
 	}
 	return NewTokenConnection(list)
 }
+
+func (rs *RootResolver) Listings(args struct{ PaginationInput }) (con *ListingConnection, err error) {
+	cursor, count, backward, err := args.ToRepositoryInput()
+	if err != nil {
+		return nil, err
+	}
+	list, err := repository.R().ListListings(nil, nil, nil, cursor, count, backward)
+	if err != nil {
+		return nil, err
+	}
+	return NewListingConnection(list)
+}
+
+func (rs *RootResolver) Offers(args struct{ PaginationInput }) (con *OfferConnection, err error) {
+	cursor, count, backward, err := args.ToRepositoryInput()
+	if err != nil {
+		return nil, err
+	}
+	list, err := repository.R().ListOffers(nil, nil, nil, cursor, count, backward)
+	if err != nil {
+		return nil, err
+	}
+	return NewOfferConnection(list)
+}

@@ -8,6 +8,13 @@ import (
 
 type Listing types.Listing
 
+func (l Listing) Token() (Token, error) {
+	return Token{
+		Address: l.Nft,
+		TokenId: l.TokenId,
+	}, nil
+}
+
 type ListingEdge struct {
 	Node *Listing
 }

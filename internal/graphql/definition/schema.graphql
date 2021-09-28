@@ -13,6 +13,10 @@ type Query {
 
     tokens(first: Int, after: Cursor, last: Int, before: Cursor): TokenConnection!
 
+    listings(first: Int, after: Cursor, last: Int, before: Cursor): ListingConnection!
+
+    offers(first: Int, after: Cursor, last: Int, before: Cursor): OfferConnection!
+
 }
 
 # Mutation endpoints for modifying the data
