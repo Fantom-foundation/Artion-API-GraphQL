@@ -37,18 +37,7 @@ func (db *MongoDbBridge) AddObservedContract(oc *types.ObservedContract) error {
 
 // isObservedContractKnown checks if the given observed contract is already stored in the database.
 func (db *MongoDbBridge) isObservedContractKnown(col *mongo.Collection, oc *types.ObservedContract) bool {
-	sr := col.FindOne(
-		context.Background(),
-		bson.D{{Key: fiContractAddress, Value: oc.Address.String()}},
-		options.FindOne().SetProjection(bson.D{{Key: fiContractAddress, Value: true}}),
-	)
-	if sr.Err() != nil {
-		if sr.Err() != mongo.ErrNoDocuments {
-			log.Errorf("check failed for %s; %s", oc.Address.String(), sr.Err().Error())
-		}
-		return false
-	}
-	return true
+	return db.exists(col, &bson.D{{Key: fiContractAddress, Value: oc.Address.String()}})
 }
 
 // ObservedContractsAddressList provides list of addresses of all observed contracts
