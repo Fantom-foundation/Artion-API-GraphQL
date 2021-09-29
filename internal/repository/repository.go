@@ -4,6 +4,7 @@ package repository
 import (
 	"artion-api-graphql/internal/config"
 	"artion-api-graphql/internal/logger"
+	"artion-api-graphql/internal/repository/cache"
 	"artion-api-graphql/internal/repository/db"
 	"artion-api-graphql/internal/repository/rpc"
 	"fmt"
@@ -29,8 +30,9 @@ var instanceMux sync.Mutex
 
 // Proxy is the implementation of the Repository interface
 type Proxy struct {
-	rpc *rpc.Opera
-	db  *db.MongoDbBridge
+	rpc   *rpc.Opera
+	db    *db.MongoDbBridge
+	cache *cache.MemCache
 }
 
 // R provides access to the singleton instance of the Repository.
@@ -82,6 +84,10 @@ func passEnvironment() {
 	// persistent storage module
 	db.SetLogger(log)
 	db.SetConfig(cfg)
+
+	// in-memory cache
+	cache.SetLogger(log)
+	cache.SetConfig(cfg)
 }
 
 // newProxy creates new instance of Proxy, implementing the Repository interface.
