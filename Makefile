@@ -32,8 +32,17 @@ test:
 internal/graphql/schema/gen/schema.graphql: internal/graphql/definition
 	@bash tools/make_graphql_bundle.sh $@ $<
 
+internal/repository/rpc/contracts/FantomArtTradable.go: internal/repository/rpc/contracts/abi/FantomArtTradable.json
+	abigen --type FantomArtTradable --pkg contracts --abi $< --out $@
+
 internal/repository/rpc/contracts/FantomMarketplace.go: internal/repository/rpc/contracts/abi/FantomMarketplace.json
 	abigen --type FantomMarketplace --pkg contracts --abi $< --out $@
+
+internal/repository/rpc/contracts/FantomNFTFactory.go: internal/repository/rpc/contracts/abi/FantomNFTFactory.json
+	abigen --type FantomNFTFactory --pkg contracts --abi $< --out $@
+
+internal/repository/rpc/contracts/FantomNFTTradable.go: internal/repository/rpc/contracts/abi/FantomNFTTradable.json
+	abigen --type FantomNFTTradable --pkg contracts --abi $< --out $@
 
 .PHONY: build/artionapi help test
 all: help
