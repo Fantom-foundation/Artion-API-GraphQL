@@ -28,7 +28,7 @@ func New() *MemCache {
 		Shards:             2048,
 		LifeWindow:         cfg.Cache.Eviction,
 		CleanWindow:        5 * time.Minute,
-		MaxEntriesInWindow: 250 * 10 * 60,
+		MaxEntriesInWindow: 1500 * 10 * 60,
 		MaxEntrySize:       2048,
 		Verbose:            false,
 		HardMaxCacheSize:   cfg.Cache.MaxSize,

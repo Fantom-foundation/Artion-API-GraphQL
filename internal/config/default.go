@@ -47,7 +47,7 @@ const (
 	defCacheEvictionTime = 15 * time.Minute
 
 	// defCacheMax size represents the default max size of the cache in MB
-	defCacheMaxSize = 4096
+	defCacheMaxSize = 2048
 
 	// defApiStateOrigin represents the default origin used for API state syncing
 	defApiStateOrigin = "https://localhost"
