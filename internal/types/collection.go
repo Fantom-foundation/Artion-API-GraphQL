@@ -13,7 +13,6 @@ type NFTCollection struct {
 	Type     string         `bson:"type"`
 	Name     string         `bson:"name"`
 	Symbol   string         `bson:"symbol"`
-	BaseUri  string         `bson:"base_uri"`
 	Created  time.Time      `bson:"created"`
 	IsActive bool           `bson:"is_active"`
 }

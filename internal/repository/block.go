@@ -19,7 +19,21 @@ func (p *Proxy) CurrentHead() (uint64, error) {
 
 // GetHeader pulls given block header by the block number.
 func (p *Proxy) GetHeader(id uint64) (*eth.Header, error) {
-	return p.rpc.GetHeader(id)
+	// try to use the in-memory cache
+	hdr := p.cache.PullHeader(id)
+	if hdr != nil {
+		return hdr, nil
+	}
+
+	// go the slow path and ask the node
+	var err error
+	hdr, err = p.rpc.GetHeader(id)
+	if err != nil {
+		return nil, err
+	}
+
+	p.cache.PushHeader(hdr)
+	return hdr, nil
 }
 
 // BlockLogs provides list of event logs for the given block number and list of topics.

@@ -97,15 +97,16 @@ func newProxy() *Proxy {
 
 	// make Proxy instance
 	p := Proxy{
-		db:  db.New(),
-		rpc: rpc.New(),
+		db:    db.New(),
+		rpc:   rpc.New(),
+		cache: cache.New(),
 	}
 
-	if p.db == nil || p.rpc == nil {
+	if p.db == nil || p.rpc == nil || p.cache == nil {
 		log.Panicf("repository init failed")
 		return nil
 	}
-
+	
 	log.Notice("repository ready")
 	return &p
 }
