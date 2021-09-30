@@ -46,7 +46,7 @@ func (db *MongoDbBridge) MinObservedBlockNumber(def uint64) uint64 {
 	c, err := col.Aggregate(context.Background(), mongo.Pipeline{
 		{{Key: "$group", Value: bson.D{
 			{Key: "_id", Value: nil},
-			{Key: "blk", Value: bson.D{{Key: "$min", Value: "block"}}},
+			{Key: "blk", Value: bson.D{{Key: "$min", Value: "$block"}}},
 		}}},
 	})
 	if err != nil {
@@ -68,11 +68,12 @@ func (db *MongoDbBridge) MinObservedBlockNumber(def uint64) uint64 {
 	var row struct {
 		Blk int64 `bson:"blk"`
 	}
-
 	if err := c.Decode(&row); err != nil {
 		log.Errorf("can not decode min observed block; %s", err.Error())
 		return def
 	}
+
+	log.Infof("the first observed block is #%d", row.Blk)
 	return uint64(row.Blk)
 }
 
@@ -117,8 +118,8 @@ func (db *MongoDbBridge) NFTContractsTypeMap() map[common.Address]string {
 	fi, err := col.Find(
 		context.Background(),
 		bson.D{{Key: "$or", Value: bson.A{
-			bson.E{Key: fiContractType, Value: types.ContractTypeERC721},
-			bson.E{Key: fiContractType, Value: types.ContractTypeERC1155},
+			bson.D{{Key: fiContractType, Value: types.ContractTypeERC721}},
+			bson.D{{Key: fiContractType, Value: types.ContractTypeERC1155}},
 		}}},
 		options.Find().SetProjection(
 			bson.D{
@@ -149,5 +150,6 @@ func (db *MongoDbBridge) NFTContractsTypeMap() map[common.Address]string {
 		list[common.HexToAddress(row.Addr)] = row.Type
 	}
 
+	log.Noticef("%d NFT contracts known", len(list))
 	return list
 }

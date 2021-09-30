@@ -11,13 +11,13 @@ import (
 
 const (
 	// coSystemStateCollection is the name of the system status collection.
-	coSystemStateCollection = "artion"
+	coSystemStateCollection = "status"
 
 	// keyLastSeenBlock represents the
 	keyLastSeenBlock = "lastSeenBlock"
 
 	// fiBlockNumber represents the name of the last seen block number field.
-	fiBlockNumber = "number"
+	fiBlockNumber = "block"
 )
 
 // UpdateLastSeenBlock stores the ID of the last seen block
@@ -52,15 +52,18 @@ func (db *MongoDbBridge) LastSeenBlockNumber() (uint64, error) {
 			log.Errorf("previous state not known")
 			return 0, nil
 		}
+		log.Errorf("cannot get block state; %s", fi.Err().Error())
 		return 0, fi.Err()
 	}
 
 	// decode
 	var row struct {
-		Num int64 `bson:"number"`
+		Num int64 `bson:"block"`
 	}
 	if err := fi.Decode(&row); err != nil {
+		log.Errorf("failed to decode block state; %s", err.Error())
 		return 0, err
 	}
+	log.Noticef("last known block is #%d", row.Num)
 	return uint64(row.Num), nil
 }
