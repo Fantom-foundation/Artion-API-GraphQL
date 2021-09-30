@@ -21,9 +21,11 @@ func (o *Opera) GetHeader(id uint64) (*eth.Header, error) {
 }
 
 // BlockLogs provides list of event logs for the given block number and list of topics.
-func (o *Opera) BlockLogs(blk *common.Hash, topics []common.Hash) ([]eth.Log, error) {
+func (o *Opera) BlockLogs(blk *big.Int, topics []common.Hash) ([]eth.Log, error) {
+	log.Debugf("loading events from block #%d", blk)
 	return o.ftm.FilterLogs(context.Background(), ethereum.FilterQuery{
-		BlockHash: blk,
+		FromBlock: blk,
+		ToBlock: blk,
 		Topics:    [][]common.Hash{topics},
 	})
 }

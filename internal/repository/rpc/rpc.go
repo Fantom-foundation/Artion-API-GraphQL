@@ -5,11 +5,17 @@ package rpc
 import (
 	"artion-api-graphql/internal/config"
 	"artion-api-graphql/internal/logger"
+	"bytes"
+	"embed"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	eth "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	client "github.com/ethereum/go-ethereum/rpc"
 	"sync"
 )
+
+//go:embed contracts/abi/*.json
+var abiFiles embed.FS
 
 const (
 	// headerObserverCapacity represents the capacity of new headers' observer channel
@@ -32,6 +38,8 @@ type Opera struct {
 	wg       *sync.WaitGroup
 	sigClose chan bool
 	headers  chan *eth.Header
+
+	abiFantom721 abi.ABI
 }
 
 // New provides a new instance of the RPC access point.
@@ -49,6 +57,12 @@ func New() *Opera {
 		wg:       new(sync.WaitGroup),
 		sigClose: make(chan bool, 1),
 		headers:  make(chan *eth.Header, headerObserverCapacity),
+	}
+
+	// load and parse ABIs
+	if err := loadABI(op); err != nil {
+		log.Criticalf("can not parse ABI files; %s", err.Error())
+		return nil
 	}
 
 	// start the observer
@@ -69,6 +83,23 @@ func connect() (*client.Client, error) {
 
 	log.Noticef("blockchain node connected at %s", cfg.Node.Url)
 	return c, nil
+}
+
+// loadABI tries to load and parse expected ABI for contracts we need.
+func loadABI(o *Opera) (err error) {
+	// FantomNFTTradable
+	data, err := abiFiles.ReadFile("contracts/abi/FantomNFTTradable.json")
+	if err != nil {
+		return err
+	}
+
+	// parse ABI
+	o.abiFantom721, err = abi.JSON(bytes.NewReader(data))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Close terminates the node connection.
