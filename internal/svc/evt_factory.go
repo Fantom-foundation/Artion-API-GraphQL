@@ -26,6 +26,7 @@ func newNFTContract(evt *eth.Log) {
 		Address:  ca,
 		IsActive: true,
 	}
+	log.Debugf("found NFT contract %s", ca.String())
 
 	// load NFT details
 	if err := extendNFTCollectionDetails(&nft, evt); err != nil {
@@ -52,20 +53,23 @@ func extendNFTCollectionDetails(nft *types.NFTCollection, evt *eth.Log) (err err
 		log.Errorf("contract %s type not known; %s", evt.Address.String(), err.Error())
 		return err
 	}
+	log.Debugf("NFT contract %s is %s", nft.Address.String(), nft.Type)
 
-	nft.Name, err = repository.R().CollectionName(&nft.Address)
+	nft.Name, err = repo.CollectionName(&nft.Address)
 	if err != nil {
 		log.Errorf("%s %s name not known; %s", nft.Type, evt.Address.String(), err.Error())
 		return err
 	}
+	log.Debugf("NFT contract %s name: %s", nft.Address.String(), nft.Name)
 
-	nft.Symbol, err = repository.R().CollectionSymbol(&nft.Address)
+	nft.Symbol, err = repo.CollectionSymbol(&nft.Address)
 	if err != nil {
 		log.Errorf("%s %s symbol not known; %s", nft.Type, evt.Address.String(), err.Error())
 		return err
 	}
+	log.Debugf("NFT contract %s symbol: %s", nft.Address.String(), nft.Symbol)
 
-	blk, err := repository.R().GetHeader(evt.BlockNumber)
+	blk, err := repo.GetHeader(evt.BlockNumber)
 	if err != nil {
 		return err
 	}
@@ -88,7 +92,7 @@ func addObservedContract(nft *types.NFTCollection, evt *eth.Log) {
 	}
 
 	// store observed contract into the repository
-	repository.R().AddObservedContract(&oc)
+	repo.AddObservedContract(&oc)
 
 	// let the log observer know there is a new contract it needs to monitor
 	Mgr().logObserver.addObservedContract(&oc)

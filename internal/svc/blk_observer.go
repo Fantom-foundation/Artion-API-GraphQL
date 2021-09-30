@@ -2,7 +2,6 @@
 package svc
 
 import (
-	"artion-api-graphql/internal/repository"
 	"github.com/ethereum/go-ethereum/common"
 	eth "github.com/ethereum/go-ethereum/core/types"
 	"time"
@@ -10,10 +9,10 @@ import (
 
 const (
 	// logEventQueueCapacity represents the log events queue capacity.
-	logEventQueueCapacity = 10000
+	logEventQueueCapacity = 25000
 
 	// observedBlocksCapacity represents the capacity of channel for observed block IDs.
-	observedBlocksCapacity = 1000
+	observedBlocksCapacity = 10000
 )
 
 // blkObserver represents a service monitoring incoming blocks
@@ -90,15 +89,18 @@ func (bo *blkObserver) close() {
 // process an incoming block header by investigating its events.
 func (bo *blkObserver) process(hdr *eth.Header) {
 	// pull events for the block
-	blk := hdr.Hash()
-	logs, err := repository.R().BlockLogs(&blk, bo.topics)
+	logs, err := repo.BlockLogs(hdr.Number, bo.topics)
 	if err != nil {
 		log.Errorf("block #%d event logs not available; %s", hdr.Number.Uint64(), err.Error())
 		return
 	}
 
+	// any logs?
+	if 0 < len(logs) {
+		log.Infof("processing %d events on block #%d", len(logs), hdr.Number.Uint64())
+	}
+
 	// push interesting events into the output queue, if any
-	log.Debugf("processing %d events on block #%d", len(logs), hdr.Number.Uint64())
 	for _, evt := range logs {
 		select {
 		case bo.outEvents <- &evt:

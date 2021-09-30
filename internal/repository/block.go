@@ -37,7 +37,7 @@ func (p *Proxy) GetHeader(id uint64) (*eth.Header, error) {
 }
 
 // BlockLogs provides list of event logs for the given block number and list of topics.
-func (p *Proxy) BlockLogs(blk *common.Hash, topics []common.Hash) ([]eth.Log, error) {
+func (p *Proxy) BlockLogs(blk *big.Int, topics []common.Hash) ([]eth.Log, error) {
 	return p.rpc.BlockLogs(blk, topics)
 }
 

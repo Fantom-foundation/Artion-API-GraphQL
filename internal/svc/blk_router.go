@@ -2,7 +2,6 @@
 package svc
 
 import (
-	"artion-api-graphql/internal/repository"
 	"artion-api-graphql/internal/svc/blkcache"
 	eth "github.com/ethereum/go-ethereum/core/types"
 )
@@ -61,7 +60,7 @@ func (br *blkRouter) name() string {
 
 // init prepares the block router to process incoming blocks from multiple sources.
 func (br *blkRouter) init() {
-	br.inNewBlocks = repository.R().NewHeaders()
+	br.inNewBlocks = repo.NewHeaders()
 	br.inScanBlocks = br.mgr.blkScanner.outBlocks
 	br.inScanStateChange = br.mgr.blkScanner.outStateChange
 	br.mgr.add(br)

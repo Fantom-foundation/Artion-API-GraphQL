@@ -1,7 +1,10 @@
 // Package svc implements monitoring and scanning services of the API server.
 package svc
 
-import "sync"
+import (
+	"artion-api-graphql/internal/repository"
+	"sync"
+)
 
 // Manager represents the manager controlling services lifetime.
 type Manager struct {
@@ -23,13 +26,17 @@ func newManager() *Manager {
 		svc: make([]service, 0),
 	}
 
-	// init & start services
+	// get the repository instance
+	repo = repository.R()
+
+	// make services
 	mgr.blkRouter = newBlkRouter(&mgr)
 	mgr.blkScanner = newBlkScanner(&mgr)
 	mgr.blkObserver = newBlkObserver(&mgr)
 	mgr.logObserver = newLogObserver(&mgr)
-	mgr.init()
 
+	// init and run
+	mgr.init()
 	log.Notice("all services are running")
 	return &mgr
 }
@@ -39,6 +46,7 @@ func (mgr *Manager) init() {
 	mgr.blkRouter.init()
 	mgr.blkScanner.init()
 	mgr.blkObserver.init()
+	mgr.logObserver.init()
 }
 
 // add managed service instance to the Manager and run it.

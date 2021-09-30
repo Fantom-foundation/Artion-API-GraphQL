@@ -4,6 +4,7 @@ package svc
 import (
 	"artion-api-graphql/internal/config"
 	"artion-api-graphql/internal/logger"
+	"artion-api-graphql/internal/repository"
 	"sync"
 )
 
@@ -12,6 +13,9 @@ var cfg *config.Config
 
 // log represents the logger to be used by services to report state.
 var log logger.Logger
+
+// repo holds instance of the repository Proxy.
+var repo *repository.Proxy
 
 // manager holds singleton instance of the service manager.
 var manager *Manager

@@ -2,7 +2,6 @@
 package svc
 
 import (
-	"artion-api-graphql/internal/repository"
 	eth "github.com/ethereum/go-ethereum/core/types"
 	"time"
 )
@@ -77,7 +76,7 @@ func (bs *blkScanner) init() {
 
 // top provides the number of the target block for the scanner.
 func (bs *blkScanner) top() uint64 {
-	cur, err := repository.R().CurrentHead()
+	cur, err := repo.CurrentHead()
 	if err != nil {
 		log.Criticalf("can not pull the latest head number; %s", err.Error())
 		return 0
@@ -87,7 +86,7 @@ func (bs *blkScanner) top() uint64 {
 
 // start provides the starting point for the scanner
 func (bs *blkScanner) start() uint64 {
-	lnb, err := repository.R().LastSeenBlockNumber()
+	lnb, err := repo.LastSeenBlockNumber()
 	if err != nil {
 		log.Criticalf("can not pull the previous state; %s", err.Error())
 		return 0
@@ -97,7 +96,7 @@ func (bs *blkScanner) start() uint64 {
 	// use a default starting block number, if the query fails
 	// we don't need to start scanning from the absolute start of the chain
 	if lnb == 0 {
-		lnb = repository.R().MinObservedBlockNumber(defStartingBlockNumber)
+		lnb = repo.MinObservedBlockNumber(defStartingBlockNumber)
 	}
 
 	return lnb - 1
@@ -108,7 +107,7 @@ func (bs *blkScanner) start() uint64 {
 // the API server keeps up with the most recent block
 func (bs *blkScanner) run() {
 	// make tickers
-	topTick := time.NewTicker(2 * time.Second)
+	topTick := time.NewTicker(5 * time.Second)
 	logTick := time.NewTicker(10 * time.Second)
 
 	defer func() {
@@ -143,7 +142,7 @@ func (bs *blkScanner) run() {
 func (bs *blkScanner) scanNext() {
 	// if we are scanning and below target; get next one
 	if bs.state == blkIsScanning && bs.current <= bs.target {
-		hdr, err := repository.R().GetHeader(bs.current)
+		hdr, err := repo.GetHeader(bs.current)
 		if err != nil {
 			log.Errorf("block header #%s not available; %s", bs.current, err.Error())
 			select {

@@ -2,7 +2,6 @@
 package svc
 
 import (
-	"artion-api-graphql/internal/repository"
 	"artion-api-graphql/internal/types"
 	"bytes"
 	"fmt"
@@ -69,8 +68,8 @@ func (lo *logObserver) name() string {
 // init configures the log observer and subscribes it with the manager.
 func (lo *logObserver) init() {
 	lo.inEvents = lo.mgr.blkObserver.outEvents
-	lo.contracts = repository.R().ObservedContractsAddressList()
-	lo.nftTypes = repository.R().NFTContractsTypeMap()
+	lo.contracts = repo.ObservedContractsAddressList()
+	lo.nftTypes = repo.NFTContractsTypeMap()
 	lo.mgr.add(lo)
 }
 
@@ -107,8 +106,19 @@ func (lo *logObserver) run() {
 func (lo *logObserver) process(evt *eth.Log) {
 	// is this an event from an observed contract?
 	if !lo.isObservedContract(evt) {
+		log.Infof("event #%d / %d on foreign contract %s skipped", evt.BlockNumber, evt.Index, evt.Address.String())
 		return
 	}
+
+	// get the handler
+	handler, ok := lo.topics[evt.Topics[0]]
+	if !ok {
+		log.Criticalf("event log handler not found for event #%d / %d, topic %s", evt.BlockNumber, evt.Index, evt.Topics[0].String())
+		return
+	}
+
+	// do the handler job
+	handler(evt)
 }
 
 // processed updates the information about the current and processed block number.
@@ -130,7 +140,7 @@ func (lo *logObserver) notify() {
 	if lo.lastProcessedBlock == nil {
 		return
 	}
-	repository.R().NotifyLastObservedBlock(lo.lastProcessedBlock)
+	repo.NotifyLastObservedBlock(lo.lastProcessedBlock)
 	log.Infof("last processed block is #%d", lo.lastProcessedBlock.Uint64())
 }
 
@@ -147,6 +157,14 @@ func (lo *logObserver) isObservedContract(evt *eth.Log) bool {
 // addObservedContract is used to extend the list of observed contracts
 // with a newly created NFT contract address; subsequent NFT events should be observed on it.
 func (lo *logObserver) addObservedContract(oc *types.ObservedContract) {
+	// check if the contract is actually a new one
+	for _, adr := range lo.contracts {
+		if 0 == bytes.Compare(adr.Bytes(), oc.Address.Bytes()) {
+			return
+		}
+	}
+
+	// add the contract to the list
 	lo.contracts = append(lo.contracts, oc.Address)
 
 	// an NFT contract? add it to the types map as well
