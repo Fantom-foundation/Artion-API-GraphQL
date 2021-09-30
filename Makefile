@@ -44,6 +44,9 @@ internal/repository/rpc/contracts/FantomNFTFactory.go: internal/repository/rpc/c
 internal/repository/rpc/contracts/FantomNFTTradable.go: internal/repository/rpc/contracts/abi/FantomNFTTradable.json
 	abigen --type FantomNFTTradable --pkg contracts --abi $< --out $@
 
+importdb: doc/db/observed.json
+	mongoimport --db=artion --collection=observed --file=$<
+
 .PHONY: build/artionapi help test
 all: help
 help: Makefile

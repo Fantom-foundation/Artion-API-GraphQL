@@ -40,6 +40,42 @@ func (db *MongoDbBridge) isObservedContractKnown(col *mongo.Collection, oc *type
 	return db.exists(col, &bson.D{{Key: fiContractAddress, Value: oc.Address.String()}})
 }
 
+// MinObservedBlockNumber finds the lowest required block number based on observed deployed contracts.
+func (db *MongoDbBridge) MinObservedBlockNumber(def uint64) uint64 {
+	col := db.client.Database(db.dbName).Collection(coObservedContracts)
+	c, err := col.Aggregate(context.Background(), mongo.Pipeline{
+		{{Key: "$group", Value: bson.D{
+			{Key: "_id", Value: nil},
+			{Key: "blk", Value: bson.D{{Key: "$min", Value: "block"}}},
+		}}},
+	})
+	if err != nil {
+		log.Errorf("can not find min observed block; %s", err.Error())
+		return def
+	}
+
+	defer func() {
+		if err := c.Close(context.Background()); err != nil {
+			log.Errorf("failed to close cursor; %s", err.Error())
+		}
+	}()
+
+	if !c.Next(context.Background()) {
+		log.Error("min observed block not available")
+		return def
+	}
+
+	var row struct {
+		Blk int64 `bson:"blk"`
+	}
+
+	if err := c.Decode(&row); err != nil {
+		log.Errorf("can not decode min observed block; %s", err.Error())
+		return def
+	}
+	return uint64(row.Blk)
+}
+
 // ObservedContractsAddressList provides list of addresses of all observed contracts
 // stored in the persistent database.
 func (db *MongoDbBridge) ObservedContractsAddressList() []common.Address {

@@ -93,11 +93,13 @@ func (bs *blkScanner) start() uint64 {
 		return 0
 	}
 
-	// if the state is unknown, use default starting block number
+	// if the state is unknown, use the lowest observed block number
+	// use a default starting block number, if the query fails
 	// we don't need to start scanning from the absolute start of the chain
 	if lnb == 0 {
-		return defStartingBlockNumber
+		lnb = repository.R().MinObservedBlockNumber(defStartingBlockNumber)
 	}
+
 	return lnb - 1
 }
 

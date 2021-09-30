@@ -26,3 +26,8 @@ func (p *Proxy) ObservedContractsAddressList() []common.Address {
 func (p *Proxy) NFTContractsTypeMap() map[common.Address]string {
 	return p.db.NFTContractsTypeMap()
 }
+
+// MinObservedBlockNumber provides the lowest observed block number.
+func (p *Proxy) MinObservedBlockNumber(def uint64) uint64 {
+	return p.db.MinObservedBlockNumber(def)
+}
