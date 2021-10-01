@@ -12,7 +12,7 @@ import (
 )
 
 // ImageHandler builds a HTTP handler function for Token images.
-func ImageHandler(log logger.Logger, resolver func(path string)(string, error)) http.Handler {
+func ImageHandler(log logger.Logger, resolver func(path string) (string, error)) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		defer func() {
 			if r := recover(); r != nil {
@@ -26,7 +26,7 @@ func ImageHandler(log logger.Logger, resolver func(path string)(string, error)) 
 		if err != nil {
 			log.Errorf("token image request handling failed; %s", err)
 			w.WriteHeader(500)
-			_,_ = w.Write([]byte("Request handling failed: " + err.Error()))
+			_, _ = w.Write([]byte("Request handling failed: " + err.Error()))
 			return
 		}
 
@@ -34,11 +34,11 @@ func ImageHandler(log logger.Logger, resolver func(path string)(string, error)) 
 		if err != nil {
 			log.Errorf("unable to get image; %s", err)
 			w.WriteHeader(500)
-			_,_ = w.Write([]byte("Obtaining image failed: " + err.Error()))
+			_, _ = w.Write([]byte("Obtaining image failed: " + err.Error()))
 		}
 		if image == nil || len(image.Data) == 0 {
 			w.WriteHeader(404)
-			_,_ = w.Write([]byte("No image available"))
+			_, _ = w.Write([]byte("No image available"))
 			return
 		}
 

@@ -27,10 +27,10 @@ type MongoDbBridge struct {
 
 	// init state marks
 	initTokenEvents *sync.Once
-	initTokens *sync.Once
-	initListings *sync.Once
-	initOffers *sync.Once
-	initUsers *sync.Once
+	initTokens      *sync.Once
+	initListings    *sync.Once
+	initOffers      *sync.Once
+	initUsers       *sync.Once
 }
 
 // New creates a new Mongo Db connection bridge.
@@ -105,6 +105,10 @@ func BSONRegistry() *bsoncodec.Registry {
 	// add common.Hash (value) support to the BSON registry
 	rb.RegisterTypeEncoder(tHash, bsoncodec.ValueEncoderFunc(HashBSONEncodeValue))
 	rb.RegisterTypeDecoder(tHash, bsoncodec.ValueDecoderFunc(HashBSONDecodeValue))
+
+	// add hexutil.Big (value) support to the BSON registry
+	rb.RegisterTypeEncoder(tHexBigInt, bsoncodec.ValueEncoderFunc(HexBigIntBSONEncodeValue))
+	rb.RegisterTypeDecoder(tHexBigInt, bsoncodec.ValueDecoderFunc(HexBigIntBSONDecodeValue))
 
 	bson.PrimitiveCodecs{}.RegisterPrimitiveCodecs(rb)
 	return rb.Build()

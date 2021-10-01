@@ -7,9 +7,7 @@ import (
 	"artion-api-graphql/internal/repository/cache"
 	"artion-api-graphql/internal/repository/db"
 	"artion-api-graphql/internal/repository/rpc"
-	"artion-api-graphql/internal/repository/uri"
 	"fmt"
-	"golang.org/x/sync/singleflight"
 	"sync"
 )
 
@@ -106,7 +104,6 @@ func newProxy() *Proxy {
 
 	if p.db == nil || p.rpc == nil || p.cache == nil {
 		log.Panicf("repository init failed")
-		uri:       uri.New(cfg),
 		return nil
 	}
 

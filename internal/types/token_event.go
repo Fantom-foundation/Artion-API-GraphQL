@@ -36,7 +36,7 @@ const (
 // TokenEvent represents marketplace related events on tokens - when they are sold etc.
 type TokenEvent struct {
 	Id            []byte
-	EventTime     Time
+	EventTime     time.Time
 	EventType     TokenEventType
 
 	// subject of trade
@@ -52,7 +52,7 @@ type TokenEvent struct {
 	PayToken     *common.Address
 	PricePerItem *hexutil.Big
 
-	StartTime    *Time // for postponed actions
+	StartTime    *time.Time // for postponed actions
 }
 
 func (e *TokenEvent) GenerateId(EventTime uint64, BlockNumber uint64, LogIndex uint) {
@@ -125,7 +125,7 @@ func (ev *TokenEvent) UnmarshalBSON(data []byte) (err error) {
 	}
 
 	ev.Id = row.Id
-	ev.EventTime = Time(row.EventTime)
+	ev.EventTime = time.Time(row.EventTime)
 	ev.EventType = TokenEventType(row.EventType)
 	ev.Nft = common.HexToAddress(row.Nft)
 	ev.TokenId = (hexutil.Big)(*hexutil.MustDecodeBig(row.TokenId))
@@ -149,6 +149,6 @@ func (ev *TokenEvent) UnmarshalBSON(data []byte) (err error) {
 		price := (hexutil.Big)(*hexutil.MustDecodeBig(*row.PricePerItem))
 		ev.PricePerItem = &price
 	}
-	ev.StartTime = (*Time)(row.StartTime)
+	ev.StartTime = (*time.Time)(row.StartTime)
 	return nil
 }
