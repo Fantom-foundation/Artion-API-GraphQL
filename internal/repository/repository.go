@@ -4,6 +4,7 @@ package repository
 import (
 	"artion-api-graphql/internal/config"
 	"artion-api-graphql/internal/logger"
+	"artion-api-graphql/internal/repository/cache"
 	"artion-api-graphql/internal/repository/db"
 	"artion-api-graphql/internal/repository/rpc"
 	"artion-api-graphql/internal/repository/uri"
@@ -11,13 +12,6 @@ import (
 	"golang.org/x/sync/singleflight"
 	"sync"
 )
-
-// repo represents an instance of the Repository manager.
-var repo Repository
-
-// onceRepo is the sync object used to make sure the Repository
-// is instantiated only once on the first demand.
-var onceRepo sync.Once
 
 // config represents the configuration setup used by the repository
 // to establish and maintain required connectivity to external services
@@ -27,29 +21,42 @@ var cfg *config.Config
 // log represents the logger to be used by the repository.
 var log logger.Logger
 
-// instance is the singleton of the Repository interface.
-var instance *proxy
+// instance is the singleton of the Proxy, implementing Repository interface.
+var instance *Proxy
 
 // oneInstance is the sync guarding Repository singleton creation.
 var oneInstance sync.Once
 
-// R provides access to the singleton instance of the Repository.
-func R() Repository {
-	// make sure to instantiate the Repository only once
-	onceRepo.Do(func() {
-		repo = newRepository()
-	})
-	return repo
+// instanceMux controls access to the repository instance
+var instanceMux sync.Mutex
+
+// Proxy is the implementation of the Repository interface
+type Proxy struct {
+	rpc   *rpc.Opera
+	db    *db.MongoDbBridge
+	cache *cache.MemCache
 }
 
-// proxy is the implementation of the Repository interface
-type proxy struct {
-	rpc rpc.Blockchain
-	uri uri.Downloader
-	db  *db.MongoDbBridge
-	log       logger.Logger
-	cfg       *config.Config
-	callGroup *singleflight.Group
+// R provides access to the singleton instance of the Repository.
+func R() *Proxy {
+	instanceMux.Lock()
+	defer instanceMux.Unlock()
+
+	// make sure to instantiate the Repository only once
+	oneInstance.Do(func() {
+		instance = newProxy()
+	})
+	return instance
+}
+
+// Close will terminate the singleton instance of the repository, if started already.
+func Close() {
+	instanceMux.Lock()
+	defer instanceMux.Unlock()
+
+	if instance != nil {
+		instance.Close()
+	}
 }
 
 // SetConfig sets the repository configuration to be used to establish
@@ -60,11 +67,11 @@ func SetConfig(c *config.Config) {
 
 // SetLogger sets the repository logger to be used to collect logging info.
 func SetLogger(l logger.Logger) {
-	log = l
+	log = l.ModuleLogger("repo")
 }
 
-// newRepository creates new instance of Repository implementation, namely proxy structure.
-func newRepository() Repository {
+// passEnvironment provides configuration and logger to the repository sub-modules.
+func passEnvironment() {
 	if cfg == nil {
 		panic(fmt.Errorf("missing configuration"))
 	}
@@ -72,34 +79,47 @@ func newRepository() Repository {
 		panic(fmt.Errorf("missing logger"))
 	}
 
-	// create connections
-	dbBridge, err := connect(cfg, log)
-	if err != nil {
-		log.Fatal("repository init failed")
+	// RPC module
+	rpc.SetLogger(log)
+	rpc.SetConfig(cfg)
+
+	// persistent storage module
+	db.SetLogger(log)
+	db.SetConfig(cfg)
+
+	// in-memory cache
+	cache.SetLogger(log)
+	cache.SetConfig(cfg)
+}
+
+// newProxy creates new instance of Proxy, implementing the Repository interface.
+func newProxy() *Proxy {
+	// pass environment to the sub-modules
+	passEnvironment()
+
+	// make Proxy instance
+	p := Proxy{
+		db:    db.New(),
+		rpc:   rpc.New(),
+		cache: cache.New(),
+	}
+
+	if p.db == nil || p.rpc == nil || p.cache == nil {
+		log.Panicf("repository init failed")
+		uri:       uri.New(cfg),
 		return nil
 	}
 
-	// construct the proxy instance
-	p := proxy{
-		db:        dbBridge,
-		uri:       uri.New(cfg),
-		log:       log,
-		cfg:       cfg,
-		callGroup: new(singleflight.Group),
-	}
-
-	// return the proxy
+	log.Notice("repository ready")
 	return &p
 }
 
-// connect opens connections to the external sources we need.
-func connect(cfg *config.Config, log logger.Logger) (*db.MongoDbBridge, error) {
-	// create new database connection bridge
-	dbBridge, err := db.New(cfg, log)
-	if err != nil {
-		log.Criticalf("can not connect backend persistent storage, %s", err.Error())
-		return nil, err
+// Close terminates repository connections.
+func (p *Proxy) Close() {
+	if p.rpc != nil {
+		p.rpc.Close()
 	}
-
-	return dbBridge, nil
+	if p.db != nil {
+		p.db.Close()
+	}
 }

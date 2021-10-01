@@ -15,7 +15,7 @@ func (db *MongoDbBridge) getTotalCount(col *mongo.Collection, filter *bson.D) (i
 	ctx := context.Background()
 	totalCount, err := col.CountDocuments(ctx, *filter)
 	if err != nil {
-		db.log.Errorf("can not get total count")
+		log.Errorf("can not get total count")
 	}
 	return totalCount, err
 }
@@ -28,7 +28,7 @@ func (db *MongoDbBridge) findPaginated(col *mongo.Collection, inputFilter *bson.
 	if cursor != "" {
 		cur, err := cursor.ToObjectId()
 		if err != nil {
-			db.log.Errorf("unable to decode cursor %s to ObjectId; %s", cursor, err)
+			log.Errorf("unable to decode cursor %s to ObjectId; %s", cursor, err)
 			return nil, err
 		}
 
@@ -49,7 +49,7 @@ func (db *MongoDbBridge) findPaginated(col *mongo.Collection, inputFilter *bson.
 
 	mc, err = col.Find(ctx, filter, opt)
 	if err != nil {
-		db.log.Errorf("error loading list; %s", err.Error())
+		log.Errorf("error loading list; %s", err.Error())
 	}
 	return mc, err
 }

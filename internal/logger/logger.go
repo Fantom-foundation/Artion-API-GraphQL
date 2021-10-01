@@ -4,6 +4,7 @@ import (
 	"artion-api-graphql/internal/config"
 	"github.com/op/go-logging"
 	"os"
+	"strings"
 )
 
 // ApiLogger defines extended logger with generic no-level logging option
@@ -15,6 +16,17 @@ type ApiLogger struct {
 // We assume the information is low in importance if passed to this function so we relay it to Debug level.
 func (a ApiLogger) Printf(format string, args ...interface{}) {
 	a.Debugf(format, args...)
+}
+
+// ModuleLogger derives new logger for sub-module.
+func (a ApiLogger) ModuleLogger(mod string) Logger {
+	var sb strings.Builder
+	sb.WriteString(a.Module)
+	sb.WriteString(".")
+	sb.WriteString(mod)
+
+	l := logging.MustGetLogger(sb.String())
+	return &ApiLogger{Logger: *l}
 }
 
 // New provides pre-configured Logger with stderr output and leveled filtering.
@@ -40,5 +52,5 @@ func New(cfg *config.Config) Logger {
 	logging.SetBackend(lvlBackend)
 	l := logging.MustGetLogger(cfg.AppName)
 
-	return &ApiLogger{*l}
+	return &ApiLogger{Logger: *l}
 }

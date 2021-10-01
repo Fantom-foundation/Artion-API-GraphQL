@@ -16,7 +16,7 @@ func Schema() (*graphql.Schema, error) {
 	opts := []graphql.SchemaOpt{graphql.UseFieldResolvers()}
 
 	// parse the schema
-	schema, err := graphql.ParseSchema(schema, resolvers.New(), opts...)
+	schema, err := graphql.ParseSchema(schema, resolvers.Resolver(), opts...)
 	if err != nil {
 		return nil, err
 	}

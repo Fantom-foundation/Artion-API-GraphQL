@@ -16,7 +16,6 @@ import (
 func Load() (*Config, error) {
 	// Get the config reader
 	var config Config
-	attachCliFlags(&config)
 
 	cfg, err := readConfigFile()
 	if err != nil {
@@ -33,12 +32,6 @@ func Load() (*Config, error) {
 
 	// return the final config
 	return &config, nil
-}
-
-// attachCliFlags connects CLI flags to certain configuration options.
-func attachCliFlags(cfg *Config) {
-	flag.Uint64Var(&cfg.RepoCommand.BlockScanReScan, keyConfigCmdBlockScanReScan, defBlockScanRescanDepth, "How many blocks are re-scanned on the server start.")
-	flag.StringVar(&cfg.RepoCommand.RestoreStake, keyConfigCmdRestoreStake, "", "Owner of the stake to be restored.")
 }
 
 // readConfigFile reads the config file and provides instance

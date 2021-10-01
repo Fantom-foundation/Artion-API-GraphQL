@@ -31,10 +31,10 @@ type Logger interface {
 	// Panicf logs critical panic error with formatting and placeholder constituents replacements.
 	Panicf(format string, args ...interface{})
 
-	// Panic logs critical error without formatting.
+	// Critical logs critical error without formatting.
 	Critical(args ...interface{})
 
-	// Panicf logs critical error  with formatting and placeholder constituents replacements.
+	// Criticalf logs critical error  with formatting and placeholder constituents replacements.
 	Criticalf(format string, args ...interface{})
 
 	// Error logs regular error without formatting.
@@ -69,4 +69,7 @@ type Logger interface {
 
 	// Printf logs regular and detailed state change with formatting and placeholder constituents replacements.
 	Printf(string, ...interface{})
+
+	// ModuleLogger derives new logger for sub-module.
+	ModuleLogger (string) Logger
 }

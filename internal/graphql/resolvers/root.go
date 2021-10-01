@@ -5,7 +5,6 @@ import (
 	"artion-api-graphql/cmd/artionapi/build"
 	"artion-api-graphql/internal/config"
 	"artion-api-graphql/internal/logger"
-	"artion-api-graphql/internal/repository"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -28,9 +27,15 @@ var log logger.Logger
 // as needed.
 var cfg *config.Config
 
+// instance represents a singleton instance of the root resolver
+var instance *RootResolver
+
+// oneInstance is the sync guarding root resolver singleton creation.
+var oneInstance sync.Once
+
 // SetLogger sets the repository logger to be used to collect logging info.
 func SetLogger(l logger.Logger) {
-	log = l
+	log = l.ModuleLogger("graphql")
 }
 
 // SetConfig sets the repository configuration to be used to establish
@@ -39,8 +44,17 @@ func SetConfig(c *config.Config) {
 	cfg = c
 }
 
-// New creates a new root resolver instance and initializes its internal structure.
-func New() *RootResolver {
+// Resolver returns a singleton instance fo the root instance.
+func Resolver() *RootResolver {
+	// make sure to instantiate the Repository only once
+	oneInstance.Do(func() {
+		instance = newResolver()
+	})
+	return instance
+}
+
+// new creates an instance of root resolver and initializes its internal structure.
+func newResolver() *RootResolver {
 	if cfg == nil {
 		panic(fmt.Errorf("missing configuration"))
 	}
@@ -97,8 +111,11 @@ func (rs *RootResolver) Version() string {
 	return build.Short(cfg)
 }
 
-func (rs *RootResolver) Token(args struct{ Address common.Address; TokenId hexutil.Big }) (Token, error) {
-	return Token{ Address: args.Address, TokenId: args.TokenId }, nil
+func (rs *RootResolver) Token(args struct {
+	Address common.Address
+	TokenId hexutil.Big
+}) (*Token, error) {
+	token := Token{Address: args.Address, TokenId: args.TokenId}
 }
 
 func (rs *RootResolver) Tokens(args struct{ PaginationInput }) (con *TokenConnection, err error) {
