@@ -17,11 +17,11 @@ func (db *MongoDbBridge) initUserCollection(col *mongo.Collection) {
 
 	// create indexes
 	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
-		db.log.Panicf("can not create indexes for transaction collection; %s", err.Error())
+		log.Panicf("can not create indexes for transaction collection; %s", err.Error())
 	}
 
 	// log we are done that
-	db.log.Debugf("transactions collection initialized")
+	log.Debugf("transactions collection initialized")
 }
 
 func (db *MongoDbBridge) GetUser(address common.Address) (user *types.User, err error) {
@@ -39,7 +39,7 @@ func (db *MongoDbBridge) GetUser(address common.Address) (user *types.User, err 
 
 	var row types.User
 	if err = result.Decode(&row); err != nil {
-		db.log.Errorf("can not decode user; %s", err.Error())
+		log.Errorf("can not decode user; %s", err.Error())
 		return nil, err
 	}
 
@@ -54,7 +54,7 @@ func (db *MongoDbBridge) UpsertUser(User *types.User) error {
 
 	filter := bson.D{{ Key: fieldId, Value: User.Address.String() }}
 	if _, err := col.ReplaceOne(context.Background(), filter, User, options.Replace().SetUpsert(true)); err != nil {
-		db.log.Errorf("can not update User; %s", err)
+		log.Errorf("can not update User; %s", err)
 		return err
 	}
 	return nil

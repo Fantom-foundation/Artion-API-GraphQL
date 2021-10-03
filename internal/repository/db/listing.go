@@ -22,11 +22,11 @@ func (db *MongoDbBridge) initListingCollection(col *mongo.Collection) {
 
 	// create indexes
 	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
-		db.log.Panicf("can not create indexes for transaction collection; %s", err.Error())
+		log.Panicf("can not create indexes for transaction collection; %s", err.Error())
 	}
 
 	// log we are done that
-	db.log.Debugf("transactions collection initialized")
+	log.Debugf("transactions collection initialized")
 }
 
 func (db *MongoDbBridge) AddListing(listing *types.Listing) error {
@@ -39,7 +39,7 @@ func (db *MongoDbBridge) AddListing(listing *types.Listing) error {
 
 	// try to do the insert
 	if _, err := col.InsertOne(context.Background(), listing); err != nil {
-		db.log.Errorf("can not add Listing; %s", err)
+		log.Errorf("can not add Listing; %s", err)
 		return err
 	}
 
@@ -62,7 +62,7 @@ func (db *MongoDbBridge) UpdateListing(listing *types.Listing) error {
 	}
 
 	if _, err := col.ReplaceOne(context.Background(), filter, listing); err != nil {
-		db.log.Errorf("can not update Listing; %s", err)
+		log.Errorf("can not update Listing; %s", err)
 		return err
 	}
 	return nil
@@ -78,7 +78,7 @@ func (db *MongoDbBridge) RemoveListing(owner common.Address, nft common.Address,
 	}
 
 	if _, err := col.DeleteOne(context.Background(), filter); err != nil {
-		db.log.Errorf("can not update Listing; %s", err)
+		log.Errorf("can not update Listing; %s", err)
 		return err
 	}
 	return nil
@@ -110,7 +110,7 @@ func (db *MongoDbBridge) listListings(filter *bson.D, cursor types.Cursor, count
 
 	ld, err := db.findPaginated(col, filter, cursor, count, backward)
 	if err != nil {
-		db.log.Errorf("error loading listings list; %s", err.Error())
+		log.Errorf("error loading listings list; %s", err.Error())
 		return nil, err
 	}
 
@@ -118,7 +118,7 @@ func (db *MongoDbBridge) listListings(filter *bson.D, cursor types.Cursor, count
 	defer func() {
 		err = ld.Close(ctx)
 		if err != nil {
-			db.log.Errorf("error closing listings list cursor; %s", err.Error())
+			log.Errorf("error closing listings list cursor; %s", err.Error())
 		}
 	}()
 
@@ -126,7 +126,7 @@ func (db *MongoDbBridge) listListings(filter *bson.D, cursor types.Cursor, count
 		if len(list.Collection) < count {
 			var row types.Listing
 			if err = ld.Decode(&row); err != nil {
-				db.log.Errorf("can not decode the listing in list; %s", err.Error())
+				log.Errorf("can not decode the listing in list; %s", err.Error())
 				return nil, err
 			}
 			list.Collection = append(list.Collection, &row)

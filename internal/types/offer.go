@@ -4,7 +4,6 @@ import (
 	"crypto/sha256"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"time"
 )
 
 const (
@@ -30,12 +29,12 @@ type Offer struct {
 	Quantity     hexutil.Big    `bson:"quantity"`
 	PayToken     common.Address `bson:"payToken"`
 	PricePerItem hexutil.Big    `bson:"pricePerItem"`
-	StartTime    time.Time      `bson:"startTime"`
-	Deadline     time.Time      `bson:"deadline"`
+	StartTime    Time           `bson:"startTime"`
+	Deadline     Time           `bson:"deadline"`
 }
 
 // GenerateId generates unique Offer ID
-// @todo Make sure the ID is unique.
+// One creator can have only one offer for one token.
 func (o *Offer) GenerateId() {
 	hash := sha256.New()
 	hash.Write(o.Nft.Bytes())

@@ -7,7 +7,9 @@ import (
 	"artion-api-graphql/internal/repository/cache"
 	"artion-api-graphql/internal/repository/db"
 	"artion-api-graphql/internal/repository/rpc"
+	"artion-api-graphql/internal/repository/uri"
 	"fmt"
+	"golang.org/x/sync/singleflight"
 	"sync"
 )
 
@@ -30,9 +32,12 @@ var instanceMux sync.Mutex
 
 // Proxy is the implementation of the Repository interface
 type Proxy struct {
-	rpc   *rpc.Opera
-	db    *db.MongoDbBridge
-	cache *cache.MemCache
+	rpc       *rpc.Opera
+	uri        uri.Downloader
+	db        *db.MongoDbBridge
+	cache     *cache.MemCache
+	log        logger.Logger
+	callGroup *singleflight.Group
 }
 
 // R provides access to the singleton instance of the Repository.

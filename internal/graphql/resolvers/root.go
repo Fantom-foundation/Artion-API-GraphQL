@@ -5,17 +5,16 @@ import (
 	"artion-api-graphql/cmd/artionapi/build"
 	"artion-api-graphql/internal/config"
 	"artion-api-graphql/internal/logger"
+	"artion-api-graphql/internal/repository"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"golang.org/x/sync/singleflight"
 	"sync"
 )
 
 // RootResolver is GraphQL resolver of root namespace.
 type RootResolver struct {
 	wg      sync.WaitGroup
-	cg      singleflight.Group
 	sigStop chan bool
 }
 
@@ -116,6 +115,7 @@ func (rs *RootResolver) Token(args struct {
 	TokenId hexutil.Big
 }) (*Token, error) {
 	token := Token{Address: args.Address, TokenId: args.TokenId}
+	return &token, nil
 }
 
 func (rs *RootResolver) Tokens(args struct{ PaginationInput }) (con *TokenConnection, err error) {

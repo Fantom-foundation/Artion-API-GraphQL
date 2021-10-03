@@ -22,11 +22,11 @@ func (db *MongoDbBridge) initOfferCollection(col *mongo.Collection) {
 
 	// create indexes
 	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
-		db.log.Panicf("can not create indexes for transaction collection; %s", err.Error())
+		log.Panicf("can not create indexes for transaction collection; %s", err.Error())
 	}
 
 	// log we are done that
-	db.log.Debugf("transactions collection initialized")
+	log.Debugf("transactions collection initialized")
 }
 
 func (db *MongoDbBridge) AddOffer(event *types.Offer) error {
@@ -39,7 +39,7 @@ func (db *MongoDbBridge) AddOffer(event *types.Offer) error {
 
 	// try to do the insert
 	if _, err := col.InsertOne(context.Background(), event); err != nil {
-		db.log.Errorf("can not store Offer; %s", err)
+		log.Errorf("can not store Offer; %s", err)
 		return err
 	}
 	// make sure gas price collection is initialized
@@ -62,7 +62,7 @@ func (db *MongoDbBridge) UpdateOffer(Offer *types.Offer) error {
 	}
 
 	if _, err := col.ReplaceOne(context.Background(), filter, Offer); err != nil {
-		db.log.Errorf("can not update Offer; %s", err)
+		log.Errorf("can not update Offer; %s", err)
 		return err
 	}
 	return nil
@@ -78,7 +78,7 @@ func (db *MongoDbBridge) RemoveOffer(creator common.Address, nft common.Address,
 	}
 
 	if _, err := col.DeleteOne(context.Background(), filter); err != nil {
-		db.log.Errorf("can not update Offer; %s", err)
+		log.Errorf("can not update Offer; %s", err)
 		return err
 	}
 	return nil
@@ -110,7 +110,7 @@ func (db *MongoDbBridge) listOffers(filter *bson.D, cursor types.Cursor, count i
 
 	ld, err := db.findPaginated(col, filter, cursor, count, backward)
 	if err != nil {
-		db.log.Errorf("error loading Offers list; %s", err.Error())
+		log.Errorf("error loading Offers list; %s", err.Error())
 		return nil, err
 	}
 
@@ -118,7 +118,7 @@ func (db *MongoDbBridge) listOffers(filter *bson.D, cursor types.Cursor, count i
 	defer func() {
 		err = ld.Close(ctx)
 		if err != nil {
-			db.log.Errorf("error closing Offers list cursor; %s", err.Error())
+			log.Errorf("error closing Offers list cursor; %s", err.Error())
 		}
 	}()
 
@@ -126,7 +126,7 @@ func (db *MongoDbBridge) listOffers(filter *bson.D, cursor types.Cursor, count i
 		if len(list.Collection) < count {
 			var row types.Offer
 			if err = ld.Decode(&row); err != nil {
-				db.log.Errorf("can not decode the Offer in list; %s", err.Error())
+				log.Errorf("can not decode the Offer in list; %s", err.Error())
 				return nil, err
 			}
 			list.Collection = append(list.Collection, &row)

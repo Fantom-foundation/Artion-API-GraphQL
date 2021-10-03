@@ -20,11 +20,11 @@ func (db *MongoDbBridge) initTokenCollection(col *mongo.Collection) {
 
 	// create indexes
 	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
-		db.log.Panicf("can not create indexes for transaction collection; %s", err.Error())
+		log.Panicf("can not create indexes for transaction collection; %s", err.Error())
 	}
 
 	// log we are done that
-	db.log.Debugf("transactions collection initialized")
+	log.Debugf("transactions collection initialized")
 }
 
 func (db *MongoDbBridge) StoreToken(token *types.Token) error {
@@ -37,7 +37,7 @@ func (db *MongoDbBridge) StoreToken(token *types.Token) error {
 
 	// try to do the insert
 	if _, err := col.InsertOne(context.Background(), token); err != nil {
-		db.log.Errorf("can not store Token; %s", err)
+		log.Errorf("can not store Token; %s", err)
 		return err
 	}
 	// make sure gas price collection is initialized
@@ -58,7 +58,7 @@ func (db *MongoDbBridge) GetToken(nft common.Address, tokenId hexutil.Big) (toke
 
 	var row types.Token
 	if err = result.Decode(&row); err != nil {
-		db.log.Errorf("can not decode token; %s", err.Error())
+		log.Errorf("can not decode token; %s", err.Error())
 		return nil, err
 	}
 
@@ -82,7 +82,7 @@ func (db *MongoDbBridge) listTokens(filter *bson.D, cursor types.Cursor, count i
 
 	ld, err := db.findPaginated(col, filter, cursor, count, backward)
 	if err != nil {
-		db.log.Errorf("error loading tokens list; %s", err.Error())
+		log.Errorf("error loading tokens list; %s", err.Error())
 		return nil, err
 	}
 
@@ -90,7 +90,7 @@ func (db *MongoDbBridge) listTokens(filter *bson.D, cursor types.Cursor, count i
 	defer func() {
 		err = ld.Close(ctx)
 		if err != nil {
-			db.log.Errorf("error closing tokens list cursor; %s", err.Error())
+			log.Errorf("error closing tokens list cursor; %s", err.Error())
 		}
 	}()
 
@@ -98,7 +98,7 @@ func (db *MongoDbBridge) listTokens(filter *bson.D, cursor types.Cursor, count i
 		if len(list.Collection) < count {
 			var row types.Token
 			if err = ld.Decode(&row); err != nil {
-				db.log.Errorf("can not decode the token in list; %s", err.Error())
+				log.Errorf("can not decode the token in list; %s", err.Error())
 				return nil, err
 			}
 			list.Collection = append(list.Collection, &row)

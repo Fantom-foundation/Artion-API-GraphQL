@@ -30,16 +30,16 @@ type Listing struct {
 	Quantity     hexutil.Big    `bson:"quantity"`
 	PayToken     common.Address `bson:"payToken"`
 	PricePerItem hexutil.Big    `bson:"pricePerItem"`
-	StartTime    time.Time      `bson:"startTime"`
+	StartTime    Time           `bson:"startTime"`
 }
 
 // GenerateId generates unique listing ID
-// @todo Check if the ID is unique for multiple listings of the same token and owner.
+// One owner can have only one listing of one token.
 func (l *Listing) GenerateId() {
 	hash := sha256.New()
 	hash.Write(l.Nft.Bytes())
 	hash.Write(l.TokenId.ToInt().Bytes())
 	hash.Write(l.Owner.Bytes())
-	hash.Write(([]byte)(l.StartTime.String()))
+	hash.Write(([]byte)(time.Time(l.StartTime).String()))
 	l.Id = hash.Sum(nil)
 }
