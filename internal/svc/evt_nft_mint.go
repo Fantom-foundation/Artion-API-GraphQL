@@ -33,7 +33,7 @@ func erc721TokenMinted(evt *eth.Log, lo *logObserver) {
 		Uri:     args[2].(string),
 	}
 	tok.GenerateId()
-	log.Infof("%s ERC-721 token %s found at trx %s", tok.Nft.String(), tok.TokenId.String(), evt.TxHash.String())
+	log.Infof("ERC-721 token %s found at %s block %d", tok.TokenId.String(), tok.Nft.String(), evt.BlockNumber)
 
 	// write token to the persistent storage
 	if err := repo.StoreToken(&tok); err != nil {
