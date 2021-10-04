@@ -102,9 +102,12 @@ func newProxy() *Proxy {
 
 	// make Proxy instance
 	p := Proxy{
-		db:    db.New(),
 		rpc:   rpc.New(),
+		uri:   uri.New(cfg),
+		db:    db.New(),
 		cache: cache.New(),
+		log:   log,
+		callGroup: new(singleflight.Group),
 	}
 
 	if p.db == nil || p.rpc == nil || p.cache == nil {

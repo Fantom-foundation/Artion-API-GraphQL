@@ -8,7 +8,7 @@ import (
 	"math/big"
 )
 
-// Token object is constructed from query, data from db are loaded on demand into "loaded" field.
+// Token object is constructed from query, data from db are loaded on demand into "dbToken" field.
 type Token struct {
 	Address common.Address
 	TokenId hexutil.Big

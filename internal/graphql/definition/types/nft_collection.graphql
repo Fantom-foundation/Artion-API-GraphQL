@@ -1,0 +1,34 @@
+# Collection represents tokens contract.
+type NFTCollection {
+    # Address of the token contract
+    address: Address!
+
+    # Type of the contract
+    type: String!
+
+    # Name of the token contract
+    name: String!
+
+    # Symbol of the token contract
+    symbol: String!
+
+    created: Time!
+
+    isActive: Boolean!
+}
+
+type NFTCollectionEdge {
+    cursor: Cursor!
+    node: NFTCollection!
+}
+
+type NFTCollectionConnection {
+    # Edges contains provided edges of the sequential list.
+    edges: [NFTCollectionEdge!]!
+
+    # TotalCount is the total amount of items in the list.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of the list.
+    pageInfo: PageInfo!
+}

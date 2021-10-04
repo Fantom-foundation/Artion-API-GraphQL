@@ -110,6 +110,25 @@ func (rs *RootResolver) Version() string {
 	return build.Short(cfg)
 }
 
+func (rs *RootResolver) NftCollection(args struct {
+	Address common.Address
+}) (*NftCollection, error) {
+	Collection := NftCollection{Address: args.Address}
+	return &Collection, nil
+}
+
+func (rs *RootResolver) NftCollections(args struct{ PaginationInput }) (con *NftCollectionConnection, err error) {
+	cursor, count, backward, err := args.ToRepositoryInput()
+	if err != nil {
+		return nil, err
+	}
+	list, err := repository.R().ListNFTCollections(cursor, count, backward)
+	if err != nil {
+		return nil, err
+	}
+	return NewCollectionConnection(list)
+}
+
 func (rs *RootResolver) Token(args struct {
 	Address common.Address
 	TokenId hexutil.Big

@@ -19,3 +19,11 @@ func (p *Proxy) CollectionSymbol(adr *common.Address) (string, error) {
 func (p *Proxy) AddNFTCollection(nft *types.NFTCollection) error {
 	return p.db.AddNFTCollection(nft)
 }
+
+func (p *Proxy) GetNFTCollection(address common.Address) (*types.NFTCollection, error) {
+	return p.db.GetNFTCollection(address)
+}
+
+func (p *Proxy) ListNFTCollections(cursor types.Cursor, count int, backward bool) (*types.NFTCollectionList, error) {
+	return p.db.ListNFTCollections(cursor, count, backward)
+}
