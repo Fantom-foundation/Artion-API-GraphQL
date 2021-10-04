@@ -129,6 +129,8 @@ func (mu *nftMetadataUpdater) update(tok *types.Token) error {
 		log.Errorf("failed NFT metadata update for token %d on contract %s; %s", tok.TokenId.String(), tok.Nft.String(), err.Error())
 		return err
 	}
+
+	log.Debugf("NFT %s at %s metadata updated", tok.TokenId.String(), tok.Nft.String())
 	return nil
 }
 
