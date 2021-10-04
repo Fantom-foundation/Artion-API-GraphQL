@@ -50,7 +50,7 @@ func (db *MongoDbBridge) MinObservedBlockNumber(def uint64) uint64 {
 		}}},
 	})
 	if err != nil {
-		log.Errorf("can not find min observed block; %s", err.Error())
+		log.Errorf("can not find min block of observed contracts; %s", err.Error())
 		return def
 	}
 
