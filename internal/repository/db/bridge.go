@@ -4,9 +4,8 @@ package db
 import (
 	"artion-api-graphql/internal/config"
 	"artion-api-graphql/internal/logger"
+	"artion-api-graphql/internal/repository/db/registry"
 	"context"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/bsoncodec"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"sync"
 )
@@ -58,7 +57,7 @@ func connectDb(cfg *config.Database) (*mongo.Client, error) {
 	ctx := context.Background()
 
 	// create new Mongo client
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.Url).SetRegistry(BSONRegistry()))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.Url).SetRegistry(registry.New()))
 	if err != nil {
 		return nil, err
 	}
@@ -88,28 +87,4 @@ func (db *MongoDbBridge) Close() {
 	if err != nil {
 		log.Errorf("can not disconnect database; %s", err.Error())
 	}
-}
-
-// BSONRegistry creates a BSON registry to be used for BSON marshalling/unmarshalling operations
-func BSONRegistry() *bsoncodec.Registry {
-	rb := bsoncodec.NewRegistryBuilder()
-
-	// add defaults
-	bsoncodec.DefaultValueEncoders{}.RegisterDefaultEncoders(rb)
-	bsoncodec.DefaultValueDecoders{}.RegisterDefaultDecoders(rb)
-
-	// add common.Address (value) support to the BSON registry
-	rb.RegisterTypeEncoder(tAddress, bsoncodec.ValueEncoderFunc(AddressBSONEncodeValue))
-	rb.RegisterTypeDecoder(tAddress, bsoncodec.ValueDecoderFunc(AddressBSONDecodeValue))
-
-	// add common.Hash (value) support to the BSON registry
-	rb.RegisterTypeEncoder(tHash, bsoncodec.ValueEncoderFunc(HashBSONEncodeValue))
-	rb.RegisterTypeDecoder(tHash, bsoncodec.ValueDecoderFunc(HashBSONDecodeValue))
-
-	// add hexutil.Big (value) support to the BSON registry
-	rb.RegisterTypeEncoder(tHexBigInt, bsoncodec.ValueEncoderFunc(HexBigIntBSONEncodeValue))
-	rb.RegisterTypeDecoder(tHexBigInt, bsoncodec.ValueDecoderFunc(HexBigIntBSONDecodeValue))
-
-	bson.PrimitiveCodecs{}.RegisterPrimitiveCodecs(rb)
-	return rb.Build()
 }
