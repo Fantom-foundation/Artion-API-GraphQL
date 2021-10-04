@@ -2,6 +2,9 @@
 package schema
 
 import (
+	"artion-api-graphql/internal/config"
+	"artion-api-graphql/internal/graphql/resolvers"
+	"artion-api-graphql/internal/logger"
 	"github.com/onsi/gomega"
 	"testing"
 )
@@ -38,7 +41,7 @@ func TestSchemaContent(t *testing.T) {
 	// modules definition to exist based on modules
 	// we check only one type for each module to confirm the module does exist
 	modules := map[string]string{
-		"Country": "region related types definition must exist",
+		"NFTCollection": "NFTCollection related types definition must exist",
 	}
 
 	// create gΩ instance
@@ -58,6 +61,10 @@ func TestSchemaContent(t *testing.T) {
 
 func TestParseSchema(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
-	_, err := Schema()
+	cfg, err := config.Load()
+	g.Expect(err).To(gomega.BeNil())
+	resolvers.SetConfig(cfg)
+	resolvers.SetLogger(logger.New(cfg))
+	_, err = Schema()
 	g.Expect(err).To(gomega.BeNil())
 }

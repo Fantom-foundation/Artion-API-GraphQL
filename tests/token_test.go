@@ -16,5 +16,5 @@ func TestTokenIdGenerator(t *testing.T) {
 	tok1.Nft = common.HexToAddress("0xf41270836df4db1d28f7fd0935270e3a603e78cc")
 	tok1.TokenId = (hexutil.Big)(*big.NewInt(9292))
 	tok1.GenerateId()
-	g.Expect(hex.EncodeToString(tok1.Id)).To(gomega.Equal("71e825e157ec35c117c8c61a45a4564f"))
+	g.Expect(hex.EncodeToString(tok1.Id)).To(gomega.Equal("b7bad90ecd63763f7a501902cda26f943329c57b80575c23d6f64473b4f2e38b"))
 }
