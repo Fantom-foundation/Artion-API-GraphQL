@@ -42,6 +42,6 @@ func AddressDecodeValue(_ bsoncodec.DecodeContext, vr bsonrw.ValueReader, val re
 		return vr.ReadUndefined()
 	}
 
-	val.Set(reflect.ValueOf(adr).Elem())
+	val.Set(reflect.ValueOf(adr))
 	return nil
 }

@@ -20,26 +20,26 @@ func TimeDecodeValue(_ bsoncodec.DecodeContext, vr bsonrw.ValueReader, val refle
 		return bsoncodec.ValueDecoderError{Name: "TimeDecodeValue", Types: []reflect.Type{tTime}, Received: val}
 	}
 
-	var timeVal time.Time
+	var timeVal types.Time
 	switch vrType := vr.Type(); vrType {
 	case bsontype.Int64:
 		i64, err := vr.ReadInt64()
 		if err != nil {
 			return err
 		}
-		timeVal = time.Unix(i64/1000, i64%1000*1000000)
+		timeVal = types.Time(time.Unix(i64/1000, i64%1000*1000000))
 	case bsontype.DateTime:
 		dt, err := vr.ReadDateTime()
 		if err != nil {
 			return err
 		}
-		timeVal = time.Unix(dt/1000, dt%1000*1000000)
+		timeVal = types.Time(time.Unix(dt/1000, dt%1000*1000000))
 	case bsontype.Timestamp:
 		t, _, err := vr.ReadTimestamp()
 		if err != nil {
 			return err
 		}
-		timeVal = time.Unix(int64(t), 0)
+		timeVal = types.Time(time.Unix(int64(t), 0))
 	case bsontype.Null:
 		if err := vr.ReadNull(); err != nil {
 			return err

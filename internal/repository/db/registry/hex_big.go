@@ -45,6 +45,6 @@ func HexBigIntDecodeValue(_ bsoncodec.DecodeContext, vr bsonrw.ValueReader, val 
 		return vr.ReadUndefined()
 	}
 
-	val.Set(reflect.ValueOf(big).Elem())
+	val.Set(reflect.ValueOf(big))
 	return nil
 }

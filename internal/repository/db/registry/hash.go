@@ -38,6 +38,6 @@ func HashDecodeValue(_ bsoncodec.DecodeContext, vr bsonrw.ValueReader, val refle
 		return vr.ReadUndefined()
 	}
 
-	val.Set(reflect.ValueOf(hash).Elem())
+	val.Set(reflect.ValueOf(hash))
 	return nil
 }
