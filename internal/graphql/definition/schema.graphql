@@ -27,8 +27,6 @@ type Query {
 
 # Mutation endpoints for modifying the data
 type Mutation {
-    # Load testing data into database
-    pushTestingData: String
 
     # Update user profile
     updateUser(user: InputUser!): Boolean!

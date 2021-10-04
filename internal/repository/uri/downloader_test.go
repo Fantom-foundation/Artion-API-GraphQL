@@ -24,7 +24,7 @@ func TestHttp(t *testing.T) {
 	downloader := Downloader{
 		ipfsShell: nil,
 	}
-	data,err := downloader.GetJsonMetadata("https://ipfs.io/ipfs/QmTetVgMNVGj88s9NQuANyVmjMtZqhZDp8T21huiVGbfAi")
+	data,err := downloader.GetJsonMetadata("https://gist.githubusercontent.com/hkalina/0fdb14b893ad912be79fc6ae0ec5d86b/raw/50ad50fa7c9292bcda1a6622431765ef0e874f32/test.json")
 	g.Expect(err).To(gomega.BeNil())
 	g.Expect(data.Name).To(gomega.Equal("item #9292"))
 	g.Expect(data.Description).To(gomega.Equal("Rarity tier 1, non magical, item crafting."))
