@@ -5,7 +5,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
-	"strconv"
 	"strings"
 )
 
@@ -29,11 +28,11 @@ func (p *Proxy) GetToken(nft *common.Address, tokenId *hexutil.Big) (*types.Toke
 }
 
 func (p *Proxy) ListTokens(cursor types.Cursor, count int, backward bool) (list *types.TokenList, err error) {
-	key := "ListTokens-" + string(cursor) + "-" + strconv.Itoa(count) + strconv.FormatBool(backward)
-	tokens, err, _ := p.callGroup.Do(key, func() (interface{}, error) {
-		return p.db.ListTokens(cursor, count, backward)
-	})
-	return tokens.(*types.TokenList), err
+	return p.db.ListTokens(cursor, count, backward)
+}
+
+func (p *Proxy) ListCollectionTokens(collection common.Address, cursor types.Cursor, count int, backward bool) (out *types.TokenList, err error) {
+	return p.db.ListCollectionTokens(collection, cursor, count, backward)
 }
 
 func (p *Proxy) GetTokenJsonMetadata(uri string) (*types.JsonMetadata, error) {

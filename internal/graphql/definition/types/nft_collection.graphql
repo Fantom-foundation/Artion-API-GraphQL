@@ -12,9 +12,14 @@ type NFTCollection {
     # Symbol of the token contract
     symbol: String!
 
+    # Time when was the collection created on chain
     created: Time!
 
+    # Whether the collection was deactivated or not
     isActive: Boolean!
+
+    # List of tokens in the collection
+    tokens(first: Int, after: Cursor, last: Int, before: Cursor): TokenConnection!
 }
 
 type NFTCollectionEdge {

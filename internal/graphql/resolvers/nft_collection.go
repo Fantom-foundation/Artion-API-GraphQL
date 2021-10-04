@@ -107,3 +107,15 @@ func (t NftCollection) IsActive() (bool, error) {
 	}
 	return t.dbNftCollection.IsActive, nil
 }
+
+func (t *NftCollection) Tokens(args struct{ PaginationInput }) (con *TokenConnection, err error) {
+	cursor, count, backward, err := args.ToRepositoryInput()
+	if err != nil {
+		return nil, err
+	}
+	list, err := repository.R().ListCollectionTokens(t.Address, cursor, count, backward)
+	if err != nil {
+		return nil, err
+	}
+	return NewTokenConnection(list)
+}

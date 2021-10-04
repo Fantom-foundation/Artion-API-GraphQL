@@ -15,6 +15,9 @@ const (
 	// CoTokens is the name of database collection.
 	coTokens = "tokens"
 
+	// fiTokenNft is the column storing the name of the NFT token.
+	fiTokenNft = "nft"
+
 	// FiTokenName is the column storing the name of the NFT token.
 	fiTokenName = "name"
 )
@@ -83,6 +86,13 @@ func (db *MongoDbBridge) GetToken(nft *common.Address, tokenId *big.Int) (token 
 
 func (db *MongoDbBridge) ListTokens(cursor types.Cursor, count int, backward bool) (out *types.TokenList, err error) {
 	filter := bson.D{}
+	return db.listTokens(&filter, cursor, count, backward)
+}
+
+func (db *MongoDbBridge) ListCollectionTokens(collection common.Address, cursor types.Cursor, count int, backward bool) (out *types.TokenList, err error) {
+	filter := bson.D{
+		{ Key: fiTokenNft, Value: collection.String() },
+	}
 	return db.listTokens(&filter, cursor, count, backward)
 }
 
