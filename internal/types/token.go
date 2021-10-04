@@ -7,14 +7,6 @@ import (
 	"math/big"
 )
 
-const (
-	// CoTokens is the name of database collection.
-	CoTokens = "tokens"
-
-	// FiTokenName is the column storing the name of the NFT token.
-	FiTokenName = "name"
-)
-
 // Token represents item list-able in the marketplace.
 type Token struct {
 	Id          []byte         `bson:"_id"`

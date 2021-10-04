@@ -13,7 +13,7 @@ type TokenEventType int8
 
 const (
 	// CoTokenEvents is the name of database collection.
-	CoTokenEvents = "TokenEvents"
+	CoTokenEvents = "tokenEvents"
 
 	// BSON attributes names used in the database collection.
 	FiTokenEventNft     = "nft"

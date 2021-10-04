@@ -10,6 +10,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+const (
+	// CoUsers is the name of database collection.
+	coUsers = "users"
+)
+
 // initUserCollection initializes collection with indexes and additional parameters.
 func (db *SharedMongoDbBridge) initUserCollection(col *mongo.Collection) {
 	// prepare index models
@@ -25,7 +30,7 @@ func (db *SharedMongoDbBridge) initUserCollection(col *mongo.Collection) {
 }
 
 func (db *SharedMongoDbBridge) GetUser(address common.Address) (user *types.User, err error) {
-	col := db.client.Database(db.dbName).Collection(types.CoUsers)
+	col := db.client.Database(db.dbName).Collection(coUsers)
 
 	filter := bson.D{{ Key: fieldId, Value: address.String() }}
 	result := col.FindOne(context.Background(), filter)
@@ -50,7 +55,7 @@ func (db *SharedMongoDbBridge) UpsertUser(User *types.User) error {
 	if User == nil {
 		return fmt.Errorf("no value to store")
 	}
-	col := db.client.Database(db.dbName).Collection(types.CoUsers)
+	col := db.client.Database(db.dbName).Collection(coUsers)
 
 	filter := bson.D{{ Key: fieldId, Value: User.Address.String() }}
 	if _, err := col.ReplaceOne(context.Background(), filter, User, options.Replace().SetUpsert(true)); err != nil {

@@ -7,20 +7,6 @@ import (
 	"time"
 )
 
-const (
-	// CoListings is the name of database collection.
-	CoListings = "Listings"
-
-	// FiListingNft is the name of the DB column storing NFT contract address.
-	FiListingNft     = "nft"
-
-	// FiListingTokenId represents the name of the DB column storing NFT token ID.
-	FiListingTokenId = "tokenId"
-
-	// FiListingOwner represents the name of the DB column storing token owner.
-	FiListingOwner   = "owner"
-)
-
 // Listing represents offer for anybody to buy given token from the owner.
 type Listing struct {
 	Id           []byte         `bson:"_id"`

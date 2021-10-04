@@ -6,20 +6,6 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
-const (
-	// CoOffers is the name of database collection.
-	CoOffers = "Offers"
-
-	// FiOfferNft is the name of the DB column of the NFT contract address.
-	FiOfferNft = "nft"
-
-	// FiOfferTokenId is the name of the DB column of the token ID.
-	FiOfferTokenId = "tokenId"
-
-	// FiOfferCreator is the name of the DB column of the offer creator address.
-	FiOfferCreator = "creator"
-)
-
 // Offer represents offer to buy given token from any current owner.
 type Offer struct {
 	Id           []byte         `bson:"_id"`

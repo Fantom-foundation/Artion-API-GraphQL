@@ -11,14 +11,28 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+const (
+	// CoListings is the name of database collection.
+	coListings = "listings"
+
+	// FiListingNft is the name of the DB column storing NFT contract address.
+	fiListingNft     = "nft"
+
+	// FiListingTokenId represents the name of the DB column storing NFT token ID.
+	fiListingTokenId = "tokenId"
+
+	// FiListingOwner represents the name of the DB column storing token owner.
+	fiListingOwner   = "owner"
+)
+
 // initListingCollection initializes collection with indexes and additional parameters.
 func (db *MongoDbBridge) initListingCollection(col *mongo.Collection) {
 	// prepare index models
 	ix := make([]mongo.IndexModel, 0)
 
 	// index sender and recipient
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiListingNft, Value: 1}, {Key: types.FiListingTokenId, Value: 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiListingOwner, Value: 1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiListingNft, Value: 1}, {Key: fiListingTokenId, Value: 1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiListingOwner, Value: 1}}})
 
 	// create indexes
 	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
@@ -35,7 +49,7 @@ func (db *MongoDbBridge) AddListing(listing *types.Listing) error {
 	}
 
 	// get the collection
-	col := db.client.Database(db.dbName).Collection(types.CoListings)
+	col := db.client.Database(db.dbName).Collection(coListings)
 
 	// try to do the insert
 	if _, err := col.InsertOne(context.Background(), listing); err != nil {
@@ -53,12 +67,12 @@ func (db *MongoDbBridge) UpdateListing(listing *types.Listing) error {
 	if listing == nil {
 		return fmt.Errorf("no value to store")
 	}
-	col := db.client.Database(db.dbName).Collection(types.CoListings)
+	col := db.client.Database(db.dbName).Collection(coListings)
 
 	filter := bson.D{
-		{ Key: types.FiListingOwner, Value: listing.Owner.String() },
-		{ Key: types.FiListingNft, Value: listing.Nft.String() },
-		{ Key: types.FiListingTokenId, Value: listing.TokenId.String() },
+		{ Key: fiListingOwner, Value: listing.Owner.String() },
+		{ Key: fiListingNft, Value: listing.Nft.String() },
+		{ Key: fiListingTokenId, Value: listing.TokenId.String() },
 	}
 
 	if _, err := col.ReplaceOne(context.Background(), filter, listing); err != nil {
@@ -69,12 +83,12 @@ func (db *MongoDbBridge) UpdateListing(listing *types.Listing) error {
 }
 
 func (db *MongoDbBridge) RemoveListing(owner common.Address, nft common.Address, tokenId hexutil.Big) error {
-	col := db.client.Database(db.dbName).Collection(types.CoListings)
+	col := db.client.Database(db.dbName).Collection(coListings)
 
 	filter := bson.D{
-		{ Key: types.FiListingOwner, Value: owner.String() },
-		{ Key: types.FiListingNft, Value: nft.String() },
-		{ Key: types.FiListingTokenId, Value: tokenId.String() },
+		{ Key: fiListingOwner, Value: owner.String() },
+		{ Key: fiListingNft, Value: nft.String() },
+		{ Key: fiListingTokenId, Value: tokenId.String() },
 	}
 
 	if _, err := col.DeleteOne(context.Background(), filter); err != nil {
@@ -87,20 +101,20 @@ func (db *MongoDbBridge) RemoveListing(owner common.Address, nft common.Address,
 func (db *MongoDbBridge) ListListings(nft *common.Address, tokenId *hexutil.Big, owner *common.Address, cursor types.Cursor, count int, backward bool) (out *types.ListingList, err error) {
 	filter := bson.D{}
 	if nft != nil {
-		filter = append(filter, primitive.E{ Key: types.FiListingNft, Value: nft.String() })
+		filter = append(filter, primitive.E{ Key: fiListingNft, Value: nft.String() })
 	}
 	if tokenId != nil {
-		filter = append(filter, primitive.E{ Key: types.FiListingTokenId, Value: tokenId.String() })
+		filter = append(filter, primitive.E{ Key: fiListingTokenId, Value: tokenId.String() })
 	}
 	if owner != nil {
-		filter = append(filter, primitive.E{ Key: types.FiListingOwner, Value: owner.String() })
+		filter = append(filter, primitive.E{ Key: fiListingOwner, Value: owner.String() })
 	}
 	return db.listListings(&filter, cursor, count, backward)
 }
 
 func (db *MongoDbBridge) listListings(filter *bson.D, cursor types.Cursor, count int, backward bool) (out *types.ListingList, err error) {
 	var list types.ListingList
-	col := db.client.Database(db.dbName).Collection(types.CoListings)
+	col := db.client.Database(db.dbName).Collection(coListings)
 	ctx := context.Background()
 
 	list.TotalCount, err = db.getTotalCount(col, filter)

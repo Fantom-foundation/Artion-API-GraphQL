@@ -11,13 +11,21 @@ import (
 	"math/big"
 )
 
+const (
+	// CoTokens is the name of database collection.
+	coTokens = "tokens"
+
+	// FiTokenName is the column storing the name of the NFT token.
+	fiTokenName = "name"
+)
+
 // initTokenCollection initializes collection with indexes and additional parameters.
 func (db *MongoDbBridge) initTokenCollection(col *mongo.Collection) {
 	// prepare index models
 	ix := make([]mongo.IndexModel, 0)
 
 	// indexes
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiTokenName, Value: 1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiTokenName, Value: 1}}})
 
 	// create indexes
 	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
@@ -35,7 +43,7 @@ func (db *MongoDbBridge) StoreToken(token *types.Token) error {
 	}
 
 	// get the collection
-	col := db.client.Database(db.dbName).Collection(types.CoTokens)
+	col := db.client.Database(db.dbName).Collection(coTokens)
 
 	// try to do the insert
 	rs, err := col.UpdateOne(
@@ -61,7 +69,7 @@ func (db *MongoDbBridge) StoreToken(token *types.Token) error {
 
 // GetToken loads specific NFT token for the given contract address and token ID
 func (db *MongoDbBridge) GetToken(nft *common.Address, tokenId *big.Int) (token *types.Token, err error) {
-	col := db.client.Database(db.dbName).Collection(types.CoTokens)
+	col := db.client.Database(db.dbName).Collection(coTokens)
 	result := col.FindOne(context.Background(), bson.D{{Key: fieldId, Value: types.TokenIdFromAddress(nft, tokenId)}})
 
 	var row types.Token
@@ -80,7 +88,7 @@ func (db *MongoDbBridge) ListTokens(cursor types.Cursor, count int, backward boo
 
 func (db *MongoDbBridge) listTokens(filter *bson.D, cursor types.Cursor, count int, backward bool) (out *types.TokenList, err error) {
 	var list types.TokenList
-	col := db.client.Database(db.dbName).Collection(types.CoTokens)
+	col := db.client.Database(db.dbName).Collection(coTokens)
 	ctx := context.Background()
 
 	list.TotalCount, err = db.getTotalCount(col, filter)

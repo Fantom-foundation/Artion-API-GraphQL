@@ -11,7 +11,7 @@ import (
 
 const (
 	// coNFTCollection is the name of the collection of NFT contracts.
-	coNFTCollection = "nft"
+	coNFTCollection = "nftcol"
 
 	// fiNFTAddress is the name of the field keeping the NFT contract address.
 	fiNFTAddress = "_id"
