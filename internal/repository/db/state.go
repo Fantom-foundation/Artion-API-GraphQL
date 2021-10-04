@@ -30,8 +30,12 @@ func (db *MongoDbBridge) UpdateLastSeenBlock(blk *big.Int) {
 	// get the collection
 	col := db.client.Database(db.dbName).Collection(coSystemStateCollection)
 	re, err := col.UpdateOne(context.Background(), bson.D{{Key: fieldId, Value: keyLastSeenBlock}}, bson.D{
-		{Key: fieldId, Value: keyLastSeenBlock},
-		{Key: fiBlockNumber, Value: blk.Int64()},
+		{Key: "$set", Value: bson.D{
+			{Key: fiBlockNumber, Value: blk.Int64()},
+		}},
+		{Key: "$setOnInsert", Value: bson.D{
+			{Key: fieldId, Value: keyLastSeenBlock},
+		}},
 	}, options.Update().SetUpsert(true))
 	if err != nil {
 		log.Errorf("can not store last seen block #%d; %s", blk.Uint64(), err.Error())

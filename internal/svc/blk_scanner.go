@@ -125,7 +125,10 @@ func (bs *blkScanner) run() {
 			bs.target = bs.top()
 		case <-logTick.C:
 			log.Infof("block scanner at #%d of #%d", bs.current, bs.target)
-		case bid := <-bs.inObservedBlocks:
+		case bid, ok := <-bs.inObservedBlocks:
+			if !ok {
+				return
+			}
 			if bs.state == blkIsIdling && bid > bs.current {
 				bs.current = bid
 			}

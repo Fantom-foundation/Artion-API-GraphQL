@@ -68,6 +68,8 @@ func (bo *blkObserver) run() {
 
 	defer func() {
 		tick.Stop()
+		close(bo.outEvents)
+		close(bo.outObservedBlocks)
 		bo.mgr.closed(bo)
 	}()
 
@@ -75,7 +77,10 @@ func (bo *blkObserver) run() {
 		select {
 		case <-bo.sigStop:
 			return
-		case hdr := <-bo.inBlocks:
+		case hdr, ok := <-bo.inBlocks:
+			if !ok {
+				return
+			}
 			bo.process(hdr)
 		}
 	}

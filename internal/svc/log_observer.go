@@ -18,7 +18,7 @@ const (
 )
 
 // EventHandler represents a function used to process event log record.
-type EventHandler func(*eth.Log)
+type EventHandler func(*eth.Log, *logObserver)
 
 // logObserver represents the service responsible for processing event logs of interest.
 type logObserver struct {
@@ -31,6 +31,10 @@ type logObserver struct {
 	// outEvent represents an output channel being fed
 	// with recognized block events for processing
 	inEvents chan *eth.Log
+
+	// outNftTokens represents an output channel receiving new NFT tokens
+	// for processing and metadata update
+	outNftTokens chan *types.Token
 
 	// currentBlock contains the number of the currently processed block
 	currentBlock *big.Int
@@ -51,11 +55,15 @@ type logObserver struct {
 // newLogObserver creates a new instance of the event logs observer service.
 func newLogObserver(mgr *Manager) *logObserver {
 	return &logObserver{
-		mgr:     mgr,
-		sigStop: make(chan bool, 1),
+		mgr:          mgr,
+		sigStop:      make(chan bool, 1),
+		outNftTokens: make(chan *types.Token, nftMetadataUpdaterQueueCapacity),
 		topics: map[common.Hash]EventHandler{
-			/* event ContractCreated(address creator, address nft) */
+			/* Factory::event ContractCreated(address creator, address nft) */
 			common.HexToHash("0x2d49c67975aadd2d389580b368cfff5b49965b0bd5da33c144922ce01e7a4d7b"): newNFTContract,
+
+			/* erc721::event Minted(uint256 tokenId, address beneficiary, string tokenUri, address minter) */
+			common.HexToHash("0x997115af5924f5e38964c6d65c804d4cb85129b65e62eb20a8ca6329dbe57e18"): erc721TokenMinted,
 		},
 	}
 }
@@ -86,6 +94,7 @@ func (lo *logObserver) run() {
 
 	defer func() {
 		tick.Stop()
+		close(lo.outNftTokens)
 		lo.mgr.closed(lo)
 	}()
 
@@ -95,7 +104,10 @@ func (lo *logObserver) run() {
 			return
 		case <-tick.C:
 			lo.notify()
-		case evt := <-lo.inEvents:
+		case evt, ok := <-lo.inEvents:
+			if !ok {
+				return
+			}
 			lo.process(evt)
 			lo.processed(evt)
 		}
@@ -118,7 +130,7 @@ func (lo *logObserver) process(evt *eth.Log) {
 	}
 
 	// do the handler job
-	handler(evt)
+	handler(evt, lo)
 }
 
 // processed updates the information about the current and processed block number.

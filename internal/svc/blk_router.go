@@ -74,6 +74,7 @@ func (br *blkRouter) close() {
 // run pulls block headers from multiple sources and routes based on the API server state.
 func (br *blkRouter) run() {
 	defer func() {
+		close(br.outBlocks)
 		br.mgr.closed(br)
 	}()
 
@@ -81,19 +82,28 @@ func (br *blkRouter) run() {
 		select {
 		case <-br.sigStop:
 			return
-		case st := <-br.inScanStateChange:
+		case st, ok := <-br.inScanStateChange:
+			if !ok {
+				return
+			}
 			br.state = st
 			if st == blkIsIdling {
 				br.cleanCache()
 			}
-		case hdr := <-br.inNewBlocks:
+		case hdr, ok := <-br.inNewBlocks:
+			if !ok {
+				return
+			}
 			if br.state == blkIsScanning {
 				br.cache.Add(hdr)
 				log.Debugf("block #%d cached", hdr.Number.Uint64())
 			} else {
 				br.push(hdr)
 			}
-		case hdr := <-br.inScanBlocks:
+		case hdr, ok := <-br.inScanBlocks:
+			if !ok {
+				return
+			}
 			br.push(hdr)
 		}
 	}

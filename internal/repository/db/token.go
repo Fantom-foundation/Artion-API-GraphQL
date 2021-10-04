@@ -5,9 +5,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"math/big"
 )
 
 // initTokenCollection initializes collection with indexes and additional parameters.
@@ -27,6 +28,7 @@ func (db *MongoDbBridge) initTokenCollection(col *mongo.Collection) {
 	log.Debugf("transactions collection initialized")
 }
 
+// StoreToken inserts new NFT token or updates existing token in persistent database.
 func (db *MongoDbBridge) StoreToken(token *types.Token) error {
 	if token == nil {
 		return fmt.Errorf("no value to store")
@@ -36,10 +38,20 @@ func (db *MongoDbBridge) StoreToken(token *types.Token) error {
 	col := db.client.Database(db.dbName).Collection(types.CoTokens)
 
 	// try to do the insert
-	if _, err := col.InsertOne(context.Background(), token); err != nil {
-		log.Errorf("can not store Token; %s", err)
+	rs, err := col.UpdateOne(
+		context.Background(),
+		bson.D{{Key: fieldId, Value: types.TokenIdFromAddress(&token.Nft, (*big.Int)(&token.TokenId))}},
+		bson.D{{Key: "$set", Value: token}},
+		options.Update().SetUpsert(true),
+	)
+	if err != nil {
+		log.Errorf("can not store token %s at %s; %s", token.TokenId.String(), token.Nft.String(), err.Error())
 		return err
 	}
+	if rs.UpsertedCount > 0 {
+		log.Infof("token %s on contract %s added to database", token.TokenId.String(), token.Nft.String())
+	}
+
 	// make sure gas price collection is initialized
 	if db.initTokens != nil {
 		db.initTokens.Do(func() { db.initTokenCollection(col); db.initTokens = nil })
@@ -47,14 +59,10 @@ func (db *MongoDbBridge) StoreToken(token *types.Token) error {
 	return nil
 }
 
-func (db *MongoDbBridge) GetToken(nft common.Address, tokenId hexutil.Big) (token *types.Token, err error) {
+// GetToken loads specific NFT token for the given contract address and token ID
+func (db *MongoDbBridge) GetToken(nft *common.Address, tokenId *big.Int) (token *types.Token, err error) {
 	col := db.client.Database(db.dbName).Collection(types.CoTokens)
-	ctx := context.Background()
-	filter := bson.D{
-		{ Key: types.FiTokenNft, Value: bson.D{{Key: "$eq", Value: nft.String() }} },
-		{ Key: types.FiTokenTokenId, Value: bson.D{{Key: "$eq", Value: tokenId.String() }} },
-	}
-	result := col.FindOne(ctx, filter)
+	result := col.FindOne(context.Background(), bson.D{{Key: fieldId, Value: types.TokenIdFromAddress(nft, tokenId)}})
 
 	var row types.Token
 	if err = result.Decode(&row); err != nil {

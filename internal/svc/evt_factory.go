@@ -10,8 +10,8 @@ import (
 )
 
 // newNFTContract handles log event for new factory deployed ERC721/ERC1155 contract.
-// event ContractCreated(address creator, address nft)
-func newNFTContract(evt *eth.Log) {
+// Factory::event ContractCreated(address creator, address nft)
+func newNFTContract(evt *eth.Log, _ *logObserver) {
 	// sanity check: no additional topics; 2 x Address = 2 x 32 bytes
 	if len(evt.Data) != 64 || len(evt.Topics) != 1 {
 		log.Errorf("invalid event %s / %d; expected 64 bytes of data, %d given; expected 1 topic, %d given",

@@ -39,7 +39,7 @@ type Opera struct {
 	sigClose chan bool
 	headers  chan *eth.Header
 
-	abiFantom721 abi.ABI
+	abiFantom721 *abi.ABI
 }
 
 // New provides a new instance of the RPC access point.
@@ -86,7 +86,7 @@ func connect() (*client.Client, error) {
 }
 
 // loadABI tries to load and parse expected ABI for contracts we need.
-func loadABI(o *Opera) (err error) {
+func loadABI(o *Opera) error {
 	// FantomNFTTradable
 	data, err := abiFiles.ReadFile("contracts/abi/FantomNFTTradable.json")
 	if err != nil {
@@ -94,11 +94,11 @@ func loadABI(o *Opera) (err error) {
 	}
 
 	// parse ABI
-	o.abiFantom721, err = abi.JSON(bytes.NewReader(data))
+	decoded, err := abi.JSON(bytes.NewReader(data))
 	if err != nil {
 		return err
 	}
-
+	o.abiFantom721 = &decoded
 	return nil
 }
 

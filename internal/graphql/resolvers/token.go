@@ -61,7 +61,7 @@ func NewTokenConnection(list *types.TokenList) (con *TokenConnection, err error)
 
 func (t *Token) load() error {
 	if t.dbToken == nil {
-		tok, err := repository.R().GetToken(t.Address, t.TokenId)
+		tok, err := repository.R().GetToken(&t.Address, &t.TokenId)
 		if err != nil {
 			return err
 		}
