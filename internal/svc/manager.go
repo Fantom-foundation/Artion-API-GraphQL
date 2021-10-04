@@ -16,6 +16,7 @@ type Manager struct {
 	blkScanner  *blkScanner
 	blkObserver *blkObserver
 	logObserver *logObserver
+	nftUpdater  *nftMetadataUpdater
 }
 
 // newManager creates a new instance of the svc Manager.
@@ -34,6 +35,7 @@ func newManager() *Manager {
 	mgr.blkScanner = newBlkScanner(&mgr)
 	mgr.blkObserver = newBlkObserver(&mgr)
 	mgr.logObserver = newLogObserver(&mgr)
+	mgr.nftUpdater = newNFTMetadataUpdater(&mgr)
 
 	// init and run
 	mgr.init()
@@ -47,6 +49,7 @@ func (mgr *Manager) init() {
 	mgr.blkScanner.init()
 	mgr.blkObserver.init()
 	mgr.logObserver.init()
+	mgr.nftUpdater.init()
 }
 
 // add managed service instance to the Manager and run it.

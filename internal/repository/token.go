@@ -4,17 +4,26 @@ import (
 	"artion-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"math/big"
 	"strconv"
+	"strings"
 )
 
+// StoreToken puts the given token into the persistent storage.
+// The function is used for both insert and update operation.
 func (p *Proxy) StoreToken(token *types.Token) error {
 	return p.db.StoreToken(token)
 }
 
-func (p *Proxy) GetToken(nft common.Address, tokenId hexutil.Big) (*types.Token, error) {
-	key := "GetToken-" + nft.String() + "-" + tokenId.String()
-	token, err, _ := p.callGroup.Do(key, func() (interface{}, error) {
-		return p.db.GetToken(nft, tokenId)
+// GetToken reads NFT token detail from the persistent database.
+func (p *Proxy) GetToken(nft *common.Address, tokenId *hexutil.Big) (*types.Token, error) {
+	var key strings.Builder
+	key.WriteString("GetToken")
+	key.WriteString(nft.String())
+	key.WriteString(tokenId.String())
+
+	token, err, _ := p.callGroup.Do(key.String(), func() (interface{}, error) {
+		return p.db.GetToken(nft, (*big.Int)(tokenId))
 	})
 	return token.(*types.Token), err
 }
@@ -29,8 +38,11 @@ func (p *Proxy) ListTokens(cursor types.Cursor, count int, backward bool) (list 
 
 func (p *Proxy) GetTokenJsonMetadata(uri string) (*types.JsonMetadata, error) {
 	// TODO: in-memory cache
-	key := "GetTokenJsonMetadata" + uri
-	jsonMetadata, err, _ := p.callGroup.Do(key, func() (interface{}, error) {
+	var key strings.Builder
+	key.WriteString("GetTokenJsonMetadata")
+	key.WriteString(uri)
+
+	jsonMetadata, err, _ := p.callGroup.Do(key.String(), func() (interface{}, error) {
 		return p.uri.GetJsonMetadata(uri)
 	})
 	return jsonMetadata.(*types.JsonMetadata), err

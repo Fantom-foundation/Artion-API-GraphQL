@@ -9,13 +9,7 @@ import (
 
 const (
 	// CoTokens is the name of database collection.
-	CoTokens = "Tokens"
-
-	// FiTokenNft is the name of DB column storing NFT contract address.
-	FiTokenNft = "nft"
-
-	// FiTokenTokenId is the name of DB column storing NFT token ID.
-	FiTokenTokenId = "tokenId"
+	CoTokens = "tokens"
 
 	// FiTokenName is the column storing the name of the NFT token.
 	FiTokenName = "name"
@@ -23,10 +17,14 @@ const (
 
 // Token represents item list-able in the marketplace.
 type Token struct {
-	Id      []byte         `bson:"_id"`
-	Nft     common.Address `bson:"nft"`
-	TokenId hexutil.Big    `bson:"tokenId"`
-	Uri     string         `bson:"uri"`
+	Id          []byte         `bson:"_id"`
+	Nft         common.Address `bson:"nft"`
+	TokenId     hexutil.Big    `bson:"tokenId"`
+	Uri         string         `bson:"uri"`
+	Name        string         `bson:"name"`
+	Description string         `bson:"desc"`
+	ImageURI    string         `bson:"image"`
+	MetadataAge Time           `bson:"metadata_age"`
 }
 
 // TokenIdFromAddress generates unique token ID from an NFT contract address and token ID.
