@@ -3,7 +3,6 @@ package types
 
 import (
 	"github.com/ethereum/go-ethereum/common"
-	"time"
 )
 
 // NFTCollection represents an Artion token collection, represented by an NFT contract.
@@ -13,6 +12,6 @@ type NFTCollection struct {
 	Type     string         `bson:"type"`
 	Name     string         `bson:"name"`
 	Symbol   string         `bson:"symbol"`
-	Created  time.Time      `bson:"created"`
+	Created  Time           `bson:"created"`
 	IsActive bool           `bson:"is_active"`
 }

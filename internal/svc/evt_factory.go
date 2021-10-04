@@ -73,7 +73,7 @@ func extendNFTCollectionDetails(nft *types.NFTCollection, evt *eth.Log) (err err
 	if err != nil {
 		return err
 	}
-	nft.Created = time.Unix(int64(blk.Time), 0)
+	nft.Created = types.Time(time.Unix(int64(blk.Time), 0))
 	return nil
 }
 

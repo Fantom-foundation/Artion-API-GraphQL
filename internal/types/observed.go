@@ -3,7 +3,6 @@ package types
 
 import (
 	"github.com/ethereum/go-ethereum/common"
-	"time"
 )
 
 const (
@@ -16,11 +15,11 @@ const (
 
 // ObservedContract represents a contract observed by the API server.
 type ObservedContract struct {
-	Address     common.Address `bson:"_id"`
-	Name        string         `bson:"name"`
-	Type        string         `bson:"type"`
-	Created     time.Time      `bson:"created"`
-	Creator     common.Address `bson:"creator"`
-	BlockNumber uint64         `bson:"block"`
-	DeployedBy  common.Hash    `bson:"trx"`
+	Address     common.Address  `bson:"_id"`
+	Name        string          `bson:"name"`
+	Type        string          `bson:"type"`
+	Created     Time            `bson:"created"`
+	Creator     common.Address  `bson:"creator"`
+	BlockNumber uint64          `bson:"block"`
+	DeployedBy  common.Hash     `bson:"trx"`
 }
