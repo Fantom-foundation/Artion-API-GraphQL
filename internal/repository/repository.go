@@ -35,6 +35,7 @@ type Proxy struct {
 	rpc       *rpc.Opera
 	uri       *uri.Downloader
 	db        *db.MongoDbBridge
+	shareddb  *db.SharedMongoDbBridge
 	cache     *cache.MemCache
 	log        logger.Logger
 	callGroup *singleflight.Group
@@ -105,6 +106,7 @@ func newProxy() *Proxy {
 		rpc:   rpc.New(),
 		uri:   uri.New(cfg),
 		db:    db.New(),
+		shareddb: db.NewShared(),
 		cache: cache.New(),
 		log:   log,
 		callGroup: new(singleflight.Group),

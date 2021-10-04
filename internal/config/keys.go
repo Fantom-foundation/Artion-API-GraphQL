@@ -37,6 +37,9 @@ const (
 	keyMongoUrl      = "db.url"
 	keyMongoDatabase = "db.db"
 
+	keySharedMongoUrl      = "shared_db.url"
+	keySharedMongoDatabase = "shared_db.db"
+
 	// cache related options
 	keyCacheEvictionTime = "cache.eviction"
 	keyCacheMaxSize      = "cache.size"

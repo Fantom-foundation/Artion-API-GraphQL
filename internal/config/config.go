@@ -22,8 +22,11 @@ type Config struct {
 	// IPFS represents the node structure
 	Ipfs Ipfs `mapstructure:"ipfs"`
 
-	// Database configuration
+	// Mongo database configuration
 	Db Database `mapstructure:"db"`
+
+	// Shared Mongo database configuration
+	SharedDb Database `mapstructure:"shared_db"`
 
 	// Cache configuration
 	Cache Cache `mapstructure:"cache"`

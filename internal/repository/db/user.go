@@ -11,7 +11,7 @@ import (
 )
 
 // initUserCollection initializes collection with indexes and additional parameters.
-func (db *MongoDbBridge) initUserCollection(col *mongo.Collection) {
+func (db *SharedMongoDbBridge) initUserCollection(col *mongo.Collection) {
 	// prepare index models
 	ix := make([]mongo.IndexModel, 0)
 
@@ -24,7 +24,7 @@ func (db *MongoDbBridge) initUserCollection(col *mongo.Collection) {
 	log.Debugf("transactions collection initialized")
 }
 
-func (db *MongoDbBridge) GetUser(address common.Address) (user *types.User, err error) {
+func (db *SharedMongoDbBridge) GetUser(address common.Address) (user *types.User, err error) {
 	col := db.client.Database(db.dbName).Collection(types.CoUsers)
 
 	filter := bson.D{{ Key: fieldId, Value: address.String() }}
@@ -46,7 +46,7 @@ func (db *MongoDbBridge) GetUser(address common.Address) (user *types.User, err 
 	return &row, err
 }
 
-func (db *MongoDbBridge) UpsertUser(User *types.User) error {
+func (db *SharedMongoDbBridge) UpsertUser(User *types.User) error {
 	if User == nil {
 		return fmt.Errorf("no value to store")
 	}

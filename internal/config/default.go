@@ -40,11 +40,17 @@ const (
 	// defIpfsUrl holds default IPFS connection string
 	defIpfsUrl = "localhost:5001"
 
-	// defMongoUrl holds default MongoDB connection string
+	// defMongoUrl holds default MongoDB connection string for local database
 	defMongoUrl = "mongodb://localhost:27017"
 
-	// defMongoDatabase holds the default name of the API persistent database
+	// defMongoDatabase holds the default name of the MongoDB local database
 	defMongoDatabase = "artion"
+
+	// defSharedMongoUrl holds default MongoDB connection string for shared/replicated database
+	defSharedMongoUrl = "mongodb://localhost:27017"
+
+	// defSharedMongoDatabase holds the default name of the shared/replicated MongoDB database
+	defSharedMongoDatabase = "artionshared"
 
 	// defCacheEvictionTime holds default time for in-memory eviction periods
 	defCacheEvictionTime = 15 * time.Minute
@@ -71,6 +77,8 @@ func applyDefaults(cfg *viper.Viper) {
 	cfg.SetDefault(keyIpfsUrl, defIpfsUrl)
 	cfg.SetDefault(keyMongoUrl, defMongoUrl)
 	cfg.SetDefault(keyMongoDatabase, defMongoDatabase)
+	cfg.SetDefault(keySharedMongoUrl, defSharedMongoUrl)
+	cfg.SetDefault(keySharedMongoDatabase, defSharedMongoDatabase)
 	cfg.SetDefault(keyApiStateOrigin, defApiStateOrigin)
 
 	// in-memory cache
