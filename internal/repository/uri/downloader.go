@@ -6,7 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"github.com/ethereum/go-ethereum/log"
+	"fmt"
 	ipfsapi "github.com/ipfs/go-ipfs-api"
 	"io"
 	"net/http"
@@ -44,7 +44,6 @@ func (d *Downloader) GetImage(uri string) (image *types.Image, err error) {
 }
 
 func (d *Downloader) getFromUri(uri string) (data []byte, mimetype string, err error) {
-	log.Debug("Loading url "+ uri)
 	if strings.HasPrefix(uri, "data:") {
 		return d.getFromDataUri(uri)
 	}
@@ -53,6 +52,14 @@ func (d *Downloader) getFromUri(uri string) (data []byte, mimetype string, err e
 	}
 	if strings.HasPrefix(uri, "ipfs://") {
 		uri = "/ipfs/" + uri[7:]
+		return d.getFromIpfs(uri)
+	}
+	if strings.HasPrefix(uri, "https://gateway.pinata.cloud/ipfs/") {
+		uri = "/ipfs/" + uri[34:]
+		return d.getFromIpfs(uri)
+	}
+	if strings.HasPrefix(uri, "https://ipfs.io/ipfs/") {
+		uri = "/ipfs/" + uri[21:]
 		return d.getFromIpfs(uri)
 	}
 	if strings.HasPrefix(uri, "http://") || strings.HasPrefix(uri, "https://") {
@@ -77,6 +84,9 @@ func (d *Downloader) getFromHttp(uri string) (data []byte, mimetype string, err 
 	resp, err := http.Get(uri)
 	if err != nil {
 		return nil, "", err
+	}
+	if resp.StatusCode != 200 {
+		return nil, "", fmt.Errorf("HTTP server returned %s", resp.Status)
 	}
 	reader := resp.Body
 	out, err := io.ReadAll(reader)
