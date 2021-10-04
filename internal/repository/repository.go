@@ -33,7 +33,7 @@ var instanceMux sync.Mutex
 // Proxy is the implementation of the Repository interface
 type Proxy struct {
 	rpc       *rpc.Opera
-	uri        uri.Downloader
+	uri       *uri.Downloader
 	db        *db.MongoDbBridge
 	cache     *cache.MemCache
 	log        logger.Logger

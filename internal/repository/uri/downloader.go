@@ -13,17 +13,17 @@ import (
 	"strings"
 )
 
-type downloader struct {
+type Downloader struct {
 	ipfsShell *ipfsapi.Shell
 }
 
-func New(cfg *config.Config) Downloader {
-	return &downloader{
+func New(cfg *config.Config) *Downloader {
+	return &Downloader{
 		ipfsShell: ipfsapi.NewShell(cfg.Ipfs.Url),
 	}
 }
 
-func (d *downloader) GetJsonMetadata(uri string) (*types.JsonMetadata, error) {
+func (d *Downloader) GetJsonMetadata(uri string) (*types.JsonMetadata, error) {
 	data, _, err := d.getFromUri(uri)
 	if err != nil {
 		return nil, err
@@ -31,7 +31,7 @@ func (d *downloader) GetJsonMetadata(uri string) (*types.JsonMetadata, error) {
 	return d.decodeJson(data)
 }
 
-func (d *downloader) GetImage(uri string) (image *types.Image, err error) {
+func (d *Downloader) GetImage(uri string) (image *types.Image, err error) {
 	data, mimetype, err := d.getFromUri(uri)
 	if err == nil && mimetype == "" {
 		mimetype = d.mimetypeFromImageUri(uri)
@@ -43,7 +43,7 @@ func (d *downloader) GetImage(uri string) (image *types.Image, err error) {
 	return &out, nil
 }
 
-func (d *downloader) getFromUri(uri string) (data []byte, mimetype string, err error) {
+func (d *Downloader) getFromUri(uri string) (data []byte, mimetype string, err error) {
 	log.Debug("Loading url "+ uri)
 	if strings.HasPrefix(uri, "data:") {
 		return d.getFromDataUri(uri)
@@ -61,7 +61,7 @@ func (d *downloader) getFromUri(uri string) (data []byte, mimetype string, err e
 	return nil, "", errors.New("Unexpected URI scheme for " + uri)
 }
 
-func (d *downloader) getFromIpfs(uri string) (data []byte, mimetype string, err error) {
+func (d *Downloader) getFromIpfs(uri string) (data []byte, mimetype string, err error) {
 	reader,err := d.ipfsShell.Cat(uri)
 	if err != nil {
 		return nil, "", err
@@ -73,7 +73,7 @@ func (d *downloader) getFromIpfs(uri string) (data []byte, mimetype string, err 
 	return out, "", reader.Close()
 }
 
-func (d *downloader) getFromHttp(uri string) (data []byte, mimetype string, err error) {
+func (d *Downloader) getFromHttp(uri string) (data []byte, mimetype string, err error) {
 	resp, err := http.Get(uri)
 	if err != nil {
 		return nil, "", err
@@ -88,7 +88,7 @@ func (d *downloader) getFromHttp(uri string) (data []byte, mimetype string, err 
 	return out, mimetype, reader.Close()
 }
 
-func (d *downloader) getFromDataUri(uri string) (data []byte, mimetype string, err error) {
+func (d *Downloader) getFromDataUri(uri string) (data []byte, mimetype string, err error) {
 	splitted := strings.Split(uri, ",")
 	if len(splitted) < 2 {
 		return nil, "", errors.New("Invalid data uri - no comma: " + uri)
@@ -102,7 +102,7 @@ func (d *downloader) getFromDataUri(uri string) (data []byte, mimetype string, e
 	return out, mimetype, nil
 }
 
-func (d *downloader) decodeJson(data []byte) (*types.JsonMetadata, error) {
+func (d *Downloader) decodeJson(data []byte) (*types.JsonMetadata, error) {
 	var out types.JsonMetadata
 	err := json.Unmarshal(data, &out)
 	if err != nil {
@@ -111,7 +111,7 @@ func (d *downloader) decodeJson(data []byte) (*types.JsonMetadata, error) {
 	return &out, nil
 }
 
-func (d *downloader) mimetypeFromImageUri(uri string) (mimetype string) {
+func (d *Downloader) mimetypeFromImageUri(uri string) (mimetype string) {
 	uri = strings.ToLower(uri)
 	if strings.HasSuffix(uri, ".svg") {
 		return "image/svg+xml"
