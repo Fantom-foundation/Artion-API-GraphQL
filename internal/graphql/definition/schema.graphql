@@ -9,9 +9,9 @@ type Query {
     # version represents the API server version responding to your requests.
     version: String!
 
-    nftCollection(address: Address!): NFTCollection!
+    collection(address: Address!): Collection!
 
-    nftCollections(first: Int, after: Cursor, last: Int, before: Cursor): NFTCollectionConnection!
+    collections(first: Int, after: Cursor, last: Int, before: Cursor): CollectionConnection!
 
     token(address: Address!, tokenId: BigInt!): Token!
 

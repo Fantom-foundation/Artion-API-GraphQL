@@ -1,8 +1,8 @@
 package types
 
-type NFTCollectionList struct {
-	// List keeps the actual NFTCollection.
-	Collection []*NFTCollection
+type CollectionList struct {
+	// List keeps the actual Collection.
+	Collection []*Collection
 
 	// TotalCount indicates total number of results.
 	TotalCount int64
@@ -14,7 +14,7 @@ type NFTCollectionList struct {
 	HasNext bool
 }
 
-func (c *NFTCollectionList) Reverse() {
+func (c *CollectionList) Reverse() {
 	// anything to swap at all?
 	if c.Collection == nil || len(c.Collection) < 2 {
 		return

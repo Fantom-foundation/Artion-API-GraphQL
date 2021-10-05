@@ -110,19 +110,19 @@ func (rs *RootResolver) Version() string {
 	return build.Short(cfg)
 }
 
-func (rs *RootResolver) NftCollection(args struct {
+func (rs *RootResolver) Collection(args struct {
 	Address common.Address
-}) (*NftCollection, error) {
-	Collection := NftCollection{Address: args.Address}
+}) (*Collection, error) {
+	Collection := Collection{Address: args.Address}
 	return &Collection, nil
 }
 
-func (rs *RootResolver) NftCollections(args struct{ PaginationInput }) (con *NftCollectionConnection, err error) {
+func (rs *RootResolver) Collections(args struct{ PaginationInput }) (con *CollectionConnection, err error) {
 	cursor, count, backward, err := args.ToRepositoryInput()
 	if err != nil {
 		return nil, err
 	}
-	list, err := repository.R().ListNFTCollections(cursor, count, backward)
+	list, err := repository.R().ListCollections(cursor, count, backward)
 	if err != nil {
 		return nil, err
 	}

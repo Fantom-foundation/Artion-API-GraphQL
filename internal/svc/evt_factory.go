@@ -22,7 +22,7 @@ func newNFTContract(evt *eth.Log, _ *logObserver) {
 	// make NFT address
 	ca := common.Address{}
 	ca.SetBytes(evt.Data[32:])
-	nft := types.NFTCollection{
+	nft := types.Collection{
 		Address:  ca,
 		IsActive: true,
 	}
@@ -35,7 +35,7 @@ func newNFTContract(evt *eth.Log, _ *logObserver) {
 	}
 
 	// add the collection to persistent storage
-	if err := repository.R().AddNFTCollection(&nft); err != nil {
+	if err := repository.R().AddCollection(&nft); err != nil {
 		log.Criticalf("can not store NFT collection %s; %s", nft.Address.String(), err.Error())
 		return
 	}
@@ -46,7 +46,7 @@ func newNFTContract(evt *eth.Log, _ *logObserver) {
 }
 
 // extendNFTCollectionDetails collects details of an NFT contract.
-func extendNFTCollectionDetails(nft *types.NFTCollection, evt *eth.Log) (err error) {
+func extendNFTCollectionDetails(nft *types.Collection, evt *eth.Log) (err error) {
 	// NFT contract type is derived from the factory contract type
 	nft.Type, err = Mgr().logObserver.contractTypeByFactory(&evt.Address)
 	if err != nil {
@@ -78,7 +78,7 @@ func extendNFTCollectionDetails(nft *types.NFTCollection, evt *eth.Log) (err err
 }
 
 // addObservedContract adds new observed contract into repository and log observer.
-func addObservedContract(nft *types.NFTCollection, evt *eth.Log) {
+func addObservedContract(nft *types.Collection, evt *eth.Log) {
 	ca := common.Address{}
 	ca.SetBytes(evt.Data[:32])
 

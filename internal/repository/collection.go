@@ -16,15 +16,15 @@ func (p *Proxy) CollectionSymbol(adr *common.Address) (string, error) {
 	return p.rpc.CollectionSymbol(adr)
 }
 
-// AddNFTCollection adds the specified NFT collection contract record into persistent storage.
-func (p *Proxy) AddNFTCollection(nft *types.NFTCollection) error {
-	return p.db.AddNFTCollection(nft)
+// AddCollection adds the specified NFT collection contract record into persistent storage.
+func (p *Proxy) AddCollection(nft *types.Collection) error {
+	return p.db.AddCollection(nft)
 }
 
-func (p *Proxy) GetNFTCollection(address common.Address) (*types.NFTCollection, error) {
-	return p.db.GetNFTCollection(address)
+func (p *Proxy) GetCollection(address common.Address) (*types.Collection, error) {
+	return p.db.GetCollection(address)
 }
 
-func (p *Proxy) ListNFTCollections(cursor types.Cursor, count int, backward bool) (*types.NFTCollectionList, error) {
-	return p.db.ListNFTCollections(cursor, count, backward)
+func (p *Proxy) ListCollections(cursor types.Cursor, count int, backward bool) (*types.CollectionList, error) {
+	return p.db.ListCollections(cursor, count, backward)
 }

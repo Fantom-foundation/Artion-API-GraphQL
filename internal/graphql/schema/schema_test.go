@@ -41,7 +41,8 @@ func TestSchemaContent(t *testing.T) {
 	// modules definition to exist based on modules
 	// we check only one type for each module to confirm the module does exist
 	modules := map[string]string{
-		"NFTCollection": "NFTCollection related types definition must exist",
+		"Collection": "Collection related types definition must exist",
+		"Token": "Token related types definition must exist",
 	}
 
 	// create gΩ instance

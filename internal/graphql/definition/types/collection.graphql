@@ -1,5 +1,5 @@
 # Collection represents tokens contract.
-type NFTCollection {
+type Collection {
     # Address of the token contract
     address: Address!
 
@@ -22,14 +22,14 @@ type NFTCollection {
     tokens(first: Int, after: Cursor, last: Int, before: Cursor): TokenConnection!
 }
 
-type NFTCollectionEdge {
+type CollectionEdge {
     cursor: Cursor!
-    node: NFTCollection!
+    node: Collection!
 }
 
-type NFTCollectionConnection {
+type CollectionConnection {
     # Edges contains provided edges of the sequential list.
-    edges: [NFTCollectionEdge!]!
+    edges: [CollectionEdge!]!
 
     # TotalCount is the total amount of items in the list.
     totalCount: BigInt!
