@@ -32,6 +32,7 @@ const (
 
 	// IPFS node connection related options
 	keyIpfsUrl = "ipfs.url"
+	keySkipHttpGateways = "ipfs.skip_http_gateways"
 
 	// off-chain database related options
 	keyMongoUrl      = "db.url"

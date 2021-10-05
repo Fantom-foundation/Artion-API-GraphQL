@@ -40,6 +40,9 @@ const (
 	// defIpfsUrl holds default IPFS connection string
 	defIpfsUrl = "localhost:5001"
 
+	// defSkipHttpGateways tells whether to skip known HTTP-to-IPFS gateways
+	defSkipHttpGateways = true
+
 	// defMongoUrl holds default MongoDB connection string for local database
 	defMongoUrl = "mongodb://localhost:27017"
 
@@ -75,6 +78,7 @@ func applyDefaults(cfg *viper.Viper) {
 	cfg.SetDefault(keyLoggingFormat, defLoggingFormat)
 	cfg.SetDefault(keyLachesisUrl, defLachesisUrl)
 	cfg.SetDefault(keyIpfsUrl, defIpfsUrl)
+	cfg.SetDefault(keySkipHttpGateways, defSkipHttpGateways)
 	cfg.SetDefault(keyMongoUrl, defMongoUrl)
 	cfg.SetDefault(keyMongoDatabase, defMongoDatabase)
 	cfg.SetDefault(keySharedMongoUrl, defSharedMongoUrl)

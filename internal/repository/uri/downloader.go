@@ -1,3 +1,5 @@
+// Package uri provides tools for downloading data from URI - especially
+// NFT tokens JSON Metadata and related images using IPFS or HTTP.
 package uri
 
 import (
@@ -19,16 +21,20 @@ const ipfsRequestTimeout = 10 * time.Second
 
 type Downloader struct {
 	ipfsShell *ipfsapi.Shell
+	skipHttpGateways bool
 }
 
+// New provides new Downloader instance.
 func New(cfg *config.Config) *Downloader {
 	d := &Downloader{
 		ipfsShell: ipfsapi.NewShell(cfg.Ipfs.Url),
+		skipHttpGateways: cfg.Ipfs.SkipHttpGateways,
 	}
 	d.ipfsShell.SetTimeout(ipfsRequestTimeout)
 	return d
 }
 
+// GetJsonMetadata download and parse NFT token Metadata JSON from given URI
 func (d *Downloader) GetJsonMetadata(uri string) (*types.JsonMetadata, error) {
 	data, _, err := d.getFromUri(uri)
 	if err != nil {
@@ -41,6 +47,7 @@ func (d *Downloader) GetJsonMetadata(uri string) (*types.JsonMetadata, error) {
 	return jsonMeta, nil
 }
 
+// GetImage downloads image from given URI and detect its mimetype
 func (d *Downloader) GetImage(uri string) (image *types.Image, err error) {
 	data, mimetype, err := d.getFromUri(uri)
 	if err != nil {
@@ -56,6 +63,7 @@ func (d *Downloader) GetImage(uri string) (image *types.Image, err error) {
 	return &out, nil
 }
 
+// getFromUri resolves the URI and download file from the URI using appropriate protocol
 func (d *Downloader) getFromUri(uri string) (data []byte, mimetype string, err error) {
 	if strings.HasPrefix(uri, "data:") {
 		return d.getFromDataUri(uri)
@@ -67,13 +75,15 @@ func (d *Downloader) getFromUri(uri string) (data []byte, mimetype string, err e
 		uri = "/ipfs/" + uri[7:]
 		return d.getFromIpfs(uri)
 	}
-	if strings.HasPrefix(uri, "https://gateway.pinata.cloud/ipfs/") {
-		uri = "/ipfs/" + uri[34:]
-		return d.getFromIpfs(uri)
-	}
-	if strings.HasPrefix(uri, "https://ipfs.io/ipfs/") {
-		uri = "/ipfs/" + uri[21:]
-		return d.getFromIpfs(uri)
+	if d.skipHttpGateways {
+		if strings.HasPrefix(uri, "https://gateway.pinata.cloud/ipfs/") {
+			uri = "/ipfs/" + uri[34:]
+			return d.getFromIpfs(uri)
+		}
+		if strings.HasPrefix(uri, "https://ipfs.io/ipfs/") {
+			uri = "/ipfs/" + uri[21:]
+			return d.getFromIpfs(uri)
+		}
 	}
 	if strings.HasPrefix(uri, "http://") || strings.HasPrefix(uri, "https://") {
 		return d.getFromHttp(uri)
@@ -81,6 +91,7 @@ func (d *Downloader) getFromUri(uri string) (data []byte, mimetype string, err e
 	return nil, "", errors.New("Unexpected URI scheme for " + uri)
 }
 
+// getFromIpfs downloads the file from IPFS (URI is expected in "/ipfs/{CID}" form).
 func (d *Downloader) getFromIpfs(uri string) (data []byte, mimetype string, err error) {
 	reader, err := d.ipfsShell.Cat(uri)
 	if err != nil {
@@ -93,6 +104,7 @@ func (d *Downloader) getFromIpfs(uri string) (data []byte, mimetype string, err 
 	return out, "", reader.Close()
 }
 
+// getFromHttp downloads the file from HTTP.
 func (d *Downloader) getFromHttp(uri string) (data []byte, mimetype string, err error) {
 	resp, err := http.Get(uri)
 	if err != nil {
@@ -111,6 +123,7 @@ func (d *Downloader) getFromHttp(uri string) (data []byte, mimetype string, err 
 	return out, mimetype, reader.Close()
 }
 
+// getFromDataUri obtains the file encoded in "data:" URI.
 func (d *Downloader) getFromDataUri(uri string) (data []byte, mimetype string, err error) {
 	splitted := strings.Split(uri, ",")
 	if len(splitted) < 2 {
@@ -125,6 +138,7 @@ func (d *Downloader) getFromDataUri(uri string) (data []byte, mimetype string, e
 	return out, mimetype, nil
 }
 
+// decodeJson parses the NFT token Metadata JSON.
 func (d *Downloader) decodeJson(data []byte) (*types.JsonMetadata, error) {
 	var out types.JsonMetadata
 	err := json.Unmarshal(data, &out)
@@ -134,6 +148,8 @@ func (d *Downloader) decodeJson(data []byte) (*types.JsonMetadata, error) {
 	return &out, nil
 }
 
+// mimetypeFromImageUri tries to guess the image mime-type from extension in URI.
+// To be used when the protocol (like IPFS) does not provide mime-type info.
 func (d *Downloader) mimetypeFromImageUri(uri string) (mimetype string) {
 	uri = strings.ToLower(uri)
 	if strings.HasSuffix(uri, ".svg") {
