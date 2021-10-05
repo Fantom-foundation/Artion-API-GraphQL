@@ -136,8 +136,8 @@ func (bs *blkScanner) run() {
 		}
 
 		bs.scanNext()
-		bs.checkTarget()
 		bs.checkIdle()
+		bs.checkTarget()
 	}
 }
 
@@ -174,7 +174,7 @@ func (bs *blkScanner) checkTarget() {
 		diff := bs.target - bs.current
 		if diff >= 0 && diff < blkScannerHysteresis {
 			bs.state = blkIsIdling
-			log.Noticef("scanner target reached")
+			log.Noticef("scanner target reached at #%d of #%d with %d diff", bs.current, bs.target, diff)
 
 			select {
 			case bs.outStateChange <- bs.state:
@@ -194,7 +194,7 @@ func (bs *blkScanner) checkIdle() {
 	diff := bs.target - bs.current
 	if diff > blkScannerHysteresis {
 		bs.state = blkIsScanning
-		log.Noticef("scanner lost head")
+		log.Noticef("scanner lost head at #%d of #%d with %d diff", bs.current, bs.target, diff)
 
 		select {
 		case bs.outStateChange <- bs.state:

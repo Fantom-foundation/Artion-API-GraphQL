@@ -65,6 +65,7 @@ func (mu *nftMetadataUpdater) run() {
 	for {
 		select {
 		case <-mu.sigStop:
+			mu.sigStop <- true
 			return
 		case tok, ok := <-mu.inTokens:
 			if !ok {
@@ -89,14 +90,19 @@ func (mu *nftMetadataUpdater) worker() {
 
 	for {
 		// pull next token
-		tok, ok := <-mu.workQueue
-		if !ok {
+		select {
+		case <-mu.sigStop:
+			mu.sigStop <- true
 			return
-		}
+		case tok, ok := <-mu.workQueue:
+			if !ok {
+				return
+			}
 
-		// process the token
-		if err := mu.update(tok); err != nil {
-			log.Errorf("NFT update failed; %s", err.Error())
+			// process the token
+			if err := mu.update(tok); err != nil {
+				log.Errorf("NFT update failed; %s", err.Error())
+			}
 		}
 	}
 }
