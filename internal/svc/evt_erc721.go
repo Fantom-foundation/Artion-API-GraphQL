@@ -78,9 +78,9 @@ func erc721TokenTransfer(evt *eth.Log, _ *logObserver) {
 
 	// ERC-721 tokens don't have quantity; the amount is always 1
 	// we can just clear previous owner here by setting qty to zero
-	if err := repo.StoreOwner(&types.NFTOwner{
+	if err := repo.StoreOwnership(&types.Ownership{
 		Contract: evt.Address,
-		TokenID:  tokenID,
+		TokenId:  tokenID,
 		Owner:    from,
 		Qty:      hexutil.Big{},
 	}); err != nil {
@@ -89,9 +89,9 @@ func erc721TokenTransfer(evt *eth.Log, _ *logObserver) {
 	}
 
 	// now we can add the new owner
-	if err := repo.StoreOwner(&types.NFTOwner{
+	if err := repo.StoreOwnership(&types.Ownership{
 		Contract: evt.Address,
-		TokenID:  tokenID,
+		TokenId:  tokenID,
 		Owner:    to,
 		Qty:      hexutil.Big(*new(big.Int).SetUint64(1)),
 	}); err != nil {

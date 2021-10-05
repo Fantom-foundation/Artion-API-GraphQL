@@ -1,0 +1,24 @@
+# Ownership represents relationship between owner account and owned NFT token.
+type Ownership {
+    contract: Address!
+    tokenId: BigInt!
+    owner: Address!
+    qty: BigInt!
+    updated: Time!
+}
+
+type OwnershipEdge {
+    cursor: Cursor!
+    node: Ownership!
+}
+
+type OwnershipConnection {
+    # Edges contains provided edges of the sequential list.
+    edges: [OwnershipEdge!]!
+
+    # TotalCount is the total amount of items in the list.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of the list.
+    pageInfo: PageInfo!
+}

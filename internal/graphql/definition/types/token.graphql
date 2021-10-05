@@ -18,6 +18,9 @@ type Token {
     # URL of the token image on the proxy
     imageProxy: String
 
+    # List owners of the token and their token balances
+    ownerships(first: Int, after: Cursor, last: Int, before: Cursor): OwnershipConnection!
+
     # Events on given token
     events(first: Int, after: Cursor, last: Int, before: Cursor): TokenEventConnection!
 

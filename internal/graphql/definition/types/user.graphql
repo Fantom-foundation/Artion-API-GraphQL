@@ -17,6 +17,9 @@ type User {
 
     # URL of the user avatar on the proxy
     avatarProxy: String
+
+    # List owned tokens and their amount
+    ownerships(first: Int, after: Cursor, last: Int, before: Cursor): OwnershipConnection!
 }
 
 # User represents user account/profile.

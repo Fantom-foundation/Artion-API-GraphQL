@@ -48,6 +48,18 @@ func (user User) AvatarProxy() (*string, error) {
 	return &url, nil
 }
 
+func (user User) Ownerships(args struct{ PaginationInput }) (con *OwnershipConnection, err error) {
+	cursor, count, backward, err := args.ToRepositoryInput()
+	if err != nil {
+		return nil, err
+	}
+	list, err := repository.R().ListOwnerships(nil, nil, &user.Address, cursor, count, backward)
+	if err != nil {
+		return nil, err
+	}
+	return NewOwnershipConnection(list)
+}
+
 func (rs *RootResolver) User(args struct{ Address common.Address }) (user User, err error) {
 	dbUser, err := repository.R().GetUser(args.Address)
 	if err != nil {

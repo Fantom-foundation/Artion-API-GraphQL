@@ -103,6 +103,18 @@ func (t Token) ImageProxy() (*string, error) {
 	return &url, nil
 }
 
+func (t Token) Ownerships(args struct{ PaginationInput }) (con *OwnershipConnection, err error) {
+	cursor, count, backward, err := args.ToRepositoryInput()
+	if err != nil {
+		return nil, err
+	}
+	list, err := repository.R().ListOwnerships(&t.Address, &t.TokenId, nil, cursor, count, backward)
+	if err != nil {
+		return nil, err
+	}
+	return NewOwnershipConnection(list)
+}
+
 func (t Token) Events(args struct{ PaginationInput }) (con *TokenEventConnection, err error) {
 	cursor, count, backward, err := args.ToRepositoryInput()
 	if err != nil {
