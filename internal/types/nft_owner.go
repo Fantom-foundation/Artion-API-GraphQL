@@ -18,6 +18,7 @@ type NFTOwner struct {
 }
 
 // ID generates unique identifier for the NFT owner record.
+// Collision approx for p(n)=1e-12: n = sqrt(2 x 2^96 x 2^-39) = 536.870.912 documents
 func (no *NFTOwner) ID() primitive.ObjectID {
 	hash := sha256.New()
 	hash.Write(no.Contract.Bytes())
