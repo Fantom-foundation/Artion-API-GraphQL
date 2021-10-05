@@ -80,6 +80,7 @@ func (mw *nftMetadataWorker) update(tok *types.Token) error {
 	}
 
 	// get the metadata
+	log.Debugf("loading metadata for %s / #%d", tok.Nft.String(), tok.TokenId.ToInt().Uint64())
 	md, err := repo.GetTokenJsonMetadata(tok.Uri)
 	if err != nil {
 		log.Errorf("NFT metadata failed for token %d on contract %s; %s", tok.TokenId.String(), tok.Nft.String(), err.Error())

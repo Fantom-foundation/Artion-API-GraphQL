@@ -65,6 +65,7 @@ func (mu *nftMetadataUpdater) run() {
 				return
 			}
 
+			log.Debugf("received token %s / #%d for processing", tok.Nft.String(), tok.TokenId.ToInt().Uint64())
 			select {
 			case <-mu.sigStop:
 				return

@@ -11,16 +11,22 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 )
+
+// ipfsRequestTimeout represents the timeout applied to IPFS requests.
+const ipfsRequestTimeout = 10 * time.Second
 
 type Downloader struct {
 	ipfsShell *ipfsapi.Shell
 }
 
 func New(cfg *config.Config) *Downloader {
-	return &Downloader{
+	d := &Downloader{
 		ipfsShell: ipfsapi.NewShell(cfg.Ipfs.Url),
 	}
+	d.ipfsShell.SetTimeout(ipfsRequestTimeout)
+	return d
 }
 
 func (d *Downloader) GetJsonMetadata(uri string) (*types.JsonMetadata, error) {
@@ -44,7 +50,7 @@ func (d *Downloader) GetImage(uri string) (image *types.Image, err error) {
 		mimetype = d.mimetypeFromImageUri(uri)
 	}
 	out := types.Image{
-		Data: data,
+		Data:     data,
 		Mimetype: mimetype,
 	}
 	return &out, nil
@@ -76,7 +82,7 @@ func (d *Downloader) getFromUri(uri string) (data []byte, mimetype string, err e
 }
 
 func (d *Downloader) getFromIpfs(uri string) (data []byte, mimetype string, err error) {
-	reader,err := d.ipfsShell.Cat(uri)
+	reader, err := d.ipfsShell.Cat(uri)
 	if err != nil {
 		return nil, "", err
 	}
