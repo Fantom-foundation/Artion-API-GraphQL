@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"math/big"
+	"time"
 )
 
 const (
@@ -47,10 +48,14 @@ func (db *MongoDbBridge) StoreToken(token *types.Token) error {
 
 	// get the collection
 	col := db.client.Database(db.dbName).Collection(coTokens)
+	ctx, cancel := context.WithTimeout(context.Background(), 10 * time.Second)
+	defer func() {
+		cancel()
+	}()
 
 	// try to do the insert
 	rs, err := col.UpdateOne(
-		context.Background(),
+		ctx,
 		bson.D{{Key: fieldId, Value: types.TokenIdFromAddress(&token.Nft, (*big.Int)(&token.TokenId))}},
 		bson.D{{Key: "$set", Value: token}},
 		options.Update().SetUpsert(true),

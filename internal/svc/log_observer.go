@@ -64,6 +64,8 @@ func newLogObserver(mgr *Manager) *logObserver {
 
 			/* erc721::event Minted(uint256 tokenId, address beneficiary, string tokenUri, address minter) */
 			common.HexToHash("0x997115af5924f5e38964c6d65c804d4cb85129b65e62eb20a8ca6329dbe57e18"): erc721TokenMinted,
+
+
 		},
 	}
 }
@@ -118,7 +120,7 @@ func (lo *logObserver) run() {
 func (lo *logObserver) process(evt *eth.Log) {
 	// is this an event from an observed contract?
 	if !lo.isObservedContract(evt) {
-		log.Infof("event #%d / %d on foreign contract %s skipped", evt.BlockNumber, evt.Index, evt.Address.String())
+		log.Debugf("event #%d / %d on foreign contract %s skipped", evt.BlockNumber, evt.Index, evt.Address.String())
 		return
 	}
 
