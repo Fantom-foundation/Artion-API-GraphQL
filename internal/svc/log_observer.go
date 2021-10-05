@@ -65,8 +65,9 @@ func newLogObserver(mgr *Manager) *logObserver {
 			/* erc721::event Minted(uint256 tokenId, address beneficiary, string tokenUri, address minter) */
 			common.HexToHash("0x997115af5924f5e38964c6d65c804d4cb85129b65e62eb20a8ca6329dbe57e18"): erc721TokenMinted,
 
+			// TODO Disabled: uncommenting stops calling newNFTContract from unknown reason
 			/* erc721::event Transfer(address indexed from, address indexed to, uint256 indexed tokenId) */
-			common.HexToHash("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"): erc721TokenTransfer,
+			//common.HexToHash("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"): erc721TokenTransfer,
 		},
 	}
 }
