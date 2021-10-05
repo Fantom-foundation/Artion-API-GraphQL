@@ -3,6 +3,7 @@ package resolvers
 import (
 	"artion-api-graphql/internal/repository"
 	"artion-api-graphql/internal/types"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
@@ -13,7 +14,6 @@ type Token struct {
 	Address common.Address
 	TokenId hexutil.Big
 	dbToken *types.Token // data for token loaded from Mongo
-	jsonMeta *types.JsonMetadata // data loaded from URI
 }
 
 type TokenEdge struct {
@@ -63,16 +63,9 @@ func (t *Token) load() error {
 	if t.dbToken == nil {
 		tok, err := repository.R().GetToken(&t.Address, &t.TokenId)
 		if err != nil {
-			return err
+			return fmt.Errorf("unable to load token from database; %s", err)
 		}
 		t.dbToken = tok
-	}
-	if t.jsonMeta == nil {
-		jsonMeta, err := repository.R().GetTokenJsonMetadata(t.dbToken.Uri)
-		if err != nil {
-			return err
-		}
-		t.jsonMeta = jsonMeta
 	}
 	return nil
 }
@@ -82,7 +75,7 @@ func (t Token) Name() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return t.jsonMeta.Name, nil
+	return t.dbToken.Name, nil
 }
 
 func (t Token) Description() (string, error) {
@@ -90,20 +83,20 @@ func (t Token) Description() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return t.jsonMeta.Description, nil
+	return t.dbToken.Description, nil
 }
 
 func (t Token) Image() (*string, error) {
 	err := t.load()
-	if err != nil {
+	if err != nil || t.dbToken.ImageURI == "" {
 		return nil, err
 	}
-	return t.jsonMeta.Image, nil
+	return &t.dbToken.ImageURI, nil
 }
 
 func (t Token) ImageProxy() (*string, error) {
 	err := t.load()
-	if err != nil || t.jsonMeta.Image == nil {
+	if err != nil || t.dbToken.ImageURI == "" {
 		return nil, err
 	}
 	url := "/token-image/" + t.Address.String() + "/" + t.TokenId.String()

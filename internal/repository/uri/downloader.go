@@ -26,13 +26,20 @@ func New(cfg *config.Config) *Downloader {
 func (d *Downloader) GetJsonMetadata(uri string) (*types.JsonMetadata, error) {
 	data, _, err := d.getFromUri(uri)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to download json; %s", err)
 	}
-	return d.decodeJson(data)
+	jsonMeta, err := d.decodeJson(data)
+	if err != nil {
+		return nil, fmt.Errorf("unable to decode json; %s", err)
+	}
+	return jsonMeta, nil
 }
 
 func (d *Downloader) GetImage(uri string) (image *types.Image, err error) {
 	data, mimetype, err := d.getFromUri(uri)
+	if err != nil {
+		return nil, fmt.Errorf("unable to download image; %s", err)
+	}
 	if err == nil && mimetype == "" {
 		mimetype = d.mimetypeFromImageUri(uri)
 	}
