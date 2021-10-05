@@ -171,7 +171,7 @@ func (bs *blkScanner) checkTarget() {
 	// reached target? make sure we are on target; switch state if so
 	if bs.state == blkIsScanning && bs.current > bs.target {
 		bs.target = bs.top()
-		diff := bs.target - bs.current
+		diff := int64(bs.target) - int64(bs.current)
 		if diff >= 0 && diff < blkScannerHysteresis {
 			bs.state = blkIsIdling
 			log.Noticef("scanner target reached at #%d of #%d with %d diff", bs.current, bs.target, diff)
@@ -191,7 +191,7 @@ func (bs *blkScanner) checkIdle() {
 		return
 	}
 
-	diff := bs.target - bs.current
+	diff := int64(bs.target) - int64(bs.current)
 	if diff > blkScannerHysteresis {
 		bs.state = blkIsScanning
 		log.Noticef("scanner lost head at #%d of #%d with %d diff", bs.current, bs.target, diff)
