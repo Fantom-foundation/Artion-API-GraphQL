@@ -6,7 +6,7 @@ import (
 )
 
 // nftMetadataUpdaterQueueCapacity is the capacity of NFT metadata updater queue.
-const nftMetadataUpdaterQueueCapacity = 10000
+const nftMetadataUpdaterQueueCapacity = 25000
 
 // nftMetadataUpdater represents a service responsible for periodic update of NFT token metadata
 // from remote URI/IFS in a local persistent storage. The metadata download is time

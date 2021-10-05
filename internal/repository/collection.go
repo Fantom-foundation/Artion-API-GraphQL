@@ -1,3 +1,4 @@
+// Package repository implements persistent data access and processing.
 package repository
 
 import (
