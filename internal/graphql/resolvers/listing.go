@@ -10,8 +10,8 @@ type Listing types.Listing
 
 func (l Listing) Token() (Token, error) {
 	return Token{
-		Address: l.Nft,
-		TokenId: l.TokenId,
+		Contract: l.Contract,
+		TokenId:  l.TokenId,
 	}, nil
 }
 

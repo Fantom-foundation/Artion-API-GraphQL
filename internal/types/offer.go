@@ -10,7 +10,7 @@ import (
 type Offer struct {
 	Id           []byte         `bson:"_id"`
 	Creator      common.Address `bson:"creator"`
-	Nft          common.Address `bson:"nft"`
+	Contract     common.Address `bson:"nft"`
 	TokenId      hexutil.Big    `bson:"tokenId"`
 	Quantity     hexutil.Big    `bson:"quantity"`
 	PayToken     common.Address `bson:"payToken"`
@@ -23,7 +23,7 @@ type Offer struct {
 // One creator can have only one offer for one token.
 func (o *Offer) GenerateId() {
 	hash := sha256.New()
-	hash.Write(o.Nft.Bytes())
+	hash.Write(o.Contract.Bytes())
 	hash.Write(o.TokenId.ToInt().Bytes())
 	hash.Write(o.Creator.Bytes())
 	o.Id = hash.Sum(nil)

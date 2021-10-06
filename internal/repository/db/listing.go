@@ -15,8 +15,8 @@ const (
 	// CoListings is the name of database collection.
 	coListings = "listings"
 
-	// FiListingNft is the name of the DB column storing NFT contract address.
-	fiListingNft     = "nft"
+	// fiListingContract is the name of the DB column storing NFT contract address.
+	fiListingContract = "nft"
 
 	// FiListingTokenId represents the name of the DB column storing NFT token ID.
 	fiListingTokenId = "tokenId"
@@ -31,7 +31,7 @@ func (db *MongoDbBridge) initListingCollection(col *mongo.Collection) {
 	ix := make([]mongo.IndexModel, 0)
 
 	// index sender and recipient
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiListingNft, Value: 1}, {Key: fiListingTokenId, Value: 1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiListingContract, Value: 1}, {Key: fiListingTokenId, Value: 1}}})
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiListingOwner, Value: 1}}})
 
 	// create indexes
@@ -71,7 +71,7 @@ func (db *MongoDbBridge) UpdateListing(listing *types.Listing) error {
 
 	filter := bson.D{
 		{ Key: fiListingOwner, Value: listing.Owner.String() },
-		{ Key: fiListingNft, Value: listing.Nft.String() },
+		{ Key: fiListingContract, Value: listing.Contract.String() },
 		{ Key: fiListingTokenId, Value: listing.TokenId.String() },
 	}
 
@@ -82,12 +82,12 @@ func (db *MongoDbBridge) UpdateListing(listing *types.Listing) error {
 	return nil
 }
 
-func (db *MongoDbBridge) RemoveListing(owner common.Address, nft common.Address, tokenId hexutil.Big) error {
+func (db *MongoDbBridge) RemoveListing(owner common.Address, contract common.Address, tokenId hexutil.Big) error {
 	col := db.client.Database(db.dbName).Collection(coListings)
 
 	filter := bson.D{
 		{ Key: fiListingOwner, Value: owner.String() },
-		{ Key: fiListingNft, Value: nft.String() },
+		{ Key: fiListingContract, Value: contract.String() },
 		{ Key: fiListingTokenId, Value: tokenId.String() },
 	}
 
@@ -98,10 +98,10 @@ func (db *MongoDbBridge) RemoveListing(owner common.Address, nft common.Address,
 	return nil
 }
 
-func (db *MongoDbBridge) ListListings(nft *common.Address, tokenId *hexutil.Big, owner *common.Address, cursor types.Cursor, count int, backward bool) (out *types.ListingList, err error) {
+func (db *MongoDbBridge) ListListings(contract *common.Address, tokenId *hexutil.Big, owner *common.Address, cursor types.Cursor, count int, backward bool) (out *types.ListingList, err error) {
 	filter := bson.D{}
-	if nft != nil {
-		filter = append(filter, primitive.E{ Key: fiListingNft, Value: nft.String() })
+	if contract != nil {
+		filter = append(filter, primitive.E{ Key: fiListingContract, Value: contract.String() })
 	}
 	if tokenId != nil {
 		filter = append(filter, primitive.E{ Key: fiListingTokenId, Value: tokenId.String() })

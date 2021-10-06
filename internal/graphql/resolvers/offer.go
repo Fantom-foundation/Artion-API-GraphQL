@@ -10,8 +10,8 @@ type Offer types.Offer
 
 func (o Offer) Token() (Token, error) {
 	return Token{
-		Address: o.Nft,
-		TokenId: o.TokenId,
+		Contract: o.Contract,
+		TokenId:  o.TokenId,
 	}, nil
 }
 

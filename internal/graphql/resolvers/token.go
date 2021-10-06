@@ -11,7 +11,7 @@ import (
 
 // Token object is constructed from query, data from db are loaded on demand into "dbToken" field.
 type Token struct {
-	Address common.Address
+	Contract common.Address
 	TokenId hexutil.Big
 	dbToken *types.Token // data for token loaded from Mongo
 }
@@ -21,7 +21,7 @@ type TokenEdge struct {
 }
 
 func (edge TokenEdge) Cursor() (types.Cursor, error) {
-	return types.CursorFromId(types.TokenIdFromAddress(&edge.Node.Address, (*big.Int)(&edge.Node.TokenId))), nil
+	return types.CursorFromId(types.TokenIdFromAddress(&edge.Node.Contract, (*big.Int)(&edge.Node.TokenId))), nil
 }
 
 type TokenConnection struct {
@@ -36,7 +36,7 @@ func NewTokenConnection(list *types.TokenList) (con *TokenConnection, err error)
 	con.Edges = make([]TokenEdge, len(list.Collection))
 	for i := 0; i < len(list.Collection); i++ {
 		resolverToken := Token{
-			Address: list.Collection[i].Nft,
+			Contract: list.Collection[i].Nft,
 			TokenId: list.Collection[i].TokenId,
 			dbToken: list.Collection[i],
 		}
@@ -61,7 +61,7 @@ func NewTokenConnection(list *types.TokenList) (con *TokenConnection, err error)
 
 func (t *Token) load() error {
 	if t.dbToken == nil {
-		tok, err := repository.R().GetToken(&t.Address, &t.TokenId)
+		tok, err := repository.R().GetToken(&t.Contract, &t.TokenId)
 		if err != nil {
 			return fmt.Errorf("unable to load token from database; %s", err)
 		}
@@ -99,7 +99,7 @@ func (t Token) ImageProxy() (*string, error) {
 	if err != nil || t.dbToken.ImageURI == "" {
 		return nil, err
 	}
-	url := "/token-image/" + t.Address.String() + "/" + t.TokenId.String()
+	url := "/token-image/" + t.Contract.String() + "/" + t.TokenId.String()
 	return &url, nil
 }
 
@@ -108,7 +108,7 @@ func (t Token) Ownerships(args struct{ PaginationInput }) (con *OwnershipConnect
 	if err != nil {
 		return nil, err
 	}
-	list, err := repository.R().ListOwnerships(&t.Address, &t.TokenId, nil, cursor, count, backward)
+	list, err := repository.R().ListOwnerships(&t.Contract, &t.TokenId, nil, cursor, count, backward)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +120,7 @@ func (t Token) Events(args struct{ PaginationInput }) (con *TokenEventConnection
 	if err != nil {
 		return nil, err
 	}
-	list, err := repository.R().ListTokenEvents(&t.Address, &t.TokenId, nil, cursor, count, backward)
+	list, err := repository.R().ListTokenEvents(&t.Contract, &t.TokenId, nil, cursor, count, backward)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +132,7 @@ func (t Token) Listings(args struct{ PaginationInput }) (con *ListingConnection,
 	if err != nil {
 		return nil, err
 	}
-	list, err := repository.R().ListListings(&t.Address, &t.TokenId, nil, cursor, count, backward)
+	list, err := repository.R().ListListings(&t.Contract, &t.TokenId, nil, cursor, count, backward)
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +144,7 @@ func (t Token) Offers(args struct{ PaginationInput }) (con *OfferConnection, err
 	if err != nil {
 		return nil, err
 	}
-	list, err := repository.R().ListOffers(&t.Address, &t.TokenId, nil, cursor, count, backward)
+	list, err := repository.R().ListOffers(&t.Contract, &t.TokenId, nil, cursor, count, backward)
 	if err != nil {
 		return nil, err
 	}

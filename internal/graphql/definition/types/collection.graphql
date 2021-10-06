@@ -1,7 +1,7 @@
 # Collection represents tokens contract.
 type Collection {
     # Address of the token contract
-    address: Address!
+    contract: Address!
 
     # Type of the contract
     type: String!

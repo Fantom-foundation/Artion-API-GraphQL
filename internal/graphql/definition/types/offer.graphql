@@ -1,7 +1,7 @@
 # Offer represents offer to buy given token from any current owner.
 type Offer {
     creator: Address!
-    nft: Address!
+    contract: Address!
     tokenId: BigInt!
     token: Token!
     quantity: BigInt!

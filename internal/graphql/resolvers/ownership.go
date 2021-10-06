@@ -10,8 +10,8 @@ type Ownership types.Ownership
 
 func (o Ownership) Token() (Token, error) {
 	return Token{
-		Address: o.Contract,
-		TokenId: o.TokenId,
+		Contract: o.Contract,
+		TokenId:  o.TokenId,
 	}, nil
 }
 

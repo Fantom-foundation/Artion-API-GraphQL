@@ -1,7 +1,7 @@
 # Listing represents offer for anybody to buy given token from the owner.
 type Listing {
     owner: Address!
-    nft: Address!
+    contract: Address!
     tokenId: BigInt!
     token: Token!
     quantity: BigInt!

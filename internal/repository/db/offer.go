@@ -15,8 +15,8 @@ const (
 	// CoOffers is the name of database collection.
 	coOffers = "offers"
 
-	// FiOfferNft is the name of the DB column of the NFT contract address.
-	fiOfferNft = "nft"
+	// fiOfferContract is the name of the DB column of the NFT contract address.
+	fiOfferContract = "nft"
 
 	// FiOfferTokenId is the name of the DB column of the token ID.
 	fiOfferTokenId = "tokenId"
@@ -31,7 +31,7 @@ func (db *MongoDbBridge) initOfferCollection(col *mongo.Collection) {
 	ix := make([]mongo.IndexModel, 0)
 
 	// index sender and recipient
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiOfferNft, Value: 1}, {Key: fiOfferTokenId, Value: 1}}})
+	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiOfferContract, Value: 1}, {Key: fiOfferTokenId, Value: 1}}})
 	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiOfferCreator, Value: 1}}})
 
 	// create indexes
@@ -71,7 +71,7 @@ func (db *MongoDbBridge) UpdateOffer(Offer *types.Offer) error {
 
 	filter := bson.D{
 		{ Key: fiOfferCreator, Value: Offer.Creator.String() },
-		{ Key: fiOfferNft, Value: Offer.Nft.String() },
+		{ Key: fiOfferContract, Value: Offer.Contract.String() },
 		{ Key: fiOfferTokenId, Value: Offer.TokenId.String() },
 	}
 
@@ -82,12 +82,12 @@ func (db *MongoDbBridge) UpdateOffer(Offer *types.Offer) error {
 	return nil
 }
 
-func (db *MongoDbBridge) RemoveOffer(creator common.Address, nft common.Address, tokenId hexutil.Big) error {
+func (db *MongoDbBridge) RemoveOffer(creator common.Address, contract common.Address, tokenId hexutil.Big) error {
 	col := db.client.Database(db.dbName).Collection(coOffers)
 
 	filter := bson.D{
 		{ Key: fiOfferCreator, Value: creator.String() },
-		{ Key: fiOfferNft, Value: nft.String() },
+		{ Key: fiOfferContract, Value: contract.String() },
 		{ Key: fiOfferTokenId, Value: tokenId.String() },
 	}
 
@@ -98,10 +98,10 @@ func (db *MongoDbBridge) RemoveOffer(creator common.Address, nft common.Address,
 	return nil
 }
 
-func (db *MongoDbBridge) ListOffers(nft *common.Address, tokenId *hexutil.Big, creator *common.Address, cursor types.Cursor, count int, backward bool) (out *types.OfferList, err error) {
+func (db *MongoDbBridge) ListOffers(contract *common.Address, tokenId *hexutil.Big, creator *common.Address, cursor types.Cursor, count int, backward bool) (out *types.OfferList, err error) {
 	filter := bson.D{}
-	if nft != nil {
-		filter = append(filter, primitive.E{Key: fiOfferNft, Value: nft.String() })
+	if contract != nil {
+		filter = append(filter, primitive.E{Key: fiOfferContract, Value: contract.String() })
 	}
 	if tokenId != nil {
 		filter = append(filter, primitive.E{Key: fiOfferTokenId, Value: tokenId.String() })

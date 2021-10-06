@@ -111,9 +111,9 @@ func (rs *RootResolver) Version() string {
 }
 
 func (rs *RootResolver) Collection(args struct {
-	Address common.Address
+	Contract common.Address
 }) (*Collection, error) {
-	Collection := Collection{Address: args.Address}
+	Collection := Collection{Contract: args.Contract}
 	return &Collection, nil
 }
 
@@ -130,10 +130,10 @@ func (rs *RootResolver) Collections(args struct{ PaginationInput }) (con *Collec
 }
 
 func (rs *RootResolver) Token(args struct {
-	Address common.Address
-	TokenId hexutil.Big
+	Contract common.Address
+	TokenId  hexutil.Big
 }) (*Token, error) {
-	token := Token{Address: args.Address, TokenId: args.TokenId}
+	token := Token{Contract: args.Contract, TokenId: args.TokenId}
 	return &token, nil
 }
 

@@ -40,7 +40,7 @@ type TokenEvent struct {
 	EventType     TokenEventType
 
 	// subject of trade
-	Nft          common.Address
+	Contract     common.Address
 	TokenId      hexutil.Big
 	Quantity     *hexutil.Big
 
@@ -83,7 +83,7 @@ func (ev *TokenEvent) MarshalBSON() ([]byte, error) {
 		Id: ev.Id,
 		EventTime: time.Time(ev.EventTime),
 		EventType: int32(ev.EventType),
-		Nft: ev.Nft.String(),
+		Nft: ev.Contract.String(),
 		TokenId: (&ev.TokenId).String(),
 	}
 	if ev.Quantity != nil {
@@ -127,7 +127,7 @@ func (ev *TokenEvent) UnmarshalBSON(data []byte) (err error) {
 	ev.Id = row.Id
 	ev.EventTime = Time(row.EventTime)
 	ev.EventType = TokenEventType(row.EventType)
-	ev.Nft = common.HexToAddress(row.Nft)
+	ev.Contract = common.HexToAddress(row.Nft)
 	ev.TokenId = (hexutil.Big)(*hexutil.MustDecodeBig(row.TokenId))
 	if row.Quantity != nil {
 		quantity := (hexutil.Big)(*hexutil.MustDecodeBig(*row.Quantity))

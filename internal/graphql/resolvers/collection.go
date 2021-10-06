@@ -10,7 +10,7 @@ import (
 
 // Collection object is constructed from query, data from db are loaded on demand into "dbCollection" field.
 type Collection struct {
-	Address      common.Address
+	Contract     common.Address
 	dbCollection *types.Collection // data for collection loaded from Mongo
 }
 
@@ -19,7 +19,7 @@ type CollectionEdge struct {
 }
 
 func (edge CollectionEdge) Cursor() (types.Cursor, error) {
-	return types.CursorFromId(edge.Node.Address.Bytes()), nil
+	return types.CursorFromId(edge.Node.Contract.Bytes()), nil
 }
 
 type CollectionConnection struct {
@@ -34,7 +34,7 @@ func NewCollectionConnection(list *types.CollectionList) (con *CollectionConnect
 	con.Edges = make([]CollectionEdge, len(list.Collection))
 	for i := 0; i < len(list.Collection); i++ {
 		resolverCollection := Collection{
-			Address:      list.Collection[i].Address,
+			Contract:     list.Collection[i].Address,
 			dbCollection: list.Collection[i],
 		}
 		con.Edges[i].Node = &resolverCollection
@@ -59,7 +59,7 @@ func NewCollectionConnection(list *types.CollectionList) (con *CollectionConnect
 
 func (t *Collection) load() error {
 	if t.dbCollection == nil {
-		tok, err := repository.R().GetCollection(t.Address)
+		tok, err := repository.R().GetCollection(t.Contract)
 		if err != nil {
 			return err
 		}
@@ -113,7 +113,7 @@ func (t *Collection) Tokens(args struct{ PaginationInput }) (con *TokenConnectio
 	if err != nil {
 		return nil, err
 	}
-	list, err := repository.R().ListCollectionTokens(t.Address, cursor, count, backward)
+	list, err := repository.R().ListCollectionTokens(t.Contract, cursor, count, backward)
 	if err != nil {
 		return nil, err
 	}

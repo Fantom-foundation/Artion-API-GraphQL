@@ -9,11 +9,11 @@ type Query {
     # version represents the API server version responding to your requests.
     version: String!
 
-    collection(address: Address!): Collection!
+    collection(contract: Address!): Collection!
 
     collections(first: Int, after: Cursor, last: Int, before: Cursor): CollectionConnection!
 
-    token(address: Address!, tokenId: BigInt!): Token!
+    token(contract: Address!, tokenId: BigInt!): Token!
 
     tokens(first: Int, after: Cursor, last: Int, before: Cursor): TokenConnection!
 

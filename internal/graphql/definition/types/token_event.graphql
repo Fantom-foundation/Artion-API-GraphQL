@@ -12,7 +12,7 @@ enum TokenEventType {
 type TokenEvent {
     eventTime: Time!
     type: TokenEventType!
-    nft: Address!
+    contract: Address!
     tokenId: BigInt!
     quantity: BigInt
     seller: Address
