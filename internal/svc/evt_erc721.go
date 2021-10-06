@@ -9,6 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	eth "github.com/ethereum/go-ethereum/core/types"
 	"math/big"
+	"time"
 )
 
 // zeroAddress represents an empty address.
@@ -94,6 +95,7 @@ func erc721TokenTransfer(evt *eth.Log, _ *logObserver) {
 		TokenId:  tokenID,
 		Owner:    to,
 		Qty:      hexutil.Big(*new(big.Int).SetUint64(1)),
+		Updated:  types.Time(time.Now()),
 	}); err != nil {
 		log.Errorf("could not add ERC-721 NFT ownership; %s", err.Error())
 		return
