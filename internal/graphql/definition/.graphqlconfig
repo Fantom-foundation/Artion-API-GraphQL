@@ -4,7 +4,7 @@
   "extensions": {
     "endpoints": {
       "Default GraphQL Endpoint": {
-        "url": "http://artion-api-a.fantom.network:7373/graphql",
+        "url": "https://artion-api-a.fantom.network/graphql",
         "headers": {
           "user-agent": "JS GraphQL"
         },

@@ -66,6 +66,15 @@ func newLogObserver(mgr *Manager) *logObserver {
 
 			/* erc721::event Transfer(address indexed from, address indexed to, uint256 indexed tokenId) */
 			common.HexToHash("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"): erc721TokenTransfer,
+
+			/* erc1155::event TransferSingle(address indexed _operator, address indexed _from, address indexed _to, uint256 _id, uint256 _amount) */
+			common.HexToHash("0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62"): erc1155TokenTransfer,
+
+			/* erc1155::event TransferBatch(address indexed _operator, address indexed _from, address indexed _to, uint256[] _ids, uint256[] _amounts) */
+			// common.HexToHash("0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb"): erc1155BatchTransfer,
+
+			/* erc1155::event URI(string _uri, uint256 indexed _id) */
+			// common.HexToHash("0x6bb7ff708619ba0610cba295a58592e0451dee2622938c8755667688daf3529b"): erc1155UriChanged,
 		},
 	}
 }

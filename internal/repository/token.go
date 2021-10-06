@@ -9,23 +9,23 @@ import (
 	"strings"
 )
 
+// Token reads NFT detail from the persistent database.
+func (p *Proxy) Token(contract *common.Address, tokenId *hexutil.Big) (*types.Token, error) {
+	var key strings.Builder
+	key.WriteString("Token")
+	key.WriteString(contract.String())
+	key.WriteString(tokenId.String())
+
+	token, err, _ := p.callGroup.Do(key.String(), func() (interface{}, error) {
+		return p.db.GetToken(contract, (*big.Int)(tokenId))
+	})
+	return token.(*types.Token), err
+}
+
 // StoreToken puts the given token into the persistent storage.
 // The function is used for both insert and update operation.
 func (p *Proxy) StoreToken(token *types.Token) error {
 	return p.db.StoreToken(token)
-}
-
-// GetToken reads NFT token detail from the persistent database.
-func (p *Proxy) GetToken(nft *common.Address, tokenId *hexutil.Big) (*types.Token, error) {
-	var key strings.Builder
-	key.WriteString("GetToken")
-	key.WriteString(nft.String())
-	key.WriteString(tokenId.String())
-
-	token, err, _ := p.callGroup.Do(key.String(), func() (interface{}, error) {
-		return p.db.GetToken(nft, (*big.Int)(tokenId))
-	})
-	return token.(*types.Token), err
 }
 
 func (p *Proxy) ListTokens(cursor types.Cursor, count int, backward bool) (list *types.TokenList, err error) {

@@ -75,15 +75,15 @@ func (mw *nftMetadataWorker) run() {
 func (mw *nftMetadataWorker) update(tok *types.Token) error {
 	// get metadata
 	if tok.Uri == "" {
-		log.Infof("token %d on contract %s URI not available", tok.TokenId.String(), tok.Nft.String())
+		log.Infof("token %d on contract %s URI not available", tok.TokenId.String(), tok.Contract.String())
 		return nil
 	}
 
 	// get the metadata
-	log.Debugf("loading metadata for %s / #%d", tok.Nft.String(), tok.TokenId.ToInt().Uint64())
+	log.Debugf("loading metadata for %s / #%d", tok.Contract.String(), tok.TokenId.ToInt().Uint64())
 	md, err := repo.GetTokenJsonMetadata(tok.Uri)
 	if err != nil {
-		log.Errorf("NFT metadata failed on %s / #%d; %s", tok.Nft.String(), tok.TokenId.ToInt().Uint64(), err.Error())
+		log.Errorf("NFT metadata failed on %s / #%d; %s", tok.Contract.String(), tok.TokenId.ToInt().Uint64(), err.Error())
 		return err
 	}
 
@@ -97,10 +97,10 @@ func (mw *nftMetadataWorker) update(tok *types.Token) error {
 
 	// update the token in persistent storage
 	if err := repo.StoreToken(tok); err != nil {
-		log.Errorf("failed metadata update on %s / #%d; %s", tok.Nft.String(), tok.TokenId.String(), err.Error())
+		log.Errorf("failed metadata update on %s / #%d; %s", tok.Contract.String(), tok.TokenId.String(), err.Error())
 		return err
 	}
 
-	log.Infof("NFT %s / %s metadata updated [%s]", tok.Nft.String(), tok.TokenId.String(), tok.Name)
+	log.Infof("NFT %s / %s metadata updated [%s]", tok.Contract.String(), tok.TokenId.String(), tok.Name)
 	return nil
 }

@@ -20,8 +20,8 @@ var zeroAddress common.Address
 func erc721TokenMinted(evt *eth.Log, lo *logObserver) {
 	// sanity check: no extra topics; tokenId + 2 x Address + URI >= 3 x 32 bytes
 	if len(evt.Data) < 96 || len(evt.Topics) != 1 {
-		log.Errorf("not ERC721::Minted() event %s / %d; expected at least 96 bytes of data, %d given; expected 1 topic, %d given",
-			evt.TxHash.String(), evt.Index, len(evt.Data), len(evt.Topics))
+		log.Errorf("not ERC721::Minted() event #%d/#%d; expected at least 96 bytes of data, %d given; expected 1 topic, %d given",
+			evt.BlockNumber, evt.Index, len(evt.Data), len(evt.Topics))
 		return
 	}
 
@@ -34,16 +34,16 @@ func erc721TokenMinted(evt *eth.Log, lo *logObserver) {
 
 	// make the token
 	tok := types.Token{
-		Nft:     evt.Address,
-		TokenId: hexutil.Big(*(args[0].(*big.Int))),
-		Uri:     args[2].(string),
+		Contract: evt.Address,
+		TokenId:  hexutil.Big(*(args[0].(*big.Int))),
+		Uri:      args[2].(string),
 	}
 	tok.GenerateId()
-	log.Infof("ERC-721 token %s found at %s block %d", tok.TokenId.String(), tok.Nft.String(), evt.BlockNumber)
+	log.Infof("ERC-721 token %s found at %s block %d", tok.TokenId.String(), tok.Contract.String(), evt.BlockNumber)
 
 	// write token to the persistent storage
 	if err := repo.StoreToken(&tok); err != nil {
-		log.Errorf("could not store token %s at %s; %s", tok.TokenId.String(), tok.Nft.String(), err.Error())
+		log.Errorf("could not store token %s at %s; %s", tok.TokenId.String(), tok.Contract.String(), err.Error())
 		return
 	}
 
@@ -52,7 +52,7 @@ func erc721TokenMinted(evt *eth.Log, lo *logObserver) {
 	select {
 	case lo.outNftTokens <- &tok:
 	default:
-		log.Errorf("NFT token updater queue full, postponing token %s at %s metadata update", tok.TokenId.String(), tok.Nft.String())
+		log.Errorf("NFT token updater queue full, postponing token %s at %s metadata update", tok.TokenId.String(), tok.Contract.String())
 	}
 }
 
@@ -61,8 +61,8 @@ func erc721TokenMinted(evt *eth.Log, lo *logObserver) {
 func erc721TokenTransfer(evt *eth.Log, _ *logObserver) {
 	// sanity check: 1 + 3 extra topics for indexed parties; no additional data = 0 bytes
 	if len(evt.Data) != 0 || len(evt.Topics) != 4 {
-		log.Errorf("not ERC721::Transfer() event %s / %d; expected no data, %d given; expected 4 topics, %d given",
-			evt.TxHash.String(), evt.Index, len(evt.Data), len(evt.Topics))
+		log.Errorf("not ERC721::Transfer() event #%d/#%d; expected no data, %d given; expected 4 topics, %d given",
+			evt.BlockNumber, evt.Index, len(evt.Data), len(evt.Topics))
 		return
 	}
 

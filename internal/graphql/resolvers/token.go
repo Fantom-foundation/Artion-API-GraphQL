@@ -36,7 +36,7 @@ func NewTokenConnection(list *types.TokenList) (con *TokenConnection, err error)
 	con.Edges = make([]TokenEdge, len(list.Collection))
 	for i := 0; i < len(list.Collection); i++ {
 		resolverToken := Token{
-			Contract: list.Collection[i].Nft,
+			Contract: list.Collection[i].Contract,
 			TokenId: list.Collection[i].TokenId,
 			dbToken: list.Collection[i],
 		}
@@ -61,7 +61,7 @@ func NewTokenConnection(list *types.TokenList) (con *TokenConnection, err error)
 
 func (t *Token) load() error {
 	if t.dbToken == nil {
-		tok, err := repository.R().GetToken(&t.Contract, &t.TokenId)
+		tok, err := repository.R().Token(&t.Contract, &t.TokenId)
 		if err != nil {
 			return fmt.Errorf("unable to load token from database; %s", err)
 		}

@@ -14,8 +14,8 @@ import (
 func newNFTContract(evt *eth.Log, lo *logObserver) {
 	// sanity check: no additional topics; 2 x Address = 2 x 32 bytes
 	if len(evt.Data) != 64 || len(evt.Topics) != 1 {
-		log.Errorf("invalid event %s / %d; expected 64 bytes of data, %d given; expected 1 topic, %d given",
-			evt.TxHash.String(), evt.Index, len(evt.Data), len(evt.Topics))
+		log.Errorf("not Factory::ContractCreated() event #%d/#%d; expected 64 bytes of data, %d given; expected 1 topic, %d given",
+			evt.BlockNumber, evt.Index, len(evt.Data), len(evt.Topics))
 		return
 	}
 
