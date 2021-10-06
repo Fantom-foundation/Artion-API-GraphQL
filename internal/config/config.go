@@ -30,6 +30,9 @@ type Config struct {
 
 	// Cache configuration
 	Cache Cache `mapstructure:"cache"`
+
+	// Auth configuration
+	Auth Auth `mapstructure:"auth"`
 }
 
 // Server represents the GraphQL server configuration
@@ -74,4 +77,10 @@ type Database struct {
 type Cache struct {
 	Eviction time.Duration `mapstructure:"eviction"`
 	MaxSize  int           `mapstructure:"size"`
+}
+
+// Auth represents the authentication configuration.
+type Auth struct {
+	BearerSecret string `mapstructure:"bearer_secret"`
+	NonceSecret  string `mapstructure:"nonce_secret"`
 }

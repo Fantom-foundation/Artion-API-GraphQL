@@ -44,4 +44,8 @@ const (
 	// cache related options
 	keyCacheEvictionTime = "cache.eviction"
 	keyCacheMaxSize      = "cache.size"
+
+	// authentication related options
+	keyAuthBearerSecret = "auth.bearer_secret"
+	keyAuthNonceSecret = "auth.nonce_secret"
 )

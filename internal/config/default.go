@@ -63,6 +63,12 @@ const (
 
 	// defApiStateOrigin represents the default origin used for API state syncing
 	defApiStateOrigin = "https://localhost"
+
+	// defAuthBearerSecret holds the default bearer secret
+	defAuthBearerSecret = "0x0123456789"
+
+	// defAuthNonceSecret holds the default nonce secret
+	defAuthNonceSecret = "0xABCDEF"
 )
 
 // defCorsAllowOrigins holds CORS default allowed origins.
@@ -98,4 +104,8 @@ func applyDefaults(cfg *viper.Viper) {
 
 	// cors
 	cfg.SetDefault(keyCorsAllowOrigins, defCorsAllowOrigins)
+
+	// auth
+	cfg.SetDefault(keyAuthBearerSecret, defAuthBearerSecret)
+	cfg.SetDefault(keyAuthNonceSecret, defAuthNonceSecret)
 }
