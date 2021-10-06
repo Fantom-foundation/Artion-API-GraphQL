@@ -25,7 +25,7 @@ func Api(cfg *config.Config, log logger.Logger) http.Handler {
 	}
 
 	// return the constructed API handler chain
-	return corsHandler.Handler(graphqlws.NewHandlerFunc(sch, &relay.Handler{Schema: sch}))
+	return corsHandler.Handler(AuthHandler(graphqlws.NewHandlerFunc(sch, &relay.Handler{Schema: sch})))
 }
 
 // corsOptions constructs new set of options for the CORS handler based on provided configuration.

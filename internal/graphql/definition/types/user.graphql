@@ -23,10 +23,7 @@ type User {
 }
 
 # User represents user account/profile.
-input InputUser {
-    # Address of the user wallet
-    address: Address!
-
+input InputUserProfile {
     # Name/Nickname
     username: String!
 

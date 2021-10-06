@@ -4,6 +4,7 @@ import (
 	"artion-api-graphql/internal/auth"
 	"artion-api-graphql/internal/repository"
 	"artion-api-graphql/internal/types"
+	"context"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -70,9 +71,37 @@ func (rs *RootResolver) User(args struct{ Address common.Address }) (user User, 
 	}
 }
 
-func (rs *RootResolver) UpdateUser(args struct{ User types.User }) (bool, error) {
-	// TODO: check permission
-	err := repository.R().UpsertUser(&args.User)
+func (rs *RootResolver) LoggedUser(ctx context.Context) (user *User, err error) {
+	address, err := auth.GetIdentityOrNil(ctx)
+	if address == nil || err != nil {
+		return nil, err
+	}
+	dbUser, err := repository.R().GetUser(*address)
+	if err != nil {
+		return nil, err
+	} else {
+		return &User{ Address: *address, dbUser: dbUser }, nil
+	}
+}
+
+func (rs *RootResolver) UpdateUser(ctx context.Context, args struct{
+	Username string
+	Bio      string
+	Email    string
+	Avatar   string
+}) (bool, error) {
+	address, err := auth.GetIdentityOrErr(ctx)
+	if err != nil {
+		return false, err
+	}
+	user := types.User{
+		Address: *address,
+		Username: args.Username,
+		Bio: args.Bio,
+		Email: args.Email,
+		Avatar: args.Avatar,
+	}
+	err = repository.R().UpsertUser(&user)
 	return err == nil, err
 }
 

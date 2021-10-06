@@ -23,6 +23,8 @@ type Query {
 
     user(address: Address!): User!
 
+    loggedUser: User
+
 }
 
 # Mutation endpoints for modifying the data
@@ -35,6 +37,6 @@ type Mutation {
     login(user: Address!, challenge: String!, signature: String!): String!
 
     # Update user profile
-    updateUser(user: InputUser!): Boolean!
+    updateUser(username: String!, bio: String!, email: String!, avatar: String!): Boolean!
 
 }
