@@ -28,6 +28,12 @@ type Query {
 # Mutation endpoints for modifying the data
 type Mutation {
 
+    # Generate login challenge to be signed by private key and used to log-in
+    initiateLogin: String!
+
+    # Use private key signed login challenge to get bearer token.
+    login(user: Address!, challenge: String!, signature: String!): String!
+
     # Update user profile
     updateUser(user: InputUser!): Boolean!
 

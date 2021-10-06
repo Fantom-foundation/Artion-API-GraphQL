@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"artion-api-graphql/internal/config"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/onsi/gomega"
@@ -46,10 +45,10 @@ func TestBearer(t *testing.T) {
 
 func TestAuthenticator(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
-	a := NewAuthenticator(config.Auth{
-		BearerSecret: "0x0123456789",
-		NonceSecret: "0xABCDEF",
-	})
+	a := Authenticator{
+		bearerSecret: hexutil.MustDecode("0x0123456789"),
+		nonceSecret:  hexutil.MustDecode("0xABCDEF"),
+	}
 
 	challenge, err := a.GenerateChallenge()
 	g.Expect(err).To(gomega.BeNil())

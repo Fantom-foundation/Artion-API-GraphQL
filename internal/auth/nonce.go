@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// generateNonce prepares base element of message to be signed by user.
 func generateNonce(secret []byte) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"exp": time.Now().Add(10 * time.Minute).Unix(),
@@ -13,6 +14,7 @@ func generateNonce(secret []byte) (string, error) {
 	return token.SignedString(secret)
 }
 
+// generateNonce verifies the nonce was issued by trustworthy server and is not expired.
 func verifyNonce(tokenString string, secret []byte) error {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// validate the alg
@@ -22,9 +24,9 @@ func verifyNonce(tokenString string, secret []byte) error {
 		return secret, nil
 	})
 	// expiration is already checked by JWT parser
-	if token.Valid {
+	if token.Valid && err == nil {
 		return nil
 	} else {
-		return fmt.Errorf("nonce validation failed; %s", err)
+		return fmt.Errorf("nonce is not valid; %s", err)
 	}
 }

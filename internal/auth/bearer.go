@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// generateBearer creates long-term login session token.
 func generateBearer(user *common.Address, secret []byte) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": user.String(),
@@ -15,6 +16,7 @@ func generateBearer(user *common.Address, secret []byte) (string, error) {
 	return token.SignedString(secret)
 }
 
+// generateBearer verifies authenticity of the login session token.
 func verifyBearer(tokenString string, secret []byte) (*common.Address, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// validate the alg

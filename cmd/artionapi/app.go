@@ -3,6 +3,7 @@ package main
 
 import (
 	"artion-api-graphql/cmd/artionapi/build"
+	"artion-api-graphql/internal/auth"
 	"artion-api-graphql/internal/config"
 	"artion-api-graphql/internal/graphql/resolvers"
 	"artion-api-graphql/internal/handlers"
@@ -49,6 +50,7 @@ func (app *apiServer) init() {
 	resolvers.SetLogger(app.log)
 	svc.SetConfig(app.cfg)
 	svc.SetLogger(app.log)
+	auth.SetConfig(app.cfg)
 
 	// make the HTTP server
 	app.makeHttpServer()

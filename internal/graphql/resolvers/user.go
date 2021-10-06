@@ -1,6 +1,7 @@
 package resolvers
 
 import (
+	"artion-api-graphql/internal/auth"
 	"artion-api-graphql/internal/repository"
 	"artion-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -73,4 +74,16 @@ func (rs *RootResolver) UpdateUser(args struct{ User types.User }) (bool, error)
 	// TODO: check permission
 	err := repository.R().UpsertUser(&args.User)
 	return err == nil, err
+}
+
+func (rs *RootResolver) InitiateLogin() (string, error) {
+	return auth.GetAuthenticator().GenerateChallenge()
+}
+
+func (rs *RootResolver) Login(args struct{
+	User      common.Address
+	Challenge string
+	Signature string
+}) (string, error) {
+	return auth.GetAuthenticator().GenerateBearer(args.Challenge, args.User, args.Signature)
 }
