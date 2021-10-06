@@ -11,7 +11,7 @@ import (
 
 // newNFTContract handles log event for new factory deployed ERC721/ERC1155 contract.
 // Factory::event ContractCreated(address creator, address nft)
-func newNFTContract(evt *eth.Log, _ *logObserver) {
+func newNFTContract(evt *eth.Log, lo *logObserver) {
 	// sanity check: no additional topics; 2 x Address = 2 x 32 bytes
 	if len(evt.Data) != 64 || len(evt.Topics) != 1 {
 		log.Errorf("invalid event %s / %d; expected 64 bytes of data, %d given; expected 1 topic, %d given",
@@ -29,7 +29,7 @@ func newNFTContract(evt *eth.Log, _ *logObserver) {
 	log.Debugf("found NFT contract %s", ca.String())
 
 	// load NFT details
-	if err := extendNFTCollectionDetails(&nft, evt); err != nil {
+	if err := extendNFTCollectionDetails(&nft, evt, lo); err != nil {
 		log.Criticalf("failed to load NFT collection %s; %s", nft.Address.String(), err.Error())
 		return
 	}
@@ -46,9 +46,9 @@ func newNFTContract(evt *eth.Log, _ *logObserver) {
 }
 
 // extendNFTCollectionDetails collects details of an NFT contract.
-func extendNFTCollectionDetails(nft *types.Collection, evt *eth.Log) (err error) {
+func extendNFTCollectionDetails(nft *types.Collection, evt *eth.Log, lo *logObserver) (err error) {
 	// NFT contract type is derived from the factory contract type
-	nft.Type, err = Mgr().logObserver.contractTypeByFactory(&evt.Address)
+	nft.Type, err = lo.contractTypeByFactory(&evt.Address)
 	if err != nil {
 		log.Errorf("contract %s type not known; %s", evt.Address.String(), err.Error())
 		return err
@@ -71,6 +71,7 @@ func extendNFTCollectionDetails(nft *types.Collection, evt *eth.Log) (err error)
 
 	blk, err := repo.GetHeader(evt.BlockNumber)
 	if err != nil {
+		log.Errorf("header #%d not available; %s", evt.BlockNumber, err.Error())
 		return err
 	}
 	nft.Created = types.Time(time.Unix(int64(blk.Time), 0))

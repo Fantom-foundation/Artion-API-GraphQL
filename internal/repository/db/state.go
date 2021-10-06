@@ -6,7 +6,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"math/big"
 )
 
 const (
@@ -22,27 +21,23 @@ const (
 
 // UpdateLastSeenBlock stores the ID of the last seen block
 // so the API server can continue where it left off.
-func (db *MongoDbBridge) UpdateLastSeenBlock(blk *big.Int) {
-	if nil == blk {
-		return
-	}
-
+func (db *MongoDbBridge) UpdateLastSeenBlock(blk uint64) {
 	// get the collection
 	col := db.client.Database(db.dbName).Collection(coSystemStateCollection)
 	re, err := col.UpdateOne(context.Background(), bson.D{{Key: fieldId, Value: keyLastSeenBlock}}, bson.D{
 		{Key: "$set", Value: bson.D{
-			{Key: fiBlockNumber, Value: blk.Int64()},
+			{Key: fiBlockNumber, Value: int64(blk)},
 		}},
 		{Key: "$setOnInsert", Value: bson.D{
 			{Key: fieldId, Value: keyLastSeenBlock},
 		}},
 	}, options.Update().SetUpsert(true))
 	if err != nil {
-		log.Errorf("can not store last seen block #%d; %s", blk.Uint64(), err.Error())
+		log.Errorf("can not store last seen block #%d; %s", blk, err.Error())
 		return
 	}
 	if re.UpsertedCount > 0 {
-		log.Debugf("last seen block updated to #%d", blk.Uint64())
+		log.Debugf("last seen block updated to #%d", blk)
 	}
 }
 

@@ -59,6 +59,7 @@ type Node struct {
 type Ipfs struct {
 	// Url of the IPFS node
 	Url string `mapstructure:"url"`
+
 	// Skip known HTTP-to-IPFS gateways and use our IPFS node instead
 	SkipHttpGateways bool `mapstructure:"skip_http_gateways"`
 }

@@ -8,7 +8,7 @@ import (
 
 const (
 	// outBlockQueueCapacity represents the size of outgoing block queue.
-	outBlockQueueCapacity = 10000
+	outBlockQueueCapacity = 1000
 
 	// blkCacheCapacity represents the amount of blocks kept in cache to prevent head miss
 	blkCacheCapacity = 25

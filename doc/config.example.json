@@ -7,6 +7,9 @@
     "write_timeout": 30,
     "resolver_timeout": 240
   },
+  "log": {
+    "level": "Info"
+  },
   "node": {
     "url": "/var/opera/mainnet/opera.ipc"
   },
@@ -14,7 +17,12 @@
     "url": "mongodb://127.0.0.1:27017",
     "db": "artion"
   },
-  "log": {
-    "level": "Info"
+  "shared_db": {
+    "url": "mongodb://127.0.0.1:27017",
+    "db": "artion_shared"
+  },
+  "ipfs": {
+    "url": "localhost:5001",
+    "skip_http_gateways": true
   }
 }

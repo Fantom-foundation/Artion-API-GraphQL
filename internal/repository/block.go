@@ -37,13 +37,13 @@ func (p *Proxy) GetHeader(id uint64) (*eth.Header, error) {
 }
 
 // BlockLogs provides list of event logs for the given block number and list of topics.
-func (p *Proxy) BlockLogs(blk *big.Int, topics []common.Hash) ([]eth.Log, error) {
+func (p *Proxy) BlockLogs(blk *big.Int, topics [][]common.Hash) ([]eth.Log, error) {
 	return p.rpc.BlockLogs(blk, topics)
 }
 
 // NotifyLastObservedBlock stores information about last seen block into persistent storage
 // so the API server can start where it left off thr last time.
-func (p *Proxy) NotifyLastObservedBlock(blk *big.Int) {
+func (p *Proxy) NotifyLastObservedBlock(blk uint64) {
 	p.db.UpdateLastSeenBlock(blk)
 }
 

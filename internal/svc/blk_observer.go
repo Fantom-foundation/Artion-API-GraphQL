@@ -9,10 +9,10 @@ import (
 
 const (
 	// logEventQueueCapacity represents the log events queue capacity.
-	logEventQueueCapacity = 25000
+	logEventQueueCapacity = 200
 
 	// observedBlocksCapacity represents the capacity of channel for observed block IDs.
-	observedBlocksCapacity = 10000
+	observedBlocksCapacity = 100
 )
 
 // blkObserver represents a service monitoring incoming blocks
@@ -29,10 +29,10 @@ type blkObserver struct {
 
 	// outEvent represents an output channel being fed
 	// with recognized block events for processing
-	outEvents chan *eth.Log
+	outEvents chan eth.Log
 
 	// topics represents the topics observed by the API server
-	topics []common.Hash
+	topics [][]common.Hash
 
 	// outObservedBlock is fed with numbers of processed blocks.
 	outObservedBlocks chan uint64
@@ -43,7 +43,7 @@ func newBlkObserver(mgr *Manager) *blkObserver {
 	return &blkObserver{
 		mgr:               mgr,
 		sigStop:           make(chan bool, 1),
-		outEvents:         make(chan *eth.Log, logEventQueueCapacity),
+		outEvents:         make(chan eth.Log, logEventQueueCapacity),
 		outObservedBlocks: make(chan uint64, observedBlocksCapacity),
 		topics:            nil,
 	}
@@ -100,18 +100,16 @@ func (bo *blkObserver) process(hdr *eth.Header) {
 		return
 	}
 
-	// any logs?
-	if 0 < len(logs) {
-		log.Infof("processing %d events on block #%d", len(logs), hdr.Number.Uint64())
-	}
-
+	// log.Infof("#%d has %d logs", hdr.Number.Uint64(), len(logs))
 	// push interesting events into the output queue, if any
 	for _, evt := range logs {
 		select {
-		case bo.outEvents <- &evt:
 		case <-bo.sigStop:
 			bo.sigStop <- true
 			return
+		// case <-time.After(50 * time.Millisecond):
+		case bo.outEvents <- evt:
+			log.Debugf("observing #%d/#%d: %s", evt.BlockNumber, evt.Index, evt.Topics[0].String())
 		}
 	}
 
@@ -120,6 +118,7 @@ func (bo *blkObserver) process(hdr *eth.Header) {
 	// with the top head of the blockchain
 	select {
 	case bo.outObservedBlocks <- hdr.Number.Uint64():
+		log.Debugf("block #%d done", hdr.Number.Uint64())
 	default:
 	}
 }

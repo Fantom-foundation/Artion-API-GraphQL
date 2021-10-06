@@ -7,14 +7,13 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	eth "github.com/ethereum/go-ethereum/core/types"
-	"math/big"
 	"time"
 )
 
 const (
 	// obsBlocksNotificationTickInterval represents the interval
 	// in which observed blocks are notified to repository.
-	obsBlocksNotificationTickInterval = 10 * time.Second
+	obsBlocksNotificationTickInterval = 15 * time.Second
 )
 
 // EventHandler represents a function used to process event log record.
@@ -30,17 +29,17 @@ type logObserver struct {
 
 	// outEvent represents an output channel being fed
 	// with recognized block events for processing
-	inEvents chan *eth.Log
+	inEvents chan eth.Log
 
 	// outNftTokens represents an output channel receiving new NFT tokens
 	// for processing and metadata update
 	outNftTokens chan *types.Token
 
 	// currentBlock contains the number of the currently processed block
-	currentBlock *big.Int
+	currentBlock uint64
 
 	// lastProcessedBlock contains the number of the last processed block
-	lastProcessedBlock *big.Int
+	lastProcessedBlock uint64
 
 	// topics represents a map of topics to their respective event handlers.
 	topics map[common.Hash]EventHandler
@@ -65,9 +64,8 @@ func newLogObserver(mgr *Manager) *logObserver {
 			/* erc721::event Minted(uint256 tokenId, address beneficiary, string tokenUri, address minter) */
 			common.HexToHash("0x997115af5924f5e38964c6d65c804d4cb85129b65e62eb20a8ca6329dbe57e18"): erc721TokenMinted,
 
-			// TODO Disabled: uncommenting stops calling newNFTContract from unknown reason
 			/* erc721::event Transfer(address indexed from, address indexed to, uint256 indexed tokenId) */
-			//common.HexToHash("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"): erc721TokenTransfer,
+			common.HexToHash("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"): erc721TokenTransfer,
 		},
 	}
 }
@@ -112,8 +110,8 @@ func (lo *logObserver) run() {
 			if !ok {
 				return
 			}
-			lo.process(evt)
-			lo.processed(evt)
+			lo.process(&evt)
+			lo.processed(&evt)
 		}
 	}
 }
@@ -134,30 +132,26 @@ func (lo *logObserver) process(evt *eth.Log) {
 	}
 
 	// do the handler job
+	log.Infof("processing event #%d/#%d at %s -> topic %s", evt.BlockNumber, evt.Index, evt.Address.String(), evt.Topics[0].String())
 	handler(evt, lo)
 }
 
 // processed updates the information about the current and processed block number.
 func (lo *logObserver) processed(evt *eth.Log) {
-	if lo.currentBlock == nil {
-		lo.currentBlock = new(big.Int).SetUint64(evt.BlockNumber)
-		return
-	}
-
 	// the last block is done
-	if lo.currentBlock.Uint64() < evt.BlockNumber {
+	if lo.currentBlock < evt.BlockNumber {
 		lo.lastProcessedBlock = lo.currentBlock
-		lo.currentBlock = new(big.Int).SetUint64(evt.BlockNumber)
+		lo.currentBlock = evt.BlockNumber
 	}
 }
 
 // notify the repository about the latest observed block, if any.
 func (lo *logObserver) notify() {
-	if lo.lastProcessedBlock == nil {
+	if lo.lastProcessedBlock == 0 {
 		return
 	}
 	repo.NotifyLastObservedBlock(lo.lastProcessedBlock)
-	log.Infof("last processed block is #%d", lo.lastProcessedBlock.Uint64())
+	log.Infof("last processed block is #%d", lo.lastProcessedBlock)
 }
 
 // isObservedContract checks if the given event log should be investigated and processed.
@@ -192,12 +186,13 @@ func (lo *logObserver) addObservedContract(oc *types.ObservedContract) {
 }
 
 // topicsList provides a list of observed topics for blocks event filtering
-func (lo *logObserver) topicsList() []common.Hash {
-	list := make([]common.Hash, len(lo.topics))
+func (lo *logObserver) topicsList() [][]common.Hash {
+	list := make([][]common.Hash, 1)
+	list[0] = make([]common.Hash, len(lo.topics))
 
 	var i int
 	for h := range lo.topics {
-		list[i] = h
+		list[0][i] = h
 		i++
 	}
 
