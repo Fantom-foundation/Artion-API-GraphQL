@@ -54,7 +54,12 @@ func (db *MongoDbBridge) StoreOwnership(to *types.Ownership) error {
 	rs, err := col.UpdateOne(
 		ctx,
 		bson.D{{Key: fieldId, Value: id}},
-		bson.D{{Key: "$set", Value: to}, {Key: "$setOnInsert", Value: id}},
+		bson.D{
+			{Key: "$set", Value: to},
+			{Key: "$setOnInsert", Value: bson.D{{
+				Key: fieldId, Value: id,
+			}}},
+		},
 		options.Update().SetUpsert(true),
 	)
 	if err != nil {
@@ -97,13 +102,13 @@ func (db *MongoDbBridge) DeleteOwnership(to *types.Ownership) error {
 func (db *MongoDbBridge) ListOwnerships(contract *common.Address, tokenId *hexutil.Big, owner *common.Address, cursor types.Cursor, count int, backward bool) (out *types.OwnershipList, err error) {
 	filter := bson.D{}
 	if contract != nil {
-		filter = append(filter, primitive.E{Key: fiOwnershipContract, Value: contract.String() })
+		filter = append(filter, primitive.E{Key: fiOwnershipContract, Value: contract.String()})
 	}
 	if tokenId != nil {
-		filter = append(filter, primitive.E{Key: fiOwnershipTokenId, Value: tokenId.String() })
+		filter = append(filter, primitive.E{Key: fiOwnershipTokenId, Value: tokenId.String()})
 	}
 	if owner != nil {
-		filter = append(filter, primitive.E{Key: fiOwnershipOwner, Value: owner.String() })
+		filter = append(filter, primitive.E{Key: fiOwnershipOwner, Value: owner.String()})
 	}
 	return db.listOwnerships(&filter, cursor, count, backward)
 }
