@@ -99,7 +99,10 @@ func (bs *blkScanner) start() uint64 {
 		lnb = repo.MinObservedBlockNumber(defStartingBlockNumber)
 	}
 
-	return lnb - 1
+	if lnb <= blkScannerHysteresis {
+		return lnb
+	}
+	return lnb - blkScannerHysteresis
 }
 
 // run scans past blocks one by one until it reaches top
