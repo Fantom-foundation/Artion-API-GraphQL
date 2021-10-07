@@ -34,7 +34,7 @@ func erc1155TokenTransfer(evt *eth.Log, lo *logObserver) {
 		Contract: evt.Address,
 		TokenId:  hexutil.Big(*tokenId),
 		Owner:    *to,
-		Qty:      repo.BalanceAt(&evt.Address, tokenId, to, &evt.BlockNumber),
+		Qty:      balanceOf(&evt.Address, tokenId, to, evt.BlockNumber, lo),
 		Updated:  types.Time(time.Now()),
 	}); err != nil {
 		log.Errorf("failed to update recipient ownership at %s/%d; %s",
@@ -53,7 +53,7 @@ func erc1155TokenTransfer(evt *eth.Log, lo *logObserver) {
 		Contract: evt.Address,
 		TokenId:  hexutil.Big(*tokenId),
 		Owner:    *to,
-		Qty:      repo.BalanceAt(&evt.Address, tokenId, from, &evt.BlockNumber),
+		Qty:      balanceOf(&evt.Address, tokenId, from, evt.BlockNumber, lo),
 		Updated:  types.Time(time.Now()),
 	}); err != nil {
 		log.Errorf("failed to update sender ownership at %s/%d; %s",
@@ -61,13 +61,44 @@ func erc1155TokenTransfer(evt *eth.Log, lo *logObserver) {
 	}
 }
 
+// balanceOf returns the balance of a token for the given owner on the given block.
+func balanceOf(con *common.Address, tokenId *big.Int, owner *common.Address, block uint64, lo *logObserver) hexutil.Big {
+	// try to get the contract type
+	tt, err := lo.contractTypeByAddress(con)
+	if err != nil {
+		log.Criticalf("unknown contract type; %s", err.Error())
+		return hexutil.Big{}
+	}
+
+	switch tt {
+	case types.ContractTypeERC721:
+		// @todo If the owner has the token, return 1; if not, return 0
+	case types.ContractTypeERC1155:
+		qty, err := repo.Erc1155BalanceOf(con, tokenId, owner, new(big.Int).SetUint64(block))
+		if err != nil {
+			log.Criticalf("token balance unknown; %s", err.Error())
+			return hexutil.Big{}
+		}
+		return hexutil.Big(*qty)
+	default:
+		log.Criticalf("unknown contract type %s", tt)
+	}
+	return hexutil.Big{}
+}
+
 // addERC1155Token adds a new ERC1155 type of token into the repository.
 func addERC1155Token(adr *common.Address, tokenID *big.Int) {
+	// extract the token URI from the contract
+	uri, err := repo.Erc1155TokenUri(adr, tokenID)
+	if err != nil {
+		log.Errorf("token URI not known; %s", err.Error())
+	}
+
 	// make the token
 	tok := types.Token{
 		Contract: *adr,
 		TokenId:  hexutil.Big(*tokenID),
-		Uri:      repo.TokenUri(adr, tokenID),
+		Uri:      uri,
 	}
 
 	tok.GenerateId()

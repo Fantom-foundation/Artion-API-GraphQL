@@ -208,12 +208,12 @@ func (lo *logObserver) topicsList() [][]common.Hash {
 	return list
 }
 
-// contractTypeByFactory provides type of contract based on known factory address.
+// contractTypeByAddress provides type of contract based on known address.
 // We use pre-loaded NFT types map to perform this.
-func (lo *logObserver) contractTypeByFactory(fa *common.Address) (string, error) {
+func (lo *logObserver) contractTypeByAddress(fa *common.Address) (string, error) {
 	tp, ok := lo.nftTypes[*fa]
 	if !ok {
-		return "", fmt.Errorf("factory %s unknown", fa.String())
+		return "", fmt.Errorf("address %s unknown", fa.String())
 	}
 	return tp, nil
 }

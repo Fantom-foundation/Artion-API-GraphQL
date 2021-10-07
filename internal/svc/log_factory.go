@@ -48,7 +48,7 @@ func newNFTContract(evt *eth.Log, lo *logObserver) {
 // extendNFTCollectionDetails collects details of an NFT contract.
 func extendNFTCollectionDetails(nft *types.Collection, evt *eth.Log, lo *logObserver) (err error) {
 	// NFT contract type is derived from the factory contract type
-	nft.Type, err = lo.contractTypeByFactory(&evt.Address)
+	nft.Type, err = lo.contractTypeByAddress(&evt.Address)
 	if err != nil {
 		log.Errorf("contract %s type not known; %s", evt.Address.String(), err.Error())
 		return err
