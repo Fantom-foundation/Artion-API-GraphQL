@@ -88,6 +88,7 @@ func (mu *nftMetadataUpdater) run() {
 			return
 		case <-refreshTick.C:
 			// try to pull a refresh set
+			mu.scheduleMetadataRefreshSet()
 		case nft, ok = <-mu.inTokens:
 			// input tokens queue
 		case nft = <-mu.refreshQueue:
