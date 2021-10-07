@@ -47,11 +47,11 @@ func (o *Opera) Erc1155TokenUri(contract *common.Address, tokenId *big.Int) (str
 	}, nil)
 	res, err := o.abiFantom721.Unpack("uri", data)
 	if err != nil {
-		log.Errorf("can not decode reponse; %s", err.Error())
+		log.Errorf("can not decode response; %s", err.Error())
 		return "", err
 	}
 
-	// get the URI; we make sure to follow ERC-1155 specs for token ID replacement
+	// extract the URI from the response data; make sure to follow ERC-1155 specs for token ID replacement
 	// If the string {id} exists in the URI, client MUST replace this
 	// with the actual token ID in hexadecimal form in lower case, not prefixed, zero-padded to 64 hex chars.
 	// https://eips.ethereum.org/EIPS/eip-1155#metadata

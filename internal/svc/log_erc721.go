@@ -32,28 +32,25 @@ func erc721TokenMinted(evt *eth.Log, lo *logObserver) {
 		return
 	}
 
-	// make the token
-	tok := types.Token{
-		Contract: evt.Address,
-		TokenId:  hexutil.Big(*(args[0].(*big.Int))),
-		Uri:      args[2].(string),
+	// get the block header
+	blk, err := repo.GetHeader(evt.BlockNumber)
+	if err != nil {
+		log.Errorf("can not load event header #%d; %s", evt.BlockNumber, err.Error())
+		return
 	}
-	tok.GenerateId()
+
+	// make the token
+	tok := types.NewToken(&evt.Address, args[0].(*big.Int), args[2].(string), int64(blk.Time), evt.BlockNumber, evt.Index)
 	log.Infof("ERC-721 token %s found at %s block %d", tok.TokenId.String(), tok.Contract.String(), evt.BlockNumber)
 
 	// write token to the persistent storage
-	if err := repo.StoreToken(&tok); err != nil {
+	if err := repo.TokenStore(tok); err != nil {
 		log.Errorf("could not store token %s at %s; %s", tok.TokenId.String(), tok.Contract.String(), err.Error())
 		return
 	}
 
 	// schedule metadata update on the token (do not wait for result)
-	// if the updater queue is full, we just let the updater pick the token for update later
-	select {
-	case lo.outNftTokens <- &tok:
-	default:
-		log.Errorf("NFT token updater queue full, postponing token %s at %s metadata update", tok.TokenId.String(), tok.Contract.String())
-	}
+	queueMetadataUpdate(tok, lo)
 }
 
 // erc721TokenTransfer handles log event for NFT token ownership transfer on an observed ERC721 contract.
@@ -99,5 +96,16 @@ func erc721TokenTransfer(evt *eth.Log, _ *logObserver) {
 	}); err != nil {
 		log.Errorf("could not add ERC-721 NFT ownership; %s", err.Error())
 		return
+	}
+}
+
+// queueMetadataUpdate pushes NFT into the metadata processing queue.
+func queueMetadataUpdate(nft *types.Token, lo *logObserver) {
+	// schedule metadata update on the token (do not wait for result)
+	// if the updater queue is full, we just let the updater pick the token for update later
+	select {
+	case lo.outNftTokens <- nft:
+	case <-time.After(10 * time.Second):
+		log.Errorf("NFT token updater queue full, postponing token %s at %s metadata update", nft.TokenId.String(), nft.Contract.String())
 	}
 }

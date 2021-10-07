@@ -1,5 +1,6 @@
 package types
 
+// TokenList represents a structure of paginated collection of NFT tokens.
 type TokenList struct {
 	// List keeps the actual Collection.
 	Collection []*Token
@@ -14,6 +15,7 @@ type TokenList struct {
 	HasNext bool
 }
 
+// Reverse the order of elements in the list collection.
 func (c *TokenList) Reverse() {
 	// anything to swap at all?
 	if c.Collection == nil || len(c.Collection) < 2 {

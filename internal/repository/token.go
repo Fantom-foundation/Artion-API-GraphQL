@@ -17,15 +17,30 @@ func (p *Proxy) Token(contract *common.Address, tokenId *hexutil.Big) (*types.To
 	key.WriteString(tokenId.String())
 
 	token, err, _ := p.callGroup.Do(key.String(), func() (interface{}, error) {
-		return p.db.GetToken(contract, (*big.Int)(tokenId))
+		return p.db.TokenGet(contract, (*big.Int)(tokenId))
 	})
 	return token.(*types.Token), err
 }
 
-// StoreToken puts the given token into the persistent storage.
+// TokenStore puts the given token into the persistent storage.
 // The function is used for both insert and update operation.
-func (p *Proxy) StoreToken(token *types.Token) error {
-	return p.db.StoreToken(token)
+func (p *Proxy) TokenStore(token *types.Token) error {
+	return p.db.TokenStore(token)
+}
+
+// TokenUpdateMetadata updates basic metadata of the NFT token.
+func (p *Proxy) TokenUpdateMetadata(nft *types.Token) error {
+	return p.db.TokenUpdateMetadata(nft)
+}
+
+// TokenUpdateMetadataRefreshSchedule sets the NFT metadata update schedule time.
+func (p *Proxy) TokenUpdateMetadataRefreshSchedule(nft *types.Token) error {
+	return p.db.TokenUpdateMetadataRefreshSchedule(nft)
+}
+
+// TokenMetadataRefreshSet pulls s set of NFT tokens scheduled to be updated up to this time.
+func (p *Proxy) TokenMetadataRefreshSet() ([]*types.Token, error) {
+	return p.db.TokenMetadataRefreshSet()
 }
 
 func (p *Proxy) ListTokens(cursor types.Cursor, count int, backward bool) (list *types.TokenList, err error) {

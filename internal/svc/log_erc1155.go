@@ -42,9 +42,9 @@ func erc1155TokenTransfer(evt *eth.Log, lo *logObserver) {
 	}
 
 	// make sure we know the token
-	// if this is a mint call, the sender is zero, and we just add the NFT record
+	// if this is a mint call (the sender is zero), we just add the NFT record
 	if 0 == bytes.Compare(zeroAddress.Bytes(), from.Bytes()) {
-		addERC1155Token(&evt.Address, tokenId)
+		addERC1155Token(&evt.Address, tokenId, evt, lo)
 		return
 	}
 
@@ -87,25 +87,29 @@ func balanceOf(con *common.Address, tokenId *big.Int, owner *common.Address, blo
 }
 
 // addERC1155Token adds a new ERC1155 type of token into the repository.
-func addERC1155Token(adr *common.Address, tokenID *big.Int) {
+func addERC1155Token(adr *common.Address, tokenID *big.Int, evt *eth.Log, lo *logObserver) {
 	// extract the token URI from the contract
 	uri, err := repo.Erc1155TokenUri(adr, tokenID)
 	if err != nil {
 		log.Errorf("token URI not known; %s", err.Error())
 	}
 
-	// make the token
-	tok := types.Token{
-		Contract: *adr,
-		TokenId:  hexutil.Big(*tokenID),
-		Uri:      uri,
+	// get the block header
+	blk, err := repo.GetHeader(evt.BlockNumber)
+	if err != nil {
+		log.Errorf("can not load event header #%d; %s", evt.BlockNumber, err.Error())
+		return
 	}
 
-	tok.GenerateId()
+	// make the token
+	tok := types.NewToken(adr, tokenID, uri, int64(blk.Time), evt.BlockNumber, evt.Index)
 	log.Infof("ERC-1155 token #%s found at %s", tok.TokenId.String(), tok.Contract.String())
 
 	// write token to the persistent storage
-	if err := repo.StoreToken(&tok); err != nil {
+	if err := repo.TokenStore(tok); err != nil {
 		log.Errorf("could not store token %s at %s; %s", tok.TokenId.String(), tok.Contract.String(), err.Error())
 	}
+
+	// queue the token for metadata update
+	queueMetadataUpdate(tok, lo)
 }

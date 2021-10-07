@@ -3,10 +3,16 @@ package svc
 
 import (
 	"artion-api-graphql/internal/types"
+	"time"
 )
 
-// nftMetadataUpdaterQueueCapacity is the capacity of NFT metadata updater queue.
-const nftMetadataUpdaterQueueCapacity = 1000
+const (
+	// nftMetadataUpdaterQueueCapacity is the capacity of NFT metadata updater queue.
+	nftMetadataUpdaterQueueCapacity = 5000
+
+	// nftMetadataRefreshTick is the tick used to pull NFT metadata refresh candidates.
+	nftMetadataRefreshTick = 2 * time.Minute
+)
 
 // nftMetadataUpdater represents a service responsible for periodic update of NFT token metadata
 // from remote URI/IFS in a local persistent storage. The metadata download is time
@@ -21,16 +27,20 @@ type nftMetadataUpdater struct {
 	// inTokens represents the channel receiving tokens to be updated.
 	inTokens chan *types.Token
 
-	// workQueue represents the channel receiving both new NFTs and periodic updates for processing.
+	// outTokens represents the channel receiving NFTs for actual processing.
 	outTokens chan *types.Token
+
+	// refreshQueue is the queue used to store NFT metadata update candidates.
+	refreshQueue chan *types.Token
 }
 
 // newNFTMetadataUpdater creates a new instance of the NFT metadata updater service.
 func newNFTMetadataUpdater(mgr *Manager) *nftMetadataUpdater {
 	return &nftMetadataUpdater{
-		mgr:       mgr,
-		sigStop:   make(chan bool, 1),
-		outTokens: make(chan *types.Token, nftMetadataUpdaterQueueCapacity),
+		mgr:          mgr,
+		sigStop:      make(chan bool, 1),
+		outTokens:    make(chan *types.Token, nftMetadataUpdaterQueueCapacity),
+		refreshQueue: make(chan *types.Token, types.MetadataRefreshSetSize),
 	}
 }
 
@@ -48,34 +58,76 @@ func (mu *nftMetadataUpdater) init() {
 	mu.mgr.add(mu)
 }
 
+// close signals the block observer to terminate
+func (mu *nftMetadataUpdater) close() {
+	mu.sigStop <- true
+}
+
 // run processes metadata update requests from new NFT and also ensures
 // updates on existing tokens' metadata as needed.
 func (mu *nftMetadataUpdater) run() {
+	// make the metadata refresh ticker
+	refreshTick := time.NewTicker(nftMetadataRefreshTick)
+
 	defer func() {
+		refreshTick.Stop()
+
 		close(mu.outTokens)
+		close(mu.refreshQueue)
+
 		mu.mgr.closed(mu)
 	}()
 
+	var (
+		ok  bool
+		nft *types.Token
+	)
 	for {
 		select {
 		case <-mu.sigStop:
 			return
-		case tok, ok := <-mu.inTokens:
-			if !ok {
-				return
-			}
+		case <-refreshTick.C:
+			// try to pull a refresh set
+		case nft, ok = <-mu.inTokens:
+			// input tokens queue
+		case nft = <-mu.refreshQueue:
+			// refresh tokens queue
+		}
 
-			log.Debugf("received token %s / #%d for processing", tok.Contract.String(), tok.TokenId.ToInt().Uint64())
+		// do we have a valid input?
+		if !ok {
+			log.Debugf("input queue closed, terminating")
+			return
+		}
+
+		// do we have a token to be pushed to the worker?
+		if nft != nil {
 			select {
 			case <-mu.sigStop:
 				return
-			case mu.outTokens <- tok:
+			case mu.outTokens <- nft:
+				log.Debugf("token %s/%s sent for processing", nft.Contract.String(), nft.TokenId.String())
+				nft = nil
 			}
 		}
 	}
 }
 
-// close signals the block observer to terminate
-func (mu *nftMetadataUpdater) close() {
-	mu.sigStop <- true
+// scheduleMetadataRefreshSet pulls new refresh set from repository and pushes it into the scheduler.
+func (mu *nftMetadataUpdater) scheduleMetadataRefreshSet() {
+	rs, err := repo.TokenMetadataRefreshSet()
+	if err != nil {
+		log.Errorf("metadata refresh set not available; %s", err.Error())
+		return
+	}
+
+	// push the refresh set into the refresh queue
+	// please note we don't wait for tokens to be stored
+	for _, nft := range rs {
+		select {
+		case mu.refreshQueue <- nft:
+			log.Debugf("scheduled refresh on %s/%s", nft.Contract.String(), nft.TokenId.String())
+		default:
+		}
+	}
 }

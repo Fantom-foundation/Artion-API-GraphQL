@@ -19,8 +19,21 @@ const (
 	// fiTokenContract is the column storing the address of the NFT token contract.
 	fiTokenContract = "nft"
 
+	// fiTokenMetadataURI is the column storing the NFT token metadata URI.
+	fiTokenMetadataURI = "uri"
+
 	// FiTokenName is the column storing the name of the NFT token.
 	fiTokenName = "name"
+
+	// fiTokenDescription is the column storing the description of the NFT token.
+	fiTokenDescription = "desc"
+
+	// fiTokenImageURI is the column storing the image URI of the NFT token.
+	fiTokenImageURI = "image"
+
+	// fiTokenMetadataUpdate is the column storing the time
+	// of the metadata update schedule of the NFT token.
+	fiTokenMetadataUpdate = "meta_update"
 )
 
 // initTokenCollection initializes collection with indexes and additional parameters.
@@ -40,24 +53,30 @@ func (db *MongoDbBridge) initTokenCollection(col *mongo.Collection) {
 	log.Debugf("transactions collection initialized")
 }
 
-// StoreToken inserts new NFT token or updates existing token in persistent database.
-func (db *MongoDbBridge) StoreToken(token *types.Token) error {
+// TokenStore inserts new NFT token or updates existing token in persistent database.
+func (db *MongoDbBridge) TokenStore(token *types.Token) error {
 	if token == nil {
 		return fmt.Errorf("no value to store")
 	}
 
 	// get the collection
 	col := db.client.Database(db.dbName).Collection(coTokens)
-	ctx, cancel := context.WithTimeout(context.Background(), 10 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer func() {
 		cancel()
 	}()
 
 	// try to do the insert
+	id := token.ID()
 	rs, err := col.UpdateOne(
 		ctx,
-		bson.D{{Key: fieldId, Value: types.TokenIdFromAddress(&token.Contract, (*big.Int)(&token.TokenId))}},
-		bson.D{{Key: "$set", Value: token}},
+		bson.D{{Key: fieldId, Value: id}},
+		bson.D{
+			{Key: "$set", Value: token},
+			{Key: "$setOnInsert", Value: bson.D{
+				{Key: fieldId, Value: id},
+			}},
+		},
 		options.Update().SetUpsert(true),
 	)
 	if err != nil {
@@ -75,8 +94,65 @@ func (db *MongoDbBridge) StoreToken(token *types.Token) error {
 	return nil
 }
 
-// GetToken loads specific NFT token for the given contract address and token ID
-func (db *MongoDbBridge) GetToken(nft *common.Address, tokenId *big.Int) (token *types.Token, err error) {
+// TokenUpdateMetadata updates basic metadata of the NFT token.
+func (db *MongoDbBridge) TokenUpdateMetadata(nft *types.Token) error {
+	if nft == nil {
+		return fmt.Errorf("no value to store")
+	}
+
+	// get the collection
+	col := db.client.Database(db.dbName).Collection(coTokens)
+	rs, err := col.UpdateOne(
+		context.Background(),
+		bson.D{{Key: fieldId, Value: nft.ID()}},
+		bson.D{
+			{Key: "$set", Value: bson.D{
+				{Key: fiTokenName, Value: nft.Name},
+				{Key: fiTokenDescription, Value: nft.Description},
+				{Key: fiTokenImageURI, Value: nft.ImageURI},
+				{Key: fiTokenMetadataUpdate, Value: nft.MetaUpdate},
+			}},
+		},
+	)
+	if err != nil {
+		log.Errorf("can not update metadata %s/%s; %s", nft.Contract.String(), nft.TokenId.String(), err.Error())
+		return err
+	}
+	if rs.UpsertedCount > 0 {
+		log.Infof("token %s/%s metadata updated", nft.Contract.String(), nft.TokenId.String())
+	}
+	return nil
+}
+
+// TokenUpdateMetadataRefreshSchedule sets the NFT metadata update schedule time.
+func (db *MongoDbBridge) TokenUpdateMetadataRefreshSchedule(nft *types.Token) error {
+	if nft == nil {
+		return fmt.Errorf("no value to store")
+	}
+
+	// get the collection
+	col := db.client.Database(db.dbName).Collection(coTokens)
+	rs, err := col.UpdateOne(
+		context.Background(),
+		bson.D{{Key: fieldId, Value: nft.ID()}},
+		bson.D{
+			{Key: "$set", Value: bson.D{
+				{Key: fiTokenMetadataUpdate, Value: nft.MetaUpdate},
+			}},
+		},
+	)
+	if err != nil {
+		log.Errorf("can not update metadata %s/%s; %s", nft.Contract.String(), nft.TokenId.String(), err.Error())
+		return err
+	}
+	if rs.UpsertedCount > 0 {
+		log.Infof("token %s/%s metadata updated", nft.Contract.String(), nft.TokenId.String())
+	}
+	return nil
+}
+
+// TokenGet loads specific NFT token for the given contract address and token ID
+func (db *MongoDbBridge) TokenGet(nft *common.Address, tokenId *big.Int) (token *types.Token, err error) {
 	col := db.client.Database(db.dbName).Collection(coTokens)
 	result := col.FindOne(context.Background(), bson.D{{Key: fieldId, Value: types.TokenIdFromAddress(nft, tokenId)}})
 
@@ -85,8 +161,44 @@ func (db *MongoDbBridge) GetToken(nft *common.Address, tokenId *big.Int) (token 
 		log.Errorf("can not decode token; %s", err.Error())
 		return nil, err
 	}
-
 	return &row, err
+}
+
+// TokenMetadataRefreshSet pulls s set of NFT tokens scheduled to be updated up to this time.
+func (db *MongoDbBridge) TokenMetadataRefreshSet() ([]*types.Token, error) {
+	list := make([]*types.Token, types.MetadataRefreshSetSize)
+	col := db.client.Database(db.dbName).Collection(coTokens)
+
+	// load the set from database
+	cur, err := col.Find(
+		context.Background(),
+		bson.D{
+			{Key: fiTokenMetadataUpdate, Value: bson.D{{"$lt", time.Now()}}},
+			{Key: fiTokenMetadataURI, Value: bson.D{{"$ne", ""}}},
+		},
+		options.Find().SetSort(bson.D{{Key: fiTokenMetadataUpdate, Value: -1}}).SetLimit(types.MetadataRefreshSetSize),
+	)
+	if err != nil {
+		log.Errorf("can not pull metadata refresh set; %s", err.Error())
+		return nil, err
+	}
+	defer func() {
+		if err := cur.Close(context.Background()); err != nil {
+			log.Errorf("can not close cursor; %s", err.Error())
+		}
+	}()
+
+	var i int
+	for cur.Next(context.Background()) {
+		var row types.Token
+		if err := cur.Decode(&row); err != nil {
+			log.Errorf("can not decode Token; %s", err.Error())
+			return nil, err
+		}
+		list[i] = &row
+		i++
+	}
+	return list[:i], nil
 }
 
 func (db *MongoDbBridge) ListTokens(cursor types.Cursor, count int, backward bool) (out *types.TokenList, err error) {
@@ -96,7 +208,7 @@ func (db *MongoDbBridge) ListTokens(cursor types.Cursor, count int, backward boo
 
 func (db *MongoDbBridge) ListCollectionTokens(collection common.Address, cursor types.Cursor, count int, backward bool) (out *types.TokenList, err error) {
 	filter := bson.D{
-		{ Key: fiTokenContract, Value: collection.String() },
+		{Key: fiTokenContract, Value: collection.String()},
 	}
 	return db.listTokens(&filter, cursor, count, backward)
 }

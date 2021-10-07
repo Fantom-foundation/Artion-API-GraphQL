@@ -3,7 +3,6 @@ package svc
 
 import (
 	"artion-api-graphql/internal/types"
-	"time"
 )
 
 // nftMetadataWorker represents a service responsible for processing NFT token metadata
@@ -75,32 +74,36 @@ func (mw *nftMetadataWorker) run() {
 func (mw *nftMetadataWorker) update(tok *types.Token) error {
 	// get metadata
 	if tok.Uri == "" {
-		log.Infof("token %d on contract %s URI not available", tok.TokenId.String(), tok.Contract.String())
+		log.Infof("token %s/%s metadata URI not available", tok.Contract.String(), tok.TokenId.String())
 		return nil
 	}
 
 	// get the metadata
-	log.Debugf("loading metadata for %s / #%d", tok.Contract.String(), tok.TokenId.ToInt().Uint64())
+	log.Debugf("loading metadata for %s/%s", tok.Contract.String(), tok.TokenId.String())
 	md, err := repo.GetTokenJsonMetadata(tok.Uri)
 	if err != nil {
-		log.Errorf("NFT metadata failed on %s / #%d; %s", tok.Contract.String(), tok.TokenId.ToInt().Uint64(), err.Error())
+		log.Errorf("NFT metadata failed on %s/%s; %s", tok.Contract.String(), tok.TokenId.String(), err.Error())
+
+		tok.ScheduleMetaUpdateOnFailure()
+		if e := repo.TokenUpdateMetadataRefreshSchedule(tok); e != nil {
+			log.Errorf("token schedule update failed;", e.Error())
+		}
 		return err
 	}
 
 	// update the data
+	tok.ScheduleMetaUpdateOnSuccess()
 	tok.Name = md.Name
 	tok.Description = md.Description
 	if md.Image != nil {
 		tok.ImageURI = *md.Image
 	}
-	tok.MetadataAge = types.Time(time.Now())
 
 	// update the token in persistent storage
-	if err := repo.StoreToken(tok); err != nil {
-		log.Errorf("failed metadata update on %s / #%d; %s", tok.Contract.String(), tok.TokenId.String(), err.Error())
+	if err := repo.TokenUpdateMetadata(tok); err != nil {
+		log.Errorf("failed metadata update on %s/%s; %s", tok.Contract.String(), tok.TokenId.String(), err.Error())
 		return err
 	}
-
-	log.Infof("NFT %s / %s metadata updated [%s]", tok.Contract.String(), tok.TokenId.String(), tok.Name)
+	log.Infof("NFT %s/%s metadata updated [%s]", tok.Contract.String(), tok.TokenId.String(), tok.Name)
 	return nil
 }
