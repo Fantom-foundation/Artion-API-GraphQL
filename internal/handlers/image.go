@@ -63,7 +63,7 @@ func TokenImageResolver(path string) (imageUri string, err error) {
 		return "", fmt.Errorf("unable to hex-decode tokenId; %s", err)
 	}
 
-	tok, err := repository.R().GetToken(&tokenAddress, (*hexutil.Big)(tokenId))
+	tok, err := repository.R().Token(&tokenAddress, (*hexutil.Big)(tokenId))
 	if err != nil {
 		return "", fmt.Errorf("unable to get token in db; %s", err)
 	}
