@@ -12,8 +12,8 @@ import (
 // Token object is constructed from query, data from db are loaded on demand into "dbToken" field.
 type Token struct {
 	Contract common.Address
-	TokenId hexutil.Big
-	dbToken *types.Token // data for token loaded from Mongo
+	TokenId  hexutil.Big
+	dbToken  *types.Token // data for token loaded from Mongo
 }
 
 type TokenEdge struct {
@@ -21,7 +21,8 @@ type TokenEdge struct {
 }
 
 func (edge TokenEdge) Cursor() (types.Cursor, error) {
-	return types.CursorFromId(types.TokenIdFromAddress(&edge.Node.Contract, (*big.Int)(&edge.Node.TokenId))), nil
+	id := edge.Node.dbToken.ID()
+	return types.CursorFromId(id[:]), nil
 }
 
 type TokenConnection struct {
@@ -37,8 +38,8 @@ func NewTokenConnection(list *types.TokenList) (con *TokenConnection, err error)
 	for i := 0; i < len(list.Collection); i++ {
 		resolverToken := Token{
 			Contract: list.Collection[i].Contract,
-			TokenId: list.Collection[i].TokenId,
-			dbToken: list.Collection[i],
+			TokenId:  list.Collection[i].TokenId,
+			dbToken:  list.Collection[i],
 		}
 		con.Edges[i].Node = &resolverToken
 	}
