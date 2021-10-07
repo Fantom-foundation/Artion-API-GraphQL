@@ -17,7 +17,7 @@ const (
 	coTokens = "tokens"
 
 	// fiTokenContract is the column storing the address of the NFT token contract.
-	fiTokenContract = "nft"
+	fiTokenContract = "contract"
 
 	// fiTokenMetadataURI is the column storing the NFT token metadata URI.
 	fiTokenMetadataURI = "uri"
