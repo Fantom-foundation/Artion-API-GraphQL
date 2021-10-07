@@ -68,27 +68,37 @@ func (d *Downloader) getFromUri(uri string) (data []byte, mimetype string, err e
 	if strings.HasPrefix(uri, "data:") {
 		return d.getFromDataUri(uri)
 	}
-	if strings.HasPrefix(uri, "/ipfs/") {
-		return d.getFromIpfs(uri)
-	}
-	if strings.HasPrefix(uri, "ipfs://") {
-		uri = "/ipfs/" + uri[7:]
-		return d.getFromIpfs(uri)
-	}
-	if d.skipHttpGateways {
-		if strings.HasPrefix(uri, "https://gateway.pinata.cloud/ipfs/") {
-			uri = "/ipfs/" + uri[34:]
-			return d.getFromIpfs(uri)
-		}
-		if strings.HasPrefix(uri, "https://ipfs.io/ipfs/") {
-			uri = "/ipfs/" + uri[21:]
-			return d.getFromIpfs(uri)
-		}
+	if ipfsUri := d.getIpfsUri(uri); ipfsUri != "" {
+		return d.getFromIpfs(ipfsUri)
 	}
 	if strings.HasPrefix(uri, "http://") || strings.HasPrefix(uri, "https://") {
 		return d.getFromHttp(uri)
 	}
 	return nil, "", errors.New("Unexpected URI scheme for " + uri)
+}
+
+// getIpfsUri try to obtain IPFS URI from the URI - returns empty string for non-ipfs uri
+// This function is responsible for IPFS URI detection, unification and for conversion
+// of known IPFS HTTP gateways URI into IPFS URI.
+func (d *Downloader) getIpfsUri(uri string) string {
+	if strings.HasPrefix(uri, "/ipfs/") {
+		return uri
+	}
+	if strings.HasPrefix(uri, "ipfs://") {
+		return "/ipfs/" + uri[7:]
+	}
+	if d.skipHttpGateways {
+		if strings.HasPrefix(uri, "https://gateway.pinata.cloud/ipfs/") {
+			return "/ipfs/" + uri[34:]
+		}
+		if strings.HasPrefix(uri, "https://ipfs.io/ipfs/") {
+			return "/ipfs/" + uri[21:]
+		}
+		if idx := strings.Index(uri, ".mypinata.cloud/ipfs/"); idx > 8 && idx < 30 {
+			return "/ipfs/" + uri[idx+21:]
+		}
+	}
+	return ""
 }
 
 // getFromIpfs downloads the file from IPFS (URI is expected in "/ipfs/{CID}" form).

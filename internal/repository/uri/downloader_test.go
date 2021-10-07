@@ -52,3 +52,28 @@ func TestDataUriMimetype(t *testing.T) { // requires locally running IPFS node
 	g.Expect(err).To(gomega.BeNil())
 	g.Expect(data.Mimetype).To(gomega.Equal("image/svg+xml"))
 }
+
+func TestIpfsUriConversion(t *testing.T) { // requires locally running IPFS node
+	g := gomega.NewGomegaWithT(t)
+	d := Downloader{
+		skipHttpGateways: true,
+	}
+
+	uri := d.getIpfsUri("/ipfs/QmTetVgMNVGj88s9NQuANyVmjMtZqhZDp8T21huiVGbfAi")
+	g.Expect(uri).To(gomega.Equal("/ipfs/QmTetVgMNVGj88s9NQuANyVmjMtZqhZDp8T21huiVGbfAi"))
+
+	uri = d.getIpfsUri("ipfs://QmTetVgMNVGj88s9NQuANyVmjMtZqhZDp8T21huiVGbfAi")
+	g.Expect(uri).To(gomega.Equal("/ipfs/QmTetVgMNVGj88s9NQuANyVmjMtZqhZDp8T21huiVGbfAi"))
+
+	uri = d.getIpfsUri("https://gateway.pinata.cloud/ipfs/QmdnUo3E1B27aLLTn3LsNZZqWtRfKMNgHAYzwVE5iYrP9P")
+	g.Expect(uri).To(gomega.Equal("/ipfs/QmdnUo3E1B27aLLTn3LsNZZqWtRfKMNgHAYzwVE5iYrP9P"))
+
+	uri = d.getIpfsUri("https://ipfs.io/ipfs/QmTetVgMNVGj88s9NQuANyVmjMtZqhZDp8T21huiVGbfAi?filename=TestToken.json")
+	g.Expect(uri).To(gomega.Equal("/ipfs/QmTetVgMNVGj88s9NQuANyVmjMtZqhZDp8T21huiVGbfAi?filename=TestToken.json"))
+
+	uri = d.getIpfsUri("https://artion6.mypinata.cloud/ipfs/Qma6nGVgxmf95FUP8zJPQo7vEzwuRhdC9i7QQAzFDFCuvx")
+	g.Expect(uri).To(gomega.Equal("/ipfs/Qma6nGVgxmf95FUP8zJPQo7vEzwuRhdC9i7QQAzFDFCuvx"))
+
+	uri = d.getIpfsUri("https://example.org/test.json")
+	g.Expect(uri).To(gomega.Equal(""))
+}
