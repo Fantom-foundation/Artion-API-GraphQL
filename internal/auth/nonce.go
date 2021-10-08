@@ -24,7 +24,7 @@ func verifyNonce(tokenString string, secret []byte) error {
 		return secret, nil
 	})
 	// expiration is already checked by JWT parser
-	if token.Valid && err == nil {
+	if token != nil && token.Valid && err == nil {
 		return nil
 	} else {
 		return fmt.Errorf("nonce is not valid; %s", err)

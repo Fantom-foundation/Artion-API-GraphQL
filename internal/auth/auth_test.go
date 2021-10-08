@@ -18,7 +18,7 @@ func TestNonce(t *testing.T) {
 	g.Expect(err).To(gomega.BeNil())
 }
 
-func TestVerification(t *testing.T) {
+func TestSignatureVerification(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 	message := "I am signing my one-time nonce: ABCDEF"
 	address := common.HexToAddress("0x83A6524Be9213B1Ce36bCc0DCEfb5eb51D87aD10")
@@ -43,7 +43,7 @@ func TestBearer(t *testing.T) {
 	g.Expect(*outAddress).To(gomega.Equal(address))
 }
 
-func TestAuthenticator(t *testing.T) {
+func TestChallengeGenerateVerify(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 	a := Authenticator{
 		bearerSecret: hexutil.MustDecode("0x0123456789"),
@@ -53,6 +53,23 @@ func TestAuthenticator(t *testing.T) {
 	challenge, err := a.GenerateChallenge()
 	g.Expect(err).To(gomega.BeNil())
 
-	err = a.verifyNonceInChallenge(challenge)
+	err = a.verifyChallengeContent(challenge)
 	g.Expect(err).To(gomega.BeNil())
+}
+
+func TestChallengeVerifyInvalids(t *testing.T) {
+	g := gomega.NewGomegaWithT(t)
+	a := Authenticator{
+		bearerSecret: hexutil.MustDecode("0x0123456789"),
+		nonceSecret:  hexutil.MustDecode("0xABCDEF"),
+	}
+
+	err := a.verifyChallengeContent(challengePrefix)
+	g.Expect(err).To(gomega.Not(gomega.BeNil()))
+
+	err = a.verifyChallengeContent(challengePrefix + "..")
+	g.Expect(err).To(gomega.Not(gomega.BeNil()))
+
+	err = a.verifyChallengeContent(challengePrefix + "...")
+	g.Expect(err).To(gomega.Not(gomega.BeNil()))
 }
