@@ -9,6 +9,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"math/big"
 )
 
 const (
@@ -16,13 +18,13 @@ const (
 	coListings = "listings"
 
 	// fiListingContract is the name of the DB column storing NFT contract address.
-	fiListingContract = "nft"
+	fiListingContract = "contract"
 
 	// FiListingTokenId represents the name of the DB column storing NFT token ID.
-	fiListingTokenId = "tokenId"
+	fiListingTokenId = "token"
 
 	// FiListingOwner represents the name of the DB column storing token owner.
-	fiListingOwner   = "owner"
+	fiListingOwner = "owner"
 )
 
 // initListingCollection initializes collection with indexes and additional parameters.
@@ -43,8 +45,29 @@ func (db *MongoDbBridge) initListingCollection(col *mongo.Collection) {
 	log.Debugf("transactions collection initialized")
 }
 
-func (db *MongoDbBridge) AddListing(listing *types.Listing) error {
-	if listing == nil {
+// ListingGet provides the token listing stored in the database, if available.
+func (db *MongoDbBridge) ListingGet(contract *common.Address, tokenID *big.Int, owner *common.Address) (*types.Listing, error) {
+	// get the collection
+	col := db.client.Database(db.dbName).Collection(coListings)
+
+	sr := col.FindOne(context.Background(), bson.D{{Key: fieldId, Value: types.ListingID(contract, tokenID, owner)}})
+	if sr.Err() != nil {
+		log.Errorf("could not find listing; %s", sr.Err().Error())
+		return nil, sr.Err()
+	}
+
+	// decode
+	var row types.Listing
+	if err := sr.Decode(&row); err != nil {
+		log.Errorf("could not decode listing; %s", sr.Err().Error())
+		return nil, sr.Err()
+	}
+	return &row, nil
+}
+
+// ListingStore adds the provided listing into the database.
+func (db *MongoDbBridge) ListingStore(lst *types.Listing) error {
+	if lst == nil {
 		return fmt.Errorf("no value to store")
 	}
 
@@ -52,7 +75,18 @@ func (db *MongoDbBridge) AddListing(listing *types.Listing) error {
 	col := db.client.Database(db.dbName).Collection(coListings)
 
 	// try to do the insert
-	if _, err := col.InsertOne(context.Background(), listing); err != nil {
+	id := lst.ID()
+	if _, err := col.UpdateOne(
+		context.Background(),
+		bson.D{{Key: fieldId, Value: id}},
+		bson.D{
+			{Key: "$set", Value: lst},
+			{Key: "$setOnInsert", Value: bson.D{
+				{Key: fieldId, Value: id},
+			}},
+		},
+		options.Update().SetUpsert(true),
+	); err != nil {
 		log.Errorf("can not add Listing; %s", err)
 		return err
 	}
@@ -63,51 +97,16 @@ func (db *MongoDbBridge) AddListing(listing *types.Listing) error {
 	return nil
 }
 
-func (db *MongoDbBridge) UpdateListing(listing *types.Listing) error {
-	if listing == nil {
-		return fmt.Errorf("no value to store")
-	}
-	col := db.client.Database(db.dbName).Collection(coListings)
-
-	filter := bson.D{
-		{ Key: fiListingOwner, Value: listing.Owner.String() },
-		{ Key: fiListingContract, Value: listing.Contract.String() },
-		{ Key: fiListingTokenId, Value: listing.TokenId.String() },
-	}
-
-	if _, err := col.ReplaceOne(context.Background(), filter, listing); err != nil {
-		log.Errorf("can not update Listing; %s", err)
-		return err
-	}
-	return nil
-}
-
-func (db *MongoDbBridge) RemoveListing(owner common.Address, contract common.Address, tokenId hexutil.Big) error {
-	col := db.client.Database(db.dbName).Collection(coListings)
-
-	filter := bson.D{
-		{ Key: fiListingOwner, Value: owner.String() },
-		{ Key: fiListingContract, Value: contract.String() },
-		{ Key: fiListingTokenId, Value: tokenId.String() },
-	}
-
-	if _, err := col.DeleteOne(context.Background(), filter); err != nil {
-		log.Errorf("can not update Listing; %s", err)
-		return err
-	}
-	return nil
-}
-
 func (db *MongoDbBridge) ListListings(contract *common.Address, tokenId *hexutil.Big, owner *common.Address, cursor types.Cursor, count int, backward bool) (out *types.ListingList, err error) {
 	filter := bson.D{}
 	if contract != nil {
-		filter = append(filter, primitive.E{ Key: fiListingContract, Value: contract.String() })
+		filter = append(filter, primitive.E{Key: fiListingContract, Value: contract.String()})
 	}
 	if tokenId != nil {
-		filter = append(filter, primitive.E{ Key: fiListingTokenId, Value: tokenId.String() })
+		filter = append(filter, primitive.E{Key: fiListingTokenId, Value: tokenId.String()})
 	}
 	if owner != nil {
-		filter = append(filter, primitive.E{ Key: fiListingOwner, Value: owner.String() })
+		filter = append(filter, primitive.E{Key: fiListingOwner, Value: owner.String()})
 	}
 	return db.listListings(&filter, cursor, count, backward)
 }

@@ -20,7 +20,8 @@ type ListingEdge struct {
 }
 
 func (edge ListingEdge) Cursor() (types.Cursor, error) {
-	return types.CursorFromId(edge.Node.Id), nil
+	id := (*types.Listing)(edge.Node).ID()
+	return types.CursorFromId(id[:]), nil
 }
 
 type ListingConnection struct {

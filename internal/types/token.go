@@ -71,10 +71,10 @@ func NewToken(con *common.Address, tokenId *big.Int, uri string, ts int64, block
 // TokenIdFromAddress generates unique token ID from an NFT contract address and token ID.
 // Collision approx. for p(n)=1e-10: n=4.000.000.000 tokens indexed
 // Collision approx. for p(n)=1e-12: n=500.000.000 tokens indexed
-func TokenIdFromAddress(adr *common.Address, TokenId *big.Int) primitive.ObjectID {
+func TokenIdFromAddress(adr *common.Address, tokenId *big.Int) primitive.ObjectID {
 	hash := sha256.New()
 	hash.Write(adr.Bytes())
-	hash.Write(TokenId.Bytes())
+	hash.Write(tokenId.Bytes())
 
 	var id [12]byte
 	copy(id[:], hash.Sum(nil))

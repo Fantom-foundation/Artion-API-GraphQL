@@ -75,6 +75,18 @@ func newLogObserver(mgr *Manager) *logObserver {
 
 			/* erc1155::event URI(string _uri, uint256 indexed _id) */
 			// common.HexToHash("0x6bb7ff708619ba0610cba295a58592e0451dee2622938c8755667688daf3529b"): erc1155UriChanged,
+
+			/* Marketplace::event ItemListed(address indexed owner, address indexed nft, uint256 tokenId, uint256 quantity, address payToken, uint256 pricePerItem, uint256 startingTime) */
+			common.HexToHash("0xa0294f02f8ad82fe4744717b0f953a105547196cd3c67056200c1a4ae3aa2629"): marketNFTListed,
+
+			/* Marketplace::event ItemUpdated(address indexed owner, address indexed nft, uint256 tokenId, address payToken, uint256 newPrice) */
+			common.HexToHash("0x60a11f1619b1716bc2857bf610d4bc631336e14d197025fd5875c1aca1ac7cbd"): marketNFTUpdated,
+
+			/* Marketplace::event ItemCanceled(address indexed owner, address indexed nft, uint256 tokenId) */
+			common.HexToHash("0x9ba1a3cb55ce8d63d072a886f94d2a744f50cddf82128e897d0661f5ec623158"): marketNFTUnlisted,
+
+			/* Marketplace::event ItemSold(address indexed seller, address indexed buyer, address indexed nft, uint256 tokenId, uint256 quantity, address payToken, int256 unitPrice, uint256 pricePerItem) */
+			common.HexToHash("0x949d1413baca5c0e4ab96b0198d536cac8cdcc17cb909b9ea24594f42ed9fa0d"): marketNFTSold,
 		},
 	}
 }

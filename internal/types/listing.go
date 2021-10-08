@@ -4,28 +4,38 @@ import (
 	"crypto/sha256"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"time"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"math/big"
 )
 
 // Listing represents offer for anybody to buy given token from the owner.
 type Listing struct {
-	Id           []byte         `bson:"_id"`
 	Owner        common.Address `bson:"owner"`
-	Contract     common.Address `bson:"nft"`
-	TokenId      hexutil.Big    `bson:"tokenId"`
+	Contract     common.Address `bson:"contract"`
+	TokenId      hexutil.Big    `bson:"token"`
 	Quantity     hexutil.Big    `bson:"quantity"`
-	PayToken     common.Address `bson:"payToken"`
-	PricePerItem hexutil.Big    `bson:"pricePerItem"`
-	StartTime    Time           `bson:"startTime"`
+	PayToken     common.Address `bson:"pay_token"`
+	UnitPrice    hexutil.Big    `bson:"price"`
+	Created      Time           `bson:"created"`
+	StartTime    Time           `bson:"start"`
+	LastUpdate   *Time          `bson:"updated"`
+	Closed       *Time          `bson:"closed"`
+	OrdinalIndex int64          `bson:"index"`
 }
 
-// GenerateId generates unique listing ID
-// One owner can have only one listing of one token.
-func (l *Listing) GenerateId() {
+// ListingID generates unique listing ID for the given contract, token, and owner.
+func ListingID(contract *common.Address, tokenID *big.Int, owner *common.Address) primitive.ObjectID {
 	hash := sha256.New()
-	hash.Write(l.Contract.Bytes())
-	hash.Write(l.TokenId.ToInt().Bytes())
-	hash.Write(l.Owner.Bytes())
-	hash.Write(([]byte)(time.Time(l.StartTime).String()))
-	l.Id = hash.Sum(nil)
+	hash.Write(contract.Bytes())
+	hash.Write(tokenID.Bytes())
+	hash.Write(owner.Bytes())
+
+	var id [12]byte
+	copy(id[:], hash.Sum(nil))
+	return id
+}
+
+// ID generates a unique identifier of the Artion Marketplace listing.
+func (l *Listing) ID() primitive.ObjectID {
+	return ListingID(&l.Contract, (*big.Int)(&l.TokenId), &l.Owner)
 }
