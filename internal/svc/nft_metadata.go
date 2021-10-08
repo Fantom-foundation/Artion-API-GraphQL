@@ -11,7 +11,7 @@ const (
 	nftMetadataUpdaterQueueCapacity = 5000
 
 	// nftMetadataRefreshTick is the tick used to pull NFT metadata refresh candidates.
-	nftMetadataRefreshTick = 2 * time.Minute
+	nftMetadataRefreshTick = 15 * time.Second
 )
 
 // nftMetadataUpdater represents a service responsible for periodic update of NFT token metadata
@@ -89,15 +89,11 @@ func (mu *nftMetadataUpdater) run() {
 		case <-refreshTick.C:
 			mu.scheduleMetadataRefreshSet()
 		case nft, ok = <-mu.inTokens:
-			// input tokens queue
+			if !ok {
+				log.Noticef("input queue closed, terminating")
+				return
+			}
 		case nft = <-mu.refreshQueue:
-			// refresh tokens queue
-		}
-
-		// do we have a valid input?
-		if !ok {
-			log.Noticef("input queue closed, terminating")
-			return
 		}
 
 		// do we have a token to be pushed to the worker?

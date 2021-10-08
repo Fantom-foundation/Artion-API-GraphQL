@@ -14,10 +14,6 @@ const (
 	// metadata update attempts of new tokens.
 	TokenDefaultMetadataUpdateDelay = 5 * time.Minute
 
-	// TokenFailedMetadataUpdateDelay is the minimal time delay before
-	// a new metadata update attempt after a failure.
-	TokenFailedMetadataUpdateDelay = 15 * time.Minute
-
 	// TokenSuccessMetadataUpdateDelay is the minimal time delay before
 	// a new metadata update attempt after a successful update.
 	TokenSuccessMetadataUpdateDelay = 7 * 24 * time.Hour
@@ -36,7 +32,6 @@ type Token struct {
 	ImageURI        string         `bson:"image"`
 	OrdinalIndex    int64          `bson:"index"`
 	Created         Time           `bson:"created"`
-	MetaUpdate      Time           `bson:"meta_update"`
 	IsListed        bool           `bson:"is_listed"`
 	IsAuction       bool           `bson:"is_auction"`
 	HasOffers       bool           `bson:"has_offers"`
@@ -50,6 +45,10 @@ type Token struct {
 	LastBid         Time           `bson:"last_bid"`
 	LastList        Time           `bson:"last_list"`
 	Price           hexutil.Big    `bson:"price"`
+
+	// metadata refresh helpers
+	MetaUpdate   Time  `bson:"meta_update"`
+	MetaFailures int32 `bson:"meta_failures"`
 }
 
 // OrdinalIndex generates numeric ordinal index from block number and log record index.
@@ -88,11 +87,14 @@ func (t *Token) ID() primitive.ObjectID {
 }
 
 // ScheduleMetaUpdateOnFailure sets new metadata update time after failed attempt.
+// Every failure makes the next delay longer since we expect the failure to happen again.
 func (t *Token) ScheduleMetaUpdateOnFailure() {
-	t.MetaUpdate = Time(time.Now().Add(TokenFailedMetadataUpdateDelay))
+	t.MetaUpdate = Time(time.Now().Add(time.Duration(2*t.MetaFailures+1) * TokenDefaultMetadataUpdateDelay))
+	t.MetaFailures++
 }
 
 // ScheduleMetaUpdateOnSuccess sets new metadata update time successful metadata update.
 func (t *Token) ScheduleMetaUpdateOnSuccess() {
 	t.MetaUpdate = Time(time.Now().Add(TokenSuccessMetadataUpdateDelay))
+	t.MetaFailures = 0
 }

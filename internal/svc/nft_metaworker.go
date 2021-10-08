@@ -3,6 +3,7 @@ package svc
 
 import (
 	"artion-api-graphql/internal/types"
+	"time"
 )
 
 // nftMetadataWorker represents a service responsible for processing NFT token metadata
@@ -82,12 +83,16 @@ func (mw *nftMetadataWorker) update(tok *types.Token) error {
 	log.Debugf("loading metadata for %s/%s", tok.Contract.String(), tok.TokenId.String())
 	md, err := repo.GetTokenJsonMetadata(tok.Uri)
 	if err != nil {
-		log.Errorf("NFT metadata failed on %s/%s; %s", tok.Contract.String(), tok.TokenId.String(), err.Error())
+		log.Errorf("NFT metadata [%s] failed on %s/%s; %s", tok.Uri, tok.Contract.String(), tok.TokenId.String(), err.Error())
 
 		tok.ScheduleMetaUpdateOnFailure()
 		if e := repo.TokenUpdateMetadataRefreshSchedule(tok); e != nil {
 			log.Errorf("token schedule update failed;", e.Error())
 		}
+
+		log.Infof("next update #%d of %s/%s at %s",
+			tok.MetaFailures, tok.Contract.String(), tok.TokenId.String(),
+			time.Time(tok.MetaUpdate).Format(time.Stamp))
 		return err
 	}
 

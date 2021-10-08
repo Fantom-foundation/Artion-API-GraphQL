@@ -34,6 +34,10 @@ const (
 	// fiTokenMetadataUpdate is the column storing the time
 	// of the metadata update schedule of the NFT token.
 	fiTokenMetadataUpdate = "meta_update"
+
+	// fiTokenMetadataUpdate is the column storing the time
+	// of the metadata update schedule of the NFT token.
+	fiTokenMetadataUpdateFailures = "meta_failures"
 )
 
 // initTokenCollection initializes collection with indexes and additional parameters.
@@ -111,6 +115,7 @@ func (db *MongoDbBridge) TokenUpdateMetadata(nft *types.Token) error {
 				{Key: fiTokenDescription, Value: nft.Description},
 				{Key: fiTokenImageURI, Value: nft.ImageURI},
 				{Key: fiTokenMetadataUpdate, Value: nft.MetaUpdate},
+				{Key: fiTokenMetadataUpdateFailures, Value: nft.MetaFailures},
 			}},
 		},
 	)
@@ -138,6 +143,7 @@ func (db *MongoDbBridge) TokenUpdateMetadataRefreshSchedule(nft *types.Token) er
 		bson.D{
 			{Key: "$set", Value: bson.D{
 				{Key: fiTokenMetadataUpdate, Value: nft.MetaUpdate},
+				{Key: fiTokenMetadataUpdateFailures, Value: nft.MetaFailures},
 			}},
 		},
 	)
