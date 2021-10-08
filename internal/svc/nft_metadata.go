@@ -87,7 +87,6 @@ func (mu *nftMetadataUpdater) run() {
 		case <-mu.sigStop:
 			return
 		case <-refreshTick.C:
-			// try to pull a refresh set
 			mu.scheduleMetadataRefreshSet()
 		case nft, ok = <-mu.inTokens:
 			// input tokens queue
@@ -97,7 +96,7 @@ func (mu *nftMetadataUpdater) run() {
 
 		// do we have a valid input?
 		if !ok {
-			log.Debugf("input queue closed, terminating")
+			log.Noticef("input queue closed, terminating")
 			return
 		}
 
@@ -116,11 +115,20 @@ func (mu *nftMetadataUpdater) run() {
 
 // scheduleMetadataRefreshSet pulls new refresh set from repository and pushes it into the scheduler.
 func (mu *nftMetadataUpdater) scheduleMetadataRefreshSet() {
+	defer func() {
+		if p := recover(); p != nil {
+			log.Errorf("could not collect refresh set; ", p)
+		}
+	}()
+
 	rs, err := repo.TokenMetadataRefreshSet()
 	if err != nil {
 		log.Errorf("metadata refresh set not available; %s", err.Error())
 		return
 	}
+
+	// log data
+	log.Infof("loaded %d tokens in refresh set", len(rs))
 
 	// push the refresh set into the refresh queue
 	// please note we don't wait for tokens to be stored

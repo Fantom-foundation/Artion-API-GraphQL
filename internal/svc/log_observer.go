@@ -105,6 +105,7 @@ func (lo *logObserver) run() {
 
 	defer func() {
 		tick.Stop()
+
 		close(lo.outNftTokens)
 		lo.mgr.closed(lo)
 	}()
