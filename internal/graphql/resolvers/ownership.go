@@ -2,6 +2,7 @@ package resolvers
 
 import (
 	"artion-api-graphql/internal/types"
+	"artion-api-graphql/internal/types/sorting"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
 )
@@ -20,8 +21,7 @@ type OwnershipEdge struct {
 }
 
 func (edge OwnershipEdge) Cursor() (types.Cursor, error) {
-	id := (*types.Ownership)(edge.Node).ID()
-	return types.CursorFromId(id[:]), nil
+	return sorting.OwnershipSortingNone.GetCursor((*types.Ownership)(edge.Node))
 }
 
 type OwnershipConnection struct {

@@ -137,16 +137,25 @@ func (rs *RootResolver) Token(args struct {
 	return &token, nil
 }
 
-func (rs *RootResolver) Tokens(args struct{ PaginationInput }) (con *TokenConnection, err error) {
+func (rs *RootResolver) Tokens(args struct{
+	SortBy *string
+	SortDir *string
+	PaginationInput
+}) (con *TokenConnection, err error) {
 	cursor, count, backward, err := args.ToRepositoryInput()
 	if err != nil {
 		return nil, err
 	}
-	list, err := repository.R().ListTokens(cursor, count, backward)
+	sorting, err := tokenSortingFromString(args.SortBy)
 	if err != nil {
 		return nil, err
 	}
-	return NewTokenConnection(list)
+
+	list, err := repository.R().ListTokens(sorting, isSortingDirectionDesc(args.SortDir), cursor, count, backward)
+	if err != nil {
+		return nil, err
+	}
+	return NewTokenConnection(list, sorting)
 }
 
 func (rs *RootResolver) Listings(args struct{ PaginationInput }) (con *ListingConnection, err error) {

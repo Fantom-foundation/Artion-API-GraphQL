@@ -3,6 +3,7 @@ package repository
 
 import (
 	"artion-api-graphql/internal/types"
+	"artion-api-graphql/internal/types/sorting"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
@@ -43,8 +44,8 @@ func (p *Proxy) TokenMetadataRefreshSet() ([]*types.Token, error) {
 	return p.db.TokenMetadataRefreshSet()
 }
 
-func (p *Proxy) ListTokens(cursor types.Cursor, count int, backward bool) (list *types.TokenList, err error) {
-	return p.db.ListTokens(cursor, count, backward)
+func (p *Proxy) ListTokens(sorting sorting.TokenSorting, sortDesc bool, cursor types.Cursor, count int, backward bool) (list *types.TokenList, err error) {
+	return p.db.ListTokens(sorting, sortDesc, cursor, count, backward)
 }
 
 func (p *Proxy) ListCollectionTokens(collection common.Address, cursor types.Cursor, count int, backward bool) (out *types.TokenList, err error) {

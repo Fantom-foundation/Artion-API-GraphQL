@@ -2,6 +2,7 @@ package resolvers
 
 import (
 	"artion-api-graphql/internal/types"
+	"artion-api-graphql/internal/types/sorting"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
 )
@@ -20,7 +21,7 @@ type OfferEdge struct {
 }
 
 func (edge OfferEdge) Cursor() (types.Cursor, error) {
-	return types.CursorFromId(edge.Node.Id), nil
+	return sorting.OfferSortingNone.GetCursor((*types.Offer)(edge.Node))
 }
 
 type OfferConnection struct {

@@ -2,6 +2,7 @@ package db
 
 import (
 	"artion-api-graphql/internal/types"
+	"artion-api-graphql/internal/types/sorting"
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
@@ -122,7 +123,7 @@ func (db *MongoDbBridge) listListings(filter *bson.D, cursor types.Cursor, count
 		return nil, err
 	}
 
-	ld, err := db.findPaginated(col, filter, cursor, count, backward)
+	ld, err := db.findPaginated(col, filter, cursor, count, sorting.ListingSortingNone, backward)
 	if err != nil {
 		log.Errorf("error loading listings list; %s", err.Error())
 		return nil, err

@@ -2,6 +2,7 @@ package db
 
 import (
 	"artion-api-graphql/internal/types"
+	"artion-api-graphql/internal/types/sorting"
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
@@ -207,19 +208,19 @@ func (db *MongoDbBridge) TokenMetadataRefreshSet() ([]*types.Token, error) {
 	return list[:i], nil
 }
 
-func (db *MongoDbBridge) ListTokens(cursor types.Cursor, count int, backward bool) (out *types.TokenList, err error) {
+func (db *MongoDbBridge) ListTokens(sorting sorting.TokenSorting, sortDesc bool, cursor types.Cursor, count int, backward bool) (out *types.TokenList, err error) {
 	filter := bson.D{}
-	return db.listTokens(&filter, cursor, count, backward)
+	return db.listTokens(&filter, sorting, sortDesc, cursor, count, backward)
 }
 
 func (db *MongoDbBridge) ListCollectionTokens(collection common.Address, cursor types.Cursor, count int, backward bool) (out *types.TokenList, err error) {
 	filter := bson.D{
 		{Key: fiTokenContract, Value: collection.String()},
 	}
-	return db.listTokens(&filter, cursor, count, backward)
+	return db.listTokens(&filter, sorting.TokenSortingNone, false, cursor, count, backward)
 }
 
-func (db *MongoDbBridge) listTokens(filter *bson.D, cursor types.Cursor, count int, backward bool) (out *types.TokenList, err error) {
+func (db *MongoDbBridge) listTokens(filter *bson.D, sorting sorting.TokenSorting, sortDesc bool, cursor types.Cursor, count int, backward bool) (out *types.TokenList, err error) {
 	var list types.TokenList
 	col := db.client.Database(db.dbName).Collection(coTokens)
 	ctx := context.Background()
@@ -229,7 +230,7 @@ func (db *MongoDbBridge) listTokens(filter *bson.D, cursor types.Cursor, count i
 		return nil, err
 	}
 
-	ld, err := db.findPaginated(col, filter, cursor, count, backward)
+	ld, err := db.findPaginated(col, filter, cursor, count, sorting, backward != sortDesc)
 	if err != nil {
 		log.Errorf("error loading tokens list; %s", err.Error())
 		return nil, err
@@ -252,6 +253,7 @@ func (db *MongoDbBridge) listTokens(filter *bson.D, cursor types.Cursor, count i
 			}
 			list.Collection = append(list.Collection, &row)
 		} else {
+			// skip the last row and set HasNext only
 			list.HasNext = true
 		}
 	}

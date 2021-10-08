@@ -3,6 +3,7 @@ package resolvers
 import (
 	"artion-api-graphql/internal/repository"
 	"artion-api-graphql/internal/types"
+	"artion-api-graphql/internal/types/sorting"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -18,11 +19,12 @@ type Token struct {
 
 type TokenEdge struct {
 	Node *Token
+	sorting sorting.TokenSorting
 }
 
 func (edge TokenEdge) Cursor() (types.Cursor, error) {
-	id := edge.Node.dbToken.ID()
-	return types.CursorFromId(id[:]), nil
+	// dbToken is always already loaded when in Edge
+	return edge.sorting.GetCursor(edge.Node.dbToken)
 }
 
 type TokenConnection struct {
@@ -31,7 +33,7 @@ type TokenConnection struct {
 	PageInfo   PageInfo
 }
 
-func NewTokenConnection(list *types.TokenList) (con *TokenConnection, err error) {
+func NewTokenConnection(list *types.TokenList, sorting sorting.TokenSorting) (con *TokenConnection, err error) {
 	con = new(TokenConnection)
 	con.TotalCount = (hexutil.Big)(*big.NewInt(list.TotalCount))
 	con.Edges = make([]TokenEdge, len(list.Collection))
@@ -41,7 +43,10 @@ func NewTokenConnection(list *types.TokenList) (con *TokenConnection, err error)
 			TokenId:  list.Collection[i].TokenId,
 			dbToken:  list.Collection[i],
 		}
-		con.Edges[i].Node = &resolverToken
+		con.Edges[i] = TokenEdge{
+			Node: &resolverToken,
+			sorting: sorting,
+		}
 	}
 	con.PageInfo.HasNextPage = list.HasNext
 	con.PageInfo.HasPreviousPage = list.HasPrev

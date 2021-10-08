@@ -3,6 +3,7 @@ package db
 
 import (
 	"artion-api-graphql/internal/types"
+	"artion-api-graphql/internal/types/sorting"
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
@@ -123,7 +124,7 @@ func (db *MongoDbBridge) listOwnerships(filter *bson.D, cursor types.Cursor, cou
 		return nil, err
 	}
 
-	ld, err := db.findPaginated(col, filter, cursor, count, backward)
+	ld, err := db.findPaginated(col, filter, cursor, count, sorting.OwnershipSortingNone, backward)
 	if err != nil {
 		log.Errorf("error loading ownerships list; %s", err.Error())
 		return nil, err

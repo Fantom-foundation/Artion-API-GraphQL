@@ -46,3 +46,9 @@ type TokenConnection {
     # PageInfo is an information about the current page of the list.
     pageInfo: PageInfo!
 }
+
+enum TokenSorting {
+    CREATED
+    LAST_LISTING
+    LAST_TRADE
+}

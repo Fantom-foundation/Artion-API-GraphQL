@@ -3,6 +3,7 @@ package resolvers
 import (
 	"artion-api-graphql/internal/repository"
 	"artion-api-graphql/internal/types"
+	"artion-api-graphql/internal/types/sorting"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
@@ -19,7 +20,7 @@ type CollectionEdge struct {
 }
 
 func (edge CollectionEdge) Cursor() (types.Cursor, error) {
-	return types.CursorFromId(edge.Node.Contract.Bytes()), nil
+	return sorting.CollectionSortingNone.GetCursor(edge.Node.dbCollection)
 }
 
 type CollectionConnection struct {
@@ -117,5 +118,5 @@ func (t *Collection) Tokens(args struct{ PaginationInput }) (con *TokenConnectio
 	if err != nil {
 		return nil, err
 	}
-	return NewTokenConnection(list)
+	return NewTokenConnection(list, sorting.TokenSortingNone)
 }

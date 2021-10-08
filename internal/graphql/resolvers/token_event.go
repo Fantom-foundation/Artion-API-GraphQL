@@ -2,6 +2,7 @@ package resolvers
 
 import (
 	"artion-api-graphql/internal/types"
+	"artion-api-graphql/internal/types/sorting"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
 )
@@ -13,7 +14,7 @@ type TokenEventEdge struct {
 }
 
 func (edge TokenEventEdge) Cursor() (types.Cursor, error) {
-	return types.CursorFromId(edge.Node.Id), nil
+	return sorting.TokenEventSortingNone.GetCursor((*types.TokenEvent)(edge.Node))
 }
 
 type TokenEventConnection struct {

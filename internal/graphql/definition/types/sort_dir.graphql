@@ -1,0 +1,5 @@
+# Direction of sorting - ascending or descending
+enum SortingDirection {
+    ASC
+    DESC
+}
