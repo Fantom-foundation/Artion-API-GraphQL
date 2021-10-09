@@ -19,5 +19,5 @@ func (ts ListingSorting) OrdinalFieldBson() string {
 func (ts ListingSorting) GetCursor(listing *types.Listing) (types.Cursor, error) {
 	params := make(map[string]interface{})
 	params["_id"] = listing.Id
-	return types.CursorFromParams(params)
+	return CursorFromParams(params)
 }

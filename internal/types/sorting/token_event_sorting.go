@@ -19,5 +19,5 @@ func (ts TokenEventSorting) OrdinalFieldBson() string {
 func (ts TokenEventSorting) GetCursor(tokenEvent *types.TokenEvent) (types.Cursor, error) {
 	params := make(map[string]interface{})
 	params["_id"] = tokenEvent.Id
-	return types.CursorFromParams(params)
+	return CursorFromParams(params)
 }

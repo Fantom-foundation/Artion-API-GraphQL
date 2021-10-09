@@ -26,5 +26,5 @@ func (ts CollectionSorting) GetCursor(collection *types.Collection) (types.Curso
 	if ts == CollectionSortingName {
 		params["name"] = collection.Name
 	}
-	return types.CursorFromParams(params)
+	return CursorFromParams(params)
 }

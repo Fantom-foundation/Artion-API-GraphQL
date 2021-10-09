@@ -4,7 +4,6 @@ import (
 	"artion-api-graphql/internal/types"
 	"artion-api-graphql/internal/types/sorting"
 	"context"
-	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -22,22 +21,19 @@ func (db *MongoDbBridge) getTotalCount(col *mongo.Collection, filter *bson.D) (i
 	return totalCount, err
 }
 
-func cursorToFilter(cursor types.Cursor, sorting sorting.Sorting, backward bool) (bson.E, error) {
-	curParams, err := cursor.ToParams()
+func cursorToFilter(cursor types.Cursor, sort sorting.Sorting, backward bool) (bson.E, error) {
+	curParams, err := sorting.CursorToParams(cursor)
 	if err != nil {
 		return bson.E{}, err
 	}
-
-	x, _ := json.Marshal(curParams)
-	log.Errorf("curParams %s", x)
 
 	cmpOp := "$gt" // greater than - for ascending sorting
 	if backward {
 		cmpOp = "$lt" // less than - for descending sorting
 	}
 
-	sortedField := sorting.SortedFieldBson()
-	ordinalField := sorting.OrdinalFieldBson()
+	sortedField := sort.SortedFieldBson()
+	ordinalField := sort.OrdinalFieldBson()
 
 	if sortedField == "" {
 		return bson.E{ Key: ordinalField, Value: bson.D{{cmpOp, curParams[ordinalField] }} }, nil
@@ -65,9 +61,6 @@ func (db *MongoDbBridge) findPaginated(col *mongo.Collection, inputFilter *bson.
 		}
 		filter = append(filter, paginationFilter)
 	}
-
-	x, _ := json.Marshal(filter)
-	log.Errorf("FILTER %s", x)
 
 	opt := options.Find()
 	direction := 1

@@ -37,5 +37,5 @@ func (ts TokenSorting) GetCursor(token *types.Token) (types.Cursor, error) {
 	if ts == TokenSortingLastTrade {
 		params["last_trade"] = token.LastTrade
 	}
-	return types.CursorFromParams(params)
+	return CursorFromParams(params)
 }

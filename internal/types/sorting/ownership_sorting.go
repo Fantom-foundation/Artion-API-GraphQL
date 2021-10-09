@@ -19,5 +19,5 @@ func (ts OwnershipSorting) OrdinalFieldBson() string {
 func (ts OwnershipSorting) GetCursor(ownership *types.Ownership) (types.Cursor, error) {
 	params := make(map[string]interface{})
 	params["_id"] = ownership.ID()
-	return types.CursorFromParams(params)
+	return CursorFromParams(params)
 }
