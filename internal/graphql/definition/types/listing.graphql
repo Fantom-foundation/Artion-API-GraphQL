@@ -6,8 +6,9 @@ type Listing {
     token: Token!
     quantity: BigInt!
     payToken: Address!
-    pricePerItem: BigInt!
+    unitPrice: BigInt!
     startTime: Time!
+    closed: Time
 }
 
 type ListingEdge {
