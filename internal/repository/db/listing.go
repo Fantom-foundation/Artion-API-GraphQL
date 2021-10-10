@@ -34,14 +34,16 @@ func (db *MongoDbBridge) ListingGet(contract *common.Address, tokenID *big.Int, 
 
 	sr := col.FindOne(context.Background(), bson.D{{Key: fieldId, Value: types.ListingID(contract, tokenID, owner)}})
 	if sr.Err() != nil {
-		log.Errorf("could not find listing; %s", sr.Err().Error())
+		log.Errorf("could not find listing %s/%s of owner %s; %s",
+			contract.String(), (*hexutil.Big)(tokenID).String(), owner.String(), sr.Err().Error())
 		return nil, sr.Err()
 	}
 
 	// decode
 	var row types.Listing
 	if err := sr.Decode(&row); err != nil {
-		log.Errorf("could not decode listing; %s", sr.Err().Error())
+		log.Errorf("could not decode listing %s/%s of owner %s; %s",
+			contract.String(), (*hexutil.Big)(tokenID).String(), owner.String(), sr.Err().Error())
 		return nil, sr.Err()
 	}
 	return &row, nil
