@@ -50,6 +50,8 @@ func marketNFTListed(evt *eth.Log, _ *logObserver) {
 	if err := repo.TokenMarkListed(&lst.Contract, (*big.Int)(&lst.TokenId), &lst.UnitPrice, (*time.Time)(&lst.Created)); err != nil {
 		log.Errorf("could not mark token as listed; %s", err.Error())
 	}
+
+	log.Infof("added new listing of %s/%s owner %s", lst.Contract.String(), lst.TokenId.String(), lst.Owner.String())
 }
 
 // marketNFTUpdated handles an update call on already listed NFT token.
@@ -94,6 +96,8 @@ func marketNFTUpdated(evt *eth.Log, _ *logObserver) {
 	if err := repo.TokenMarkListed(&lst.Contract, (*big.Int)(&lst.TokenId), &lst.UnitPrice, (*time.Time)(&lst.Created)); err != nil {
 		log.Errorf("could not mark token as listed; %s", err.Error())
 	}
+
+	log.Infof("updated listing of %s/%s owner %s", lst.Contract.String(), lst.TokenId.String(), lst.Owner.String())
 }
 
 // marketNFTUnlisted processes canceled NFT listing event.
@@ -132,8 +136,10 @@ func marketNFTUnlisted(evt *eth.Log, _ *logObserver) {
 
 	// mark the token as listed
 	if err := repo.TokenMarkUnlisted(&lst.Contract, tokenID); err != nil {
-		log.Errorf("could not mark token as listed; %s", err.Error())
+		log.Errorf("could not mark token as unlisted; %s", err.Error())
 	}
+
+	log.Infof("canceled and closed listing of %s/%s owner %s", lst.Contract.String(), lst.TokenId.String(), lst.Owner.String())
 }
 
 // marketNFTSold processes NFT listing being finished with sale event.
@@ -175,6 +181,8 @@ func marketNFTSold(evt *eth.Log, _ *logObserver) {
 
 	// mark the token as sold
 	if err := repo.TokenMarkSold(&lst.Contract, tokenID, &lst.UnitPrice, &up); err != nil {
-		log.Errorf("could not mark token as listed; %s", err.Error())
+		log.Errorf("could not mark token as sold; %s", err.Error())
 	}
+
+	log.Infof("closed sold listing of %s/%s owner %s", lst.Contract.String(), lst.TokenId.String(), lst.Owner.String())
 }
