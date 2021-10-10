@@ -4,7 +4,10 @@ import (
 	"crypto/sha256"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"math/big"
 	"time"
 )
@@ -25,7 +28,7 @@ const (
 // Token represents item list-able in the marketplace.
 type Token struct {
 	Contract        common.Address `bson:"contract"`
-	TokenId         hexutil.Big    `bson:"tokenId"`
+	TokenId         hexutil.Big    `bson:"token"`
 	Uri             string         `bson:"uri"`
 	Name            string         `bson:"name"`
 	Description     string         `bson:"desc"`
@@ -51,6 +54,18 @@ type Token struct {
 	MetaFailures int32 `bson:"meta_failures"`
 }
 
+// TokensIndexes provides a list of indexes expected to exist on tokens' collection.
+func TokensIndexes() []mongo.IndexModel {
+	ix := make([]mongo.IndexModel, 2)
+
+	ixContractToken := "ix_contract_token"
+	ix[0] = mongo.IndexModel{Keys: bson.D{{Key: "contract", Value: 1}, {Key: "token", Value: 1}}, Options: &options.IndexOptions{Name: &ixContractToken}}
+
+	ixOrdinal := "ix_ordinal"
+	ix[1] = mongo.IndexModel{Keys: bson.D{{Key: "index", Value: -1}}, Options: &options.IndexOptions{Name: &ixOrdinal}}
+	return ix
+}
+
 // OrdinalIndex generates numeric ordinal index from block number and log record index.
 func OrdinalIndex(blk int64, index int64) int64 {
 	return (blk<<12)&0x7FFFFFFFFFFFFFFF | (index & 0x3fff)
@@ -71,10 +86,10 @@ func NewToken(con *common.Address, tokenId *big.Int, uri string, ts int64, block
 // TokenIdFromAddress generates unique token ID from an NFT contract address and token ID.
 // Collision approx. for p(n)=1e-10: n=4.000.000.000 tokens indexed
 // Collision approx. for p(n)=1e-12: n=500.000.000 tokens indexed
-func TokenIdFromAddress(adr *common.Address, TokenId *big.Int) primitive.ObjectID {
+func TokenIdFromAddress(adr *common.Address, tokenId *big.Int) primitive.ObjectID {
 	hash := sha256.New()
 	hash.Write(adr.Bytes())
-	hash.Write(TokenId.Bytes())
+	hash.Write(tokenId.Bytes())
 
 	var id [12]byte
 	copy(id[:], hash.Sum(nil))

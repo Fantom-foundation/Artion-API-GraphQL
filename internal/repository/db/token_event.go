@@ -9,27 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
-
-// initTokenEventCollection initializes collection with indexes and additional parameters.
-func (db *MongoDbBridge) initTokenEventCollection(col *mongo.Collection) {
-	// prepare index models
-	ix := make([]mongo.IndexModel, 0)
-
-	// index sender and recipient
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiTokenEventSeller, Value: 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiTokenEventBuyer, Value: 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: types.FiTokenEventTime, Value: 1}}})
-
-	// create indexes
-	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
-		log.Panicf("can not create indexes for transaction collection; %s", err.Error())
-	}
-
-	// log we are done that
-	log.Debugf("transactions collection initialized")
-}
 
 func (db *MongoDbBridge) StoreTokenEvent(event *types.TokenEvent) error {
 	if event == nil {
@@ -43,10 +23,6 @@ func (db *MongoDbBridge) StoreTokenEvent(event *types.TokenEvent) error {
 	if _, err := col.InsertOne(context.Background(), event); err != nil {
 		log.Errorf("can not store TokenEvent; %s", err)
 		return err
-	}
-	// make sure gas price collection is initialized
-	if db.initTokenEvents != nil {
-		db.initTokenEvents.Do(func() { db.initTokenEventCollection(col); db.initTokenEvents = nil })
 	}
 	return nil
 }

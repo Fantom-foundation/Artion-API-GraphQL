@@ -6,8 +6,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"math/big"
 	"time"
@@ -39,24 +39,22 @@ const (
 	// fiTokenMetadataUpdate is the column storing the time
 	// of the metadata update schedule of the NFT token.
 	fiTokenMetadataUpdateFailures = "meta_failures"
+
+	// fiTokenIsListed is the column marking listed token.
+	fiTokenIsListed = "is_listed"
+
+	// fiTokenListedPrice is the column storing the latest price token is listed at.
+	fiTokenListedPrice = "amo_list"
+
+	// fiTokenTradePrice is the column storing the latest price token was sold for.
+	fiTokenTradePrice = "amo_trade"
+
+	// fiTokenLastTrade is the column storing the latest trade date/time.
+	fiTokenLastTrade = "last_trade"
+
+	// fiTokenLastListed is the column storing the latest listing date/time.
+	fiTokenLastListed = "last_list"
 )
-
-// initTokenCollection initializes collection with indexes and additional parameters.
-func (db *MongoDbBridge) initTokenCollection(col *mongo.Collection) {
-	// prepare index models
-	ix := make([]mongo.IndexModel, 0)
-
-	// indexes
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiTokenName, Value: 1}}})
-
-	// create indexes
-	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
-		log.Panicf("can not create indexes for transaction collection; %s", err.Error())
-	}
-
-	// log we are done that
-	log.Debugf("transactions collection initialized")
-}
 
 // TokenStore inserts new NFT token or updates existing token in persistent database.
 func (db *MongoDbBridge) TokenStore(token *types.Token) error {
@@ -91,10 +89,24 @@ func (db *MongoDbBridge) TokenStore(token *types.Token) error {
 	if rs.UpsertedCount > 0 {
 		log.Infof("token %s on contract %s added to database", token.TokenId.String(), token.Contract.String())
 	}
+	return nil
+}
 
-	// make sure gas price collection is initialized
-	if db.initTokens != nil {
-		db.initTokens.Do(func() { db.initTokenCollection(col); db.initTokens = nil })
+// TokenUpdate updates the token data i the database using provided update data set.
+func (db *MongoDbBridge) TokenUpdate(contract *common.Address, tokenID *big.Int, data bson.D) error {
+	// get the collection
+	col := db.client.Database(db.dbName).Collection(coTokens)
+	rs, err := col.UpdateOne(
+		context.Background(),
+		bson.D{{Key: fieldId, Value: types.TokenIdFromAddress(contract, tokenID)}},
+		bson.D{{Key: "$set", Value: data}},
+	)
+	if err != nil {
+		log.Errorf("can not update token %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err.Error())
+		return err
+	}
+	if rs.UpsertedCount > 0 {
+		log.Infof("token %s/%s updated", contract.String(), (*hexutil.Big)(tokenID).String())
 	}
 	return nil
 }
@@ -105,29 +117,13 @@ func (db *MongoDbBridge) TokenUpdateMetadata(nft *types.Token) error {
 		return fmt.Errorf("no value to store")
 	}
 
-	// get the collection
-	col := db.client.Database(db.dbName).Collection(coTokens)
-	rs, err := col.UpdateOne(
-		context.Background(),
-		bson.D{{Key: fieldId, Value: nft.ID()}},
-		bson.D{
-			{Key: "$set", Value: bson.D{
-				{Key: fiTokenName, Value: nft.Name},
-				{Key: fiTokenDescription, Value: nft.Description},
-				{Key: fiTokenImageURI, Value: nft.ImageURI},
-				{Key: fiTokenMetadataUpdate, Value: nft.MetaUpdate},
-				{Key: fiTokenMetadataUpdateFailures, Value: nft.MetaFailures},
-			}},
-		},
-	)
-	if err != nil {
-		log.Errorf("can not update metadata %s/%s; %s", nft.Contract.String(), nft.TokenId.String(), err.Error())
-		return err
-	}
-	if rs.UpsertedCount > 0 {
-		log.Infof("token %s/%s metadata updated", nft.Contract.String(), nft.TokenId.String())
-	}
-	return nil
+	return db.TokenUpdate(&nft.Contract, (*big.Int)(&nft.TokenId), bson.D{
+		{Key: fiTokenName, Value: nft.Name},
+		{Key: fiTokenDescription, Value: nft.Description},
+		{Key: fiTokenImageURI, Value: nft.ImageURI},
+		{Key: fiTokenMetadataUpdate, Value: nft.MetaUpdate},
+		{Key: fiTokenMetadataUpdateFailures, Value: nft.MetaFailures},
+	})
 }
 
 // TokenUpdateMetadataRefreshSchedule sets the NFT metadata update schedule time.
@@ -136,26 +132,35 @@ func (db *MongoDbBridge) TokenUpdateMetadataRefreshSchedule(nft *types.Token) er
 		return fmt.Errorf("no value to store")
 	}
 
-	// get the collection
-	col := db.client.Database(db.dbName).Collection(coTokens)
-	rs, err := col.UpdateOne(
-		context.Background(),
-		bson.D{{Key: fieldId, Value: nft.ID()}},
-		bson.D{
-			{Key: "$set", Value: bson.D{
-				{Key: fiTokenMetadataUpdate, Value: nft.MetaUpdate},
-				{Key: fiTokenMetadataUpdateFailures, Value: nft.MetaFailures},
-			}},
-		},
-	)
-	if err != nil {
-		log.Errorf("can not update metadata %s/%s; %s", nft.Contract.String(), nft.TokenId.String(), err.Error())
-		return err
-	}
-	if rs.UpsertedCount > 0 {
-		log.Infof("token %s/%s metadata updated", nft.Contract.String(), nft.TokenId.String())
-	}
-	return nil
+	return db.TokenUpdate(&nft.Contract, (*big.Int)(&nft.TokenId), bson.D{
+		{Key: fiTokenMetadataUpdate, Value: nft.MetaUpdate},
+		{Key: fiTokenMetadataUpdateFailures, Value: nft.MetaFailures},
+	})
+}
+
+// TokenMarkListed marks the given NFT as listed for direct sale for the given price.
+func (db *MongoDbBridge) TokenMarkListed(contract *common.Address, tokenID *big.Int, price *hexutil.Big, ts *time.Time) error {
+	return db.TokenUpdate(contract, tokenID, bson.D{
+		{Key: fiTokenLastListed, Value: *ts},
+		{Key: fiTokenIsListed, Value: true},
+		{Key: fiTokenListedPrice, Value: *price},
+	})
+}
+
+// TokenMarkUnlisted marks the given NFT as listed for direct sale for the given price.
+func (db *MongoDbBridge) TokenMarkUnlisted(contract *common.Address, tokenID *big.Int) error {
+	return db.TokenUpdate(contract, tokenID, bson.D{
+		{Key: fiTokenIsListed, Value: false},
+	})
+}
+
+// TokenMarkSold marks the given NFT as sold for the given price.
+func (db *MongoDbBridge) TokenMarkSold(contract *common.Address, tokenID *big.Int, price *hexutil.Big, ts *time.Time) error {
+	return db.TokenUpdate(contract, tokenID, bson.D{
+		{Key: fiTokenLastTrade, Value: *ts},
+		{Key: fiTokenIsListed, Value: false},
+		{Key: fiTokenTradePrice, Value: *price},
+	})
 }
 
 // TokenGet loads specific NFT token for the given contract address and token ID

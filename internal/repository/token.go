@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
 	"strings"
+	"time"
 )
 
 // Token reads NFT detail from the persistent database.
@@ -42,6 +43,21 @@ func (p *Proxy) TokenUpdateMetadataRefreshSchedule(nft *types.Token) error {
 // TokenMetadataRefreshSet pulls s set of NFT tokens scheduled to be updated up to this time.
 func (p *Proxy) TokenMetadataRefreshSet() ([]*types.Token, error) {
 	return p.db.TokenMetadataRefreshSet()
+}
+
+// TokenMarkListed marks the given NFT as listed for direct sale for the given price.
+func (p *Proxy) TokenMarkListed(contract *common.Address, tokenID *big.Int, price *hexutil.Big, ts *time.Time) error {
+	return p.db.TokenMarkListed(contract, tokenID, price, ts)
+}
+
+// TokenMarkUnlisted marks the given NFT as not listed for direct sale.
+func (p *Proxy) TokenMarkUnlisted(contract *common.Address, tokenID *big.Int) error {
+	return p.db.TokenMarkUnlisted(contract, tokenID)
+}
+
+// TokenMarkSold marks the given NFT as sold on a listing for direct sale for the given price.
+func (p *Proxy) TokenMarkSold(contract *common.Address, tokenID *big.Int, price *hexutil.Big, ts *time.Time) error {
+	return p.db.TokenMarkSold(contract, tokenID, price, ts)
 }
 
 func (p *Proxy) ListTokens(sorting sorting.TokenSorting, sortDesc bool, cursor types.Cursor, count int, backward bool) (list *types.TokenList, err error) {
