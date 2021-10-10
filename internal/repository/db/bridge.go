@@ -24,11 +24,9 @@ type MongoDbBridge struct {
 	client *mongo.Client
 	dbName string
 
-	// init state marks
-	initTokenEvents *sync.Once
-	initTokens      *sync.Once
-	initListings    *sync.Once
-	initOffers      *sync.Once
+	// sync DB related processes
+	wg  sync.WaitGroup
+	sig []chan bool
 }
 
 // New creates a new Mongo Db connection bridge.
@@ -44,10 +42,15 @@ func New() *MongoDbBridge {
 	}
 
 	log.Notice("database connection is open")
-	return &MongoDbBridge{
+	br := &MongoDbBridge{
 		client: con,
 		dbName: cfg.Db.DbName,
+		sig:    make([]chan bool, 0),
 	}
+
+	// update indexes to make sure we have the data in correct shape
+	br.updateDatabaseIndexes()
+	return br
 }
 
 // connectDb opens Mongo database connection
@@ -82,6 +85,13 @@ func SetLogger(l logger.Logger) {
 
 // Close terminates the database connection.
 func (db *MongoDbBridge) Close() {
+	// signal terminate and wait for processes to finish
+	for _, sig := range db.sig {
+		sig <- true
+	}
+	db.wg.Wait()
+
+	// disconnect the db
 	err := db.client.Disconnect(context.Background())
 	if err != nil {
 		log.Errorf("can not disconnect database; %s", err.Error())

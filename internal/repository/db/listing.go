@@ -8,7 +8,6 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"math/big"
 )
@@ -26,24 +25,6 @@ const (
 	// FiListingOwner represents the name of the DB column storing token owner.
 	fiListingOwner = "owner"
 )
-
-// initListingCollection initializes collection with indexes and additional parameters.
-func (db *MongoDbBridge) initListingCollection(col *mongo.Collection) {
-	// prepare index models
-	ix := make([]mongo.IndexModel, 0)
-
-	// index sender and recipient
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiListingContract, Value: 1}, {Key: fiListingTokenId, Value: 1}}})
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiListingOwner, Value: 1}}})
-
-	// create indexes
-	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
-		log.Panicf("can not create indexes for transaction collection; %s", err.Error())
-	}
-
-	// log we are done that
-	log.Debugf("transactions collection initialized")
-}
 
 // ListingGet provides the token listing stored in the database, if available.
 func (db *MongoDbBridge) ListingGet(contract *common.Address, tokenID *big.Int, owner *common.Address) (*types.Listing, error) {
@@ -89,10 +70,6 @@ func (db *MongoDbBridge) ListingStore(lst *types.Listing) error {
 	); err != nil {
 		log.Errorf("can not add Listing; %s", err)
 		return err
-	}
-
-	if db.initListings != nil {
-		db.initListings.Do(func() { db.initListingCollection(col); db.initListings = nil })
 	}
 	return nil
 }

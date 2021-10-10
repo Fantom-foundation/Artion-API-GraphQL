@@ -7,7 +7,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"math/big"
 	"time"
@@ -56,23 +55,6 @@ const (
 	fiTokenLastListed = "last_list"
 )
 
-// initTokenCollection initializes collection with indexes and additional parameters.
-func (db *MongoDbBridge) initTokenCollection(col *mongo.Collection) {
-	// prepare index models
-	ix := make([]mongo.IndexModel, 0)
-
-	// indexes
-	ix = append(ix, mongo.IndexModel{Keys: bson.D{{Key: fiTokenName, Value: 1}}})
-
-	// create indexes
-	if _, err := col.Indexes().CreateMany(context.Background(), ix); err != nil {
-		log.Panicf("can not create indexes for transaction collection; %s", err.Error())
-	}
-
-	// log we are done that
-	log.Debugf("transactions collection initialized")
-}
-
 // TokenStore inserts new NFT token or updates existing token in persistent database.
 func (db *MongoDbBridge) TokenStore(token *types.Token) error {
 	if token == nil {
@@ -105,11 +87,6 @@ func (db *MongoDbBridge) TokenStore(token *types.Token) error {
 	}
 	if rs.UpsertedCount > 0 {
 		log.Infof("token %s on contract %s added to database", token.TokenId.String(), token.Contract.String())
-	}
-
-	// make sure gas price collection is initialized
-	if db.initTokens != nil {
-		db.initTokens.Do(func() { db.initTokenCollection(col); db.initTokens = nil })
 	}
 	return nil
 }

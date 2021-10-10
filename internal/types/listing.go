@@ -4,7 +4,10 @@ import (
 	"crypto/sha256"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"math/big"
 )
 
@@ -21,6 +24,18 @@ type Listing struct {
 	LastUpdate   *Time          `bson:"updated"`
 	Closed       *Time          `bson:"closed"`
 	OrdinalIndex int64          `bson:"index"`
+}
+
+// ListingsIndexes provides list of indexes expected on listings.
+func ListingsIndexes() []mongo.IndexModel {
+	ix := make([]mongo.IndexModel, 2)
+
+	ixToken := "ix_contract_token"
+	ix[0] = mongo.IndexModel{Keys: bson.D{{Key: "contract", Value: 1}, {Key: "token", Value: 1}}, Options: &options.IndexOptions{Name: &ixToken}}
+
+	ixOwner := "ix_owner"
+	ix[1] = mongo.IndexModel{Keys: bson.D{{Key: "owner", Value: 1}}, Options: &options.IndexOptions{Name: &ixOwner}}
+	return ix
 }
 
 // ListingID generates unique listing ID for the given contract, token, and owner.
