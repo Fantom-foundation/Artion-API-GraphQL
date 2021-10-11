@@ -4,20 +4,19 @@ import (
 	"artion-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"math/big"
 )
 
-func (p *Proxy) AddOffer(offer *types.Offer) error {
-	return p.db.AddOffer(offer)
+// GetOffer provides the token offer stored in the database, if available.
+func (p *Proxy) GetOffer(contract *common.Address, tokenID *big.Int, proposer *common.Address) (*types.Offer, error) {
+	return p.db.GetOffer(contract, tokenID, proposer)
 }
 
-func (p *Proxy) UpdateOffer(offer *types.Offer) error {
-	return p.db.UpdateOffer(offer)
+// StoreOffer adds the provided offer into the database.
+func (p *Proxy) StoreOffer(offer *types.Offer) error {
+	return p.db.StoreOffer(offer)
 }
 
-func (p *Proxy) RemoveOffer(creator common.Address, nft common.Address, tokenId hexutil.Big) error {
-	return p.db.RemoveOffer(creator, nft, tokenId)
-}
-
-func (p * Proxy) ListOffers(nft *common.Address, tokenId *hexutil.Big, creator *common.Address, cursor types.Cursor, count int, backward bool) (out *types.OfferList, err error) {
+func (p *Proxy) ListOffers(nft *common.Address, tokenId *hexutil.Big, creator *common.Address, cursor types.Cursor, count int, backward bool) (out *types.OfferList, err error) {
 	return p.db.ListOffers(nft, tokenId, creator, cursor, count, backward)
 }
