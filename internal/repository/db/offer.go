@@ -99,7 +99,7 @@ func (db *MongoDbBridge) HasOpenOffers(contract *common.Address, tokenID *big.In
 	count, err := col.CountDocuments(context.Background(), bson.D{
 		{Key: fiOfferContract, Value: *contract},
 		{Key: fiOfferTokenId, Value: hexutil.Big(*tokenID)},
-		{Key: fiOfferClosed, Value: bson.D{{Key: "$types", Value: 10}}},
+		{Key: fiOfferClosed, Value: bson.D{{Key: "$type", Value: 10}}},
 		{Key: fiOfferDeadline, Value: bson.D{{Key: "$gt", Value: types.Time(time.Now().UTC())}}},
 	}, options.Count().SetLimit(1))
 

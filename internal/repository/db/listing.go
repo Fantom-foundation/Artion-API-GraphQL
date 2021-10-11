@@ -100,7 +100,7 @@ func (db *MongoDbBridge) HasOpenListings(contract *common.Address, tokenID *big.
 	count, err := col.CountDocuments(context.Background(), bson.D{
 		{Key: fiListingContract, Value: *contract},
 		{Key: fiListingTokenId, Value: hexutil.Big(*tokenID)},
-		{Key: fiListingClosed, Value: bson.D{{Key: "$types", Value: 10}}},
+		{Key: fiListingClosed, Value: bson.D{{Key: "$type", Value: 10}}},
 		{Key: fiListingStartTime, Value: bson.D{{Key: "$lte", Value: types.Time(time.Now().UTC())}}},
 	}, options.Count().SetLimit(1))
 
