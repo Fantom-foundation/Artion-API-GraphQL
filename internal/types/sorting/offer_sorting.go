@@ -18,6 +18,6 @@ func (ts OfferSorting) OrdinalFieldBson() string {
 
 func (ts OfferSorting) GetCursor(offer *types.Offer) (types.Cursor, error) {
 	params := make(map[string]interface{})
-	params["_id"] = offer.Id
+	params["_id"] = offer.ID()
 	return CursorFromParams(params)
 }
