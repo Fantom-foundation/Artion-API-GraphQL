@@ -1,13 +1,11 @@
+// Package types provides high level structures for the API server.
 package types
 
 import (
 	"crypto/sha256"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"math/big"
 	"time"
 )
@@ -52,18 +50,6 @@ type Token struct {
 	// metadata refresh helpers
 	MetaUpdate   Time  `bson:"meta_update"`
 	MetaFailures int32 `bson:"meta_failures"`
-}
-
-// TokensIndexes provides a list of indexes expected to exist on tokens' collection.
-func TokensIndexes() []mongo.IndexModel {
-	ix := make([]mongo.IndexModel, 2)
-
-	ixContractToken := "ix_contract_token"
-	ix[0] = mongo.IndexModel{Keys: bson.D{{Key: "contract", Value: 1}, {Key: "token", Value: 1}}, Options: &options.IndexOptions{Name: &ixContractToken}}
-
-	ixOrdinal := "ix_ordinal"
-	ix[1] = mongo.IndexModel{Keys: bson.D{{Key: "index", Value: -1}}, Options: &options.IndexOptions{Name: &ixOrdinal}}
-	return ix
 }
 
 // OrdinalIndex generates numeric ordinal index from block number and log record index.

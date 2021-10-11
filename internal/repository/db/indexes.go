@@ -2,7 +2,6 @@
 package db
 
 import (
-	"artion-api-graphql/internal/types"
 	"context"
 	"fmt"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -24,11 +23,12 @@ type IndexList struct {
 func (db *MongoDbBridge) updateDatabaseIndexes() {
 	// define index list loaders
 	var ixLoaders = map[string]IndexListProvider{
-		coTokens:          types.TokensIndexes,
-		coCollection:      types.CollectionsIndexes,
-		coListings:        types.ListingsIndexes,
-		coTokenOwnerships: types.OwnershipsIndexes,
-		coUsers:           types.UsersIndexes,
+		coTokens:          IndexDefinitionTokens,
+		coCollection:      IndexDefinitionCollections,
+		coListings:        IndexDefinitionListings,
+		coOffers:          IndexDefinitionOffers,
+		coTokenOwnerships: IndexesDefinitionOwnership,
+		coUsers:           IndexesDefinitionUsers,
 	}
 
 	// the DB bridge needs a way to terminate this thread
@@ -66,7 +66,7 @@ func (db *MongoDbBridge) indexUpdater(iq chan *IndexList, sig chan bool) {
 		case ix, more := <-iq:
 			// is this the end?
 			if !more {
-				log.Noticef("all indexes processed, closing the updater")
+				log.Noticef("all indexes processed")
 				return
 			}
 
