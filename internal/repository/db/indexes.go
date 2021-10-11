@@ -23,12 +23,13 @@ type IndexList struct {
 func (db *MongoDbBridge) updateDatabaseIndexes() {
 	// define index list loaders
 	var ixLoaders = map[string]IndexListProvider{
-		coTokens:          IndexDefinitionTokens,
+		coAuctions:        IndexDefinitionAuctions,
 		coCollection:      IndexDefinitionCollections,
 		coListings:        IndexDefinitionListings,
 		coOffers:          IndexDefinitionOffers,
-		coTokenOwnerships: IndexesDefinitionOwnership,
-		coUsers:           IndexesDefinitionUsers,
+		coTokenOwnerships: IndexDefinitionOwnership,
+		coTokens:          IndexDefinitionTokens,
+		coUsers:           IndexDefinitionUsers,
 	}
 
 	// the DB bridge needs a way to terminate this thread

@@ -96,6 +96,9 @@ func newLogObserver(mgr *Manager) *logObserver {
 
 			/* Marketplace::event OfferCanceled(address indexed creator, address indexed nft, uint256 tokenId) */
 			common.HexToHash("0xc6e24dcedb16cc237925b586889d0a38102c719734d6cc56acb89b013099b3a7"): marketOfferCanceled,
+
+			/* Auction::event AuctionCreated(address indexed nftAddress, uint256 indexed tokenId, address payToken) */
+			common.HexToHash("0xca437d90ed6373b827a01275bd2fdfe7e6406d7ecd400662ee0533d3546ab17a"): auctionCreated,
 		},
 	}
 }
