@@ -74,10 +74,6 @@ func (p *Proxy) ListTokens(filter *types.TokenFilter, sorting sorting.TokenSorti
 	return p.db.ListTokens(filter, sorting, sortDesc, cursor, count, backward)
 }
 
-func (p *Proxy) ListCollectionTokens(collection common.Address, cursor types.Cursor, count int, backward bool) (out *types.TokenList, err error) {
-	return p.db.ListCollectionTokens(collection, cursor, count, backward)
-}
-
 func (p *Proxy) GetTokenJsonMetadata(uri string) (*types.JsonMetadata, error) {
 	// TODO: in-memory cache
 	var key strings.Builder

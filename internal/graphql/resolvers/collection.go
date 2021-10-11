@@ -57,7 +57,6 @@ func NewCollectionConnection(list *types.CollectionList) (con *CollectionConnect
 	return con, err
 }
 
-
 func (t *Collection) load() error {
 	if t.dbCollection == nil {
 		tok, err := repository.R().GetCollection(t.Contract)
@@ -107,16 +106,4 @@ func (t Collection) IsActive() (bool, error) {
 		return false, err
 	}
 	return t.dbCollection.IsActive, nil
-}
-
-func (t *Collection) Tokens(args struct{ PaginationInput }) (con *TokenConnection, err error) {
-	cursor, count, backward, err := args.ToRepositoryInput()
-	if err != nil {
-		return nil, err
-	}
-	list, err := repository.R().ListCollectionTokens(t.Contract, cursor, count, backward)
-	if err != nil {
-		return nil, err
-	}
-	return NewTokenConnection(list, sorting.TokenSortingNone)
 }
