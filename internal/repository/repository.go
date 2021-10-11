@@ -141,7 +141,7 @@ func (p *Proxy) registerContracts() {
 	for _, ct := range types {
 		err := p.rpc.RegisterContract(ct, p.ObservedContractAddressByType(ct))
 		if err != nil {
-			log.Panicf("mandatory contract %c not available", ct)
+			log.Panicf("mandatory contract %s not available", ct)
 		}
 	}
 }

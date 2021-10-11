@@ -36,18 +36,19 @@ type Token struct {
 	ImageURI        string         `bson:"image"`
 	OrdinalIndex    int64          `bson:"index"`
 	Created         Time           `bson:"created"`
-	HasListing      bool           `bson:"has_listing"`
-	HasAuction      bool           `bson:"has_auction"`
-	HasOffer        bool           `bson:"has_offer"`
+	HasListingSince *Time          `bson:"listed_since"`
+	HasAuctionSince *Time          `bson:"auction_since"`
+	HasAuctionUntil *Time          `bson:"auction_until"`
+	HasOfferUntil   *Time          `bson:"offer_until"`
 	HasBid          bool           `bson:"has_bid"`
+	LastTrade       *Time          `bson:"last_trade"`
+	LastOffer       *Time          `bson:"last_offer"`
+	LastBid         *Time          `bson:"last_bid"`
+	LastList        *Time          `bson:"last_list"`
 	AmountLastTrade int64          `bson:"amo_trade"`
 	AmountLastOffer int64          `bson:"amo_offer"`
 	AmountLastBid   int64          `bson:"amo_bid"`
 	AmountLastList  int64          `bson:"amo_list"`
-	LastTrade       Time           `bson:"last_trade"`
-	LastOffer       Time           `bson:"last_offer"`
-	LastBid         Time           `bson:"last_bid"`
-	LastList        Time           `bson:"last_list"`
 	Price           int64          `bson:"price"`
 
 	// metadata refresh helpers

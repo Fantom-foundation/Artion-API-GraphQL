@@ -12,7 +12,7 @@ import (
 
 // auctionCreated processes an event for newly created auction on an ERC-721 token.
 // Auction::AuctionCreated(address indexed nftAddress, uint256 indexed tokenId, address payToken)
-func auctionCreated(evt *eth.Log, _ *logObserver) {
+func auctionCreated(evt *eth.Log, lo *logObserver) {
 	// sanity check: 1 + 2 topics; 1 x uint256 = 32 bytes
 	if len(evt.Data) != 32 || len(evt.Topics) != 3 {
 		log.Errorf("not Auction::AuctionCreated() event #%d/#%d; expected 32 bytes of data, %d given; expected 3 topics, %d given",
@@ -51,4 +51,16 @@ func auctionCreated(evt *eth.Log, _ *logObserver) {
 	if err := repo.StoreAuction(&auction); err != nil {
 		log.Errorf("could not store auction; %s", err.Error())
 	}
+
+	// mark the token as being auctioned
+	if err := repo.TokenMarkAuctioned(
+		&auction.Contract,
+		(*big.Int)(&auction.TokenId),
+		repo.GetUnitPriceAt(lo.marketplace, &auction.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&auction.ReservePrice)),
+		(*time.Time)(&auction.Created),
+	); err != nil {
+		log.Errorf("could not mark token as having auction; %s", err.Error())
+	}
+
+	log.Infof("added new auction of %s/%s started by %s", auction.Contract.String(), auction.TokenId.String(), auction.Owner.String())
 }
