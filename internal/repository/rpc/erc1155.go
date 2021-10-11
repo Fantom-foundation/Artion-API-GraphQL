@@ -27,6 +27,9 @@ func (o *Opera) Erc1155BalanceOf(contract *common.Address, tokenId *big.Int, own
 		To:   contract,
 		Data: input,
 	}, block)
+	if err != nil {
+		return nil, err
+	}
 	return new(big.Int).SetBytes(data), nil
 }
 

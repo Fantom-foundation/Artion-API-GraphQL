@@ -41,17 +41,17 @@ const (
 	// of the metadata update schedule of the NFT token.
 	fiTokenMetadataUpdateFailures = "meta_failures"
 
-	// fiTokenIsListed is the column marking listed token.
-	fiTokenIsListed = "is_listed"
+	// fiTokenHasListing is the column marking listed token.
+	fiTokenHasListing = "has_listing"
 
-	// fiTokenIsAuction is the column marking auctioned token.
-	fiTokenIsAuction = "is_auction"
+	// fiTokenHasAuction is the column marking auctioned token.
+	fiTokenHasAuction = "has_auction"
 
-	// fiTokenHasOffers is the column marking offered token.
-	fiTokenHasOffers = "has_offers"
+	// fiTokenHasOffer is the column marking offered token.
+	fiTokenHasOffer = "has_offer"
 
-	// fiTokenHasBids is the column marking auctioned token with at least one bid.
-	fiTokenHasBids = "has_bids"
+	// fiTokenHasBid is the column marking auctioned token with at least one bid.
+	fiTokenHasBid = "has_bid"
 
 	// fiTokenListedPrice is the column storing the latest price token is listed at.
 	fiTokenListedPrice = "amo_list"
@@ -168,44 +168,44 @@ func (db *MongoDbBridge) UpdateTokenMetadataRefreshSchedule(nft *types.Token) er
 }
 
 // TokenMarkOffered marks the given NFT as having offer for the given price.
-func (db *MongoDbBridge) TokenMarkOffered(contract *common.Address, tokenID *big.Int, price *hexutil.Big, ts *time.Time) error {
+func (db *MongoDbBridge) TokenMarkOffered(contract *common.Address, tokenID *big.Int, price int64, ts *time.Time) error {
 	return db.UpdateToken(contract, tokenID, bson.D{
 		{Key: fiTokenLastOffer, Value: *ts},
-		{Key: fiTokenHasOffers, Value: true},
-		{Key: fiTokenOfferPrice, Value: *price},
+		{Key: fiTokenHasOffer, Value: true},
+		{Key: fiTokenOfferPrice, Value: price},
 	})
 }
 
 // TokenMarkListed marks the given NFT as listed for direct sale for the given price.
-func (db *MongoDbBridge) TokenMarkListed(contract *common.Address, tokenID *big.Int, price *hexutil.Big, ts *time.Time) error {
+func (db *MongoDbBridge) TokenMarkListed(contract *common.Address, tokenID *big.Int, price int64, ts *time.Time) error {
 	return db.UpdateToken(contract, tokenID, bson.D{
 		{Key: fiTokenLastListed, Value: *ts},
-		{Key: fiTokenIsListed, Value: true},
-		{Key: fiTokenListedPrice, Value: *price},
+		{Key: fiTokenHasListing, Value: true},
+		{Key: fiTokenListedPrice, Value: price},
 	})
 }
 
 // TokenMarkUnlisted marks the given NFT as listed for direct sale for the given price.
 func (db *MongoDbBridge) TokenMarkUnlisted(contract *common.Address, tokenID *big.Int) error {
 	return db.UpdateToken(contract, tokenID, bson.D{
-		{Key: fiTokenIsListed, Value: db.HasOpenListings(contract, tokenID)},
+		{Key: fiTokenHasListing, Value: db.HasOpenListings(contract, tokenID)},
 	})
 }
 
 // TokenMarkUnOffered marks the given NFT as not having buy offers.
 func (db *MongoDbBridge) TokenMarkUnOffered(contract *common.Address, tokenID *big.Int) error {
 	return db.UpdateToken(contract, tokenID, bson.D{
-		{Key: fiTokenHasOffers, Value: db.HasOpenOffers(contract, tokenID)},
+		{Key: fiTokenHasOffer, Value: db.HasOpenOffers(contract, tokenID)},
 	})
 }
 
 // TokenMarkSold marks the given NFT as sold for the given price.
-func (db *MongoDbBridge) TokenMarkSold(contract *common.Address, tokenID *big.Int, price *hexutil.Big, ts *time.Time) error {
+func (db *MongoDbBridge) TokenMarkSold(contract *common.Address, tokenID *big.Int, price int64, ts *time.Time) error {
 	return db.UpdateToken(contract, tokenID, bson.D{
 		{Key: fiTokenLastTrade, Value: *ts},
-		{Key: fiTokenIsListed, Value: db.HasOpenListings(contract, tokenID)},
-		{Key: fiTokenHasOffers, Value: db.HasOpenOffers(contract, tokenID)},
-		{Key: fiTokenTradePrice, Value: *price},
+		{Key: fiTokenHasListing, Value: db.HasOpenListings(contract, tokenID)},
+		{Key: fiTokenHasOffer, Value: db.HasOpenOffers(contract, tokenID)},
+		{Key: fiTokenTradePrice, Value: price},
 	})
 }
 
@@ -307,20 +307,20 @@ func tokenFilterToBson(f *types.TokenFilter) bson.D {
 		}})
 	}
 	if f.HasListing != nil {
-		filter = append(filter, bson.E{Key: fiTokenIsListed, Value: *f.HasListing })
+		filter = append(filter, bson.E{Key: fiTokenHasListing, Value: *f.HasListing})
 	}
 	if f.HasAuction != nil {
-		filter = append(filter, bson.E{Key: fiTokenIsAuction, Value: *f.HasAuction })
+		filter = append(filter, bson.E{Key: fiTokenHasAuction, Value: *f.HasAuction})
 	}
 	if f.HasOffer != nil {
-		filter = append(filter, bson.E{Key: fiTokenHasOffers, Value: *f.HasOffer })
+		filter = append(filter, bson.E{Key: fiTokenHasOffer, Value: *f.HasOffer})
 	}
 	if f.HasBids != nil {
-		filter = append(filter, bson.E{Key: fiTokenHasBids, Value: *f.HasBids })
+		filter = append(filter, bson.E{Key: fiTokenHasBid, Value: *f.HasBids})
 	}
 	if f.Collections != nil && len(*f.Collections) > 0 {
 		if len(*f.Collections) == 1 {
-			filter = append(filter, bson.E{Key: fiTokenContract, Value: (*f.Collections)[0].String() })
+			filter = append(filter, bson.E{Key: fiTokenContract, Value: (*f.Collections)[0].String()})
 		} else {
 			values := make([]string, len(*f.Collections))
 			for i, value := range *f.Collections {

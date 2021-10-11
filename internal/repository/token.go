@@ -24,6 +24,19 @@ func (p *Proxy) Token(contract *common.Address, tokenId *hexutil.Big) (*types.To
 	return token.(*types.Token), err
 }
 
+// GetUnitPriceAt converts input unit price on given token to the value stored on token record.
+func (p *Proxy) GetUnitPriceAt(contract *common.Address, token *common.Address, block *big.Int, val *big.Int) int64 {
+	// get the unit price of the given token
+	unit, err := p.rpc.GetUnitPriceAt(contract, token, block)
+	if err != nil {
+		log.Errorf("failed to get the unit price of %s; %s", token.String(), err.Error())
+		return 0
+	}
+
+	// recalculate to total and update to fixed decimals int64
+	return new(big.Int).Div(new(big.Int).Mul(val, unit), types.TokenPriceDecimalsCorrection).Int64()
+}
+
 // StoreToken puts the given token into the persistent storage.
 // The function is used for both insert and update operation.
 func (p *Proxy) StoreToken(token *types.Token) error {
@@ -46,12 +59,12 @@ func (p *Proxy) TokenMetadataRefreshSet() ([]*types.Token, error) {
 }
 
 // TokenMarkListed marks the given NFT as listed for direct sale for the given price.
-func (p *Proxy) TokenMarkListed(contract *common.Address, tokenID *big.Int, price *hexutil.Big, ts *time.Time) error {
+func (p *Proxy) TokenMarkListed(contract *common.Address, tokenID *big.Int, price int64, ts *time.Time) error {
 	return p.db.TokenMarkListed(contract, tokenID, price, ts)
 }
 
 // TokenMarkOffered marks the given NFT as having offer for the given price.
-func (p *Proxy) TokenMarkOffered(contract *common.Address, tokenID *big.Int, price *hexutil.Big, ts *time.Time) error {
+func (p *Proxy) TokenMarkOffered(contract *common.Address, tokenID *big.Int, price int64, ts *time.Time) error {
 	return p.db.TokenMarkOffered(contract, tokenID, price, ts)
 }
 
@@ -66,7 +79,7 @@ func (p *Proxy) TokenMarkUnOffered(contract *common.Address, tokenID *big.Int) e
 }
 
 // TokenMarkSold marks the given NFT as sold on a listing for direct sale for the given price.
-func (p *Proxy) TokenMarkSold(contract *common.Address, tokenID *big.Int, price *hexutil.Big, ts *time.Time) error {
+func (p *Proxy) TokenMarkSold(contract *common.Address, tokenID *big.Int, price int64, ts *time.Time) error {
 	return p.db.TokenMarkSold(contract, tokenID, price, ts)
 }
 

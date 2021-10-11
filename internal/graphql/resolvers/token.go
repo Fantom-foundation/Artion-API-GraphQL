@@ -123,7 +123,7 @@ func (t Token) HasListing() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return t.dbToken.IsListed, nil
+	return t.dbToken.HasListing, nil
 }
 
 func (t Token) HasOffer() (bool, error) {
@@ -131,7 +131,7 @@ func (t Token) HasOffer() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return t.dbToken.HasOffers, nil
+	return t.dbToken.HasOffer, nil
 }
 
 func (t Token) HasAuction() (bool, error) {
@@ -139,7 +139,7 @@ func (t Token) HasAuction() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return t.dbToken.IsAuction, nil
+	return t.dbToken.HasAuction, nil
 }
 
 func (t Token) HasBids() (bool, error) {
@@ -147,7 +147,7 @@ func (t Token) HasBids() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return t.dbToken.HasBids, nil
+	return t.dbToken.HasBid, nil
 }
 
 func (t Token) LastListing() (*types.Time, error) {

@@ -35,6 +35,34 @@ func (db *MongoDbBridge) AddObservedContract(oc *types.ObservedContract) error {
 	return nil
 }
 
+// ObservedContractAddressByType provides address of an observed contract by its type, if available.
+func (db *MongoDbBridge) ObservedContractAddressByType(t string) (*common.Address, error) {
+	col := db.client.Database(db.dbName).Collection(coObservedContracts)
+	sr := col.FindOne(
+		context.Background(),
+		bson.D{{Key: "type", Value: t}},
+		options.FindOne().SetProjection(bson.D{{Key: "_id", Value: 1}}),
+	)
+
+	if sr.Err() != nil {
+		if sr.Err() == mongo.ErrNoDocuments {
+			log.Warningf("contract of type %s not found", t)
+			return nil, sr.Err()
+		}
+		log.Errorf("failed to lookup contract of type %s; %s", t, sr.Err().Error())
+		return nil, sr.Err()
+	}
+
+	var row struct {
+		ID common.Address `bson:"_id"`
+	}
+	if err := sr.Decode(&row); err != nil {
+		log.Errorf("failed to decode contract address of type %s; %s", t, sr.Err().Error())
+		return nil, sr.Err()
+	}
+	return &row.ID, nil
+}
+
 // isObservedContractKnown checks if the given observed contract is already stored in the database.
 func (db *MongoDbBridge) isObservedContractKnown(col *mongo.Collection, oc *types.ObservedContract) bool {
 	return db.exists(col, &bson.D{{Key: fiContractAddress, Value: oc.Address.String()}})

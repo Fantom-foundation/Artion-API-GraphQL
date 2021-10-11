@@ -20,6 +20,16 @@ func (p *Proxy) ObservedContractsAddressList() []common.Address {
 	return p.db.ObservedContractsAddressList()
 }
 
+// ObservedContractAddressByType provides address of an observed contract by its type, if available.
+func (p *Proxy) ObservedContractAddressByType(t string) *common.Address {
+	adr, err := p.db.ObservedContractAddressByType(t)
+	if err != nil {
+		log.Errorf("contract lookup failed for %s, %s", t, err.Error())
+		return nil
+	}
+	return adr
+}
+
 // NFTContractsTypeMap provides a map of observed contract addresses to corresponding
 // contract type for ERC721 and ERC1155 contracts including their factory.
 // In case of a factory contract, we need the deployed NFT type for processing.

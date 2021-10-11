@@ -12,7 +12,7 @@ import (
 
 // marketNFTListed handles log event for NFT token to get listed for sale on the Marketplace.
 // Marketplace::ItemListed(address indexed owner, address indexed nft, uint256 tokenId, uint256 quantity, address payToken, uint256 pricePerItem, uint256 startingTime)
-func marketNFTListed(evt *eth.Log, _ *logObserver) {
+func marketNFTListed(evt *eth.Log, lo *logObserver) {
 	// sanity check: 1 + 2 topics; 4 x uint256 + 1 address = 5 x 32 bytes of data = 160 bytes
 	if len(evt.Data) != 160 || len(evt.Topics) != 3 {
 		log.Errorf("not Marketplace::ItemListed() event #%d/#%d; expected 160 bytes of data, %d given; expected 3 topics, %d given",
@@ -47,7 +47,12 @@ func marketNFTListed(evt *eth.Log, _ *logObserver) {
 	}
 
 	// mark the token as listed
-	if err := repo.TokenMarkListed(&lst.Contract, (*big.Int)(&lst.TokenId), &lst.UnitPrice, (*time.Time)(&lst.Created)); err != nil {
+	if err := repo.TokenMarkListed(
+		&lst.Contract,
+		(*big.Int)(&lst.TokenId),
+		repo.GetUnitPriceAt(lo.marketplace, &lst.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&lst.UnitPrice)),
+		(*time.Time)(&lst.Created),
+	); err != nil {
 		log.Errorf("could not mark token as listed; %s", err.Error())
 	}
 
@@ -56,7 +61,7 @@ func marketNFTListed(evt *eth.Log, _ *logObserver) {
 
 // marketNFTUpdated handles an update call on already listed NFT token.
 // Marketplace::ItemUpdated(address indexed owner, address indexed nft, uint256 tokenId, address payToken, uint256 newPrice)
-func marketNFTUpdated(evt *eth.Log, _ *logObserver) {
+func marketNFTUpdated(evt *eth.Log, lo *logObserver) {
 	// sanity check: 1 + 2 topics; 2 x uint256 + 1 address = 3 x 32 bytes of data = 96 bytes
 	if len(evt.Data) != 96 || len(evt.Topics) != 3 {
 		log.Errorf("not Marketplace::ItemUpdated() event #%d/#%d; expected 96 bytes of data, %d given; expected 3 topics, %d given",
@@ -93,7 +98,12 @@ func marketNFTUpdated(evt *eth.Log, _ *logObserver) {
 	}
 
 	// mark the token as listed
-	if err := repo.TokenMarkListed(&lst.Contract, (*big.Int)(&lst.TokenId), &lst.UnitPrice, (*time.Time)(&lst.Created)); err != nil {
+	if err := repo.TokenMarkListed(
+		&lst.Contract,
+		(*big.Int)(&lst.TokenId),
+		repo.GetUnitPriceAt(lo.marketplace, &lst.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&lst.UnitPrice)),
+		(*time.Time)(&lst.Created),
+	); err != nil {
 		log.Errorf("could not mark token as listed; %s", err.Error())
 	}
 
@@ -144,7 +154,7 @@ func marketNFTUnlisted(evt *eth.Log, _ *logObserver) {
 
 // marketItemSold processes NFT listing being finished with sale event; an offer is resulted by the same event.
 // Marketplace::ItemSold(address indexed seller, address indexed buyer, address indexed nft, uint256 tokenId, uint256 quantity, address payToken, int256 unitPrice, uint256 pricePerItem)
-func marketItemSold(evt *eth.Log, _ *logObserver) {
+func marketItemSold(evt *eth.Log, lo *logObserver) {
 	// sanity check: 1 + 3 topics; 4 x uint256 + 1 x address = 5 x 32 bytes = 160 bytes
 	if len(evt.Data) != 160 || len(evt.Topics) != 4 {
 		log.Errorf("not Marketplace::ItemCanceled() event #%d/#%d; expected 160 bytes of data, %d given; expected 4 topics, %d given",
@@ -166,14 +176,14 @@ func marketItemSold(evt *eth.Log, _ *logObserver) {
 	// try to get a listing
 	lst, err := repo.GetListing(&contract, tokenID, &owner)
 	if err == nil {
-		marketCloseListingWithSale(evt, lst, blk)
+		marketCloseListingWithSale(evt, lst, blk, lo)
 		return
 	}
 
 	// try to get an offer
 	offer, err := repo.GetOffer(&contract, tokenID, &buyer)
 	if err == nil {
-		marketCloseOfferWithSale(evt, offer, blk)
+		marketCloseOfferWithSale(evt, offer, blk, lo)
 		return
 	}
 
@@ -181,7 +191,7 @@ func marketItemSold(evt *eth.Log, _ *logObserver) {
 }
 
 // marketCloseListingWithSale processes a listing wrap up by a sale.
-func marketCloseListingWithSale(evt *eth.Log, lst *types.Listing, blk *eth.Header) {
+func marketCloseListingWithSale(evt *eth.Log, lst *types.Listing, blk *eth.Header, lo *logObserver) {
 	up := time.Unix(int64(blk.Time), 0)
 	lst.Closed = (*types.Time)(&up)
 	lst.PayToken = common.BytesToAddress(evt.Data[64:96])
@@ -193,7 +203,12 @@ func marketCloseListingWithSale(evt *eth.Log, lst *types.Listing, blk *eth.Heade
 	}
 
 	// mark the token as sold
-	if err := repo.TokenMarkSold(&lst.Contract, (*big.Int)(&lst.TokenId), &lst.UnitPrice, &up); err != nil {
+	if err := repo.TokenMarkSold(
+		&lst.Contract,
+		(*big.Int)(&lst.TokenId),
+		repo.GetUnitPriceAt(lo.marketplace, &lst.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&lst.UnitPrice)),
+		&up,
+	); err != nil {
 		log.Errorf("could not mark token as sold; %s", err.Error())
 	}
 

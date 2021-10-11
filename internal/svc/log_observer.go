@@ -49,6 +49,9 @@ type logObserver struct {
 
 	// nftTypes represents a map of types of observed NFT contracts.
 	nftTypes map[common.Address]string
+
+	// marketplace is the address of the Marketplace contract.
+	marketplace *common.Address
 }
 
 // newLogObserver creates a new instance of the event logs observer service.
@@ -107,6 +110,13 @@ func (lo *logObserver) init() {
 	lo.inEvents = lo.mgr.blkObserver.outEvents
 	lo.contracts = repo.ObservedContractsAddressList()
 	lo.nftTypes = repo.NFTContractsTypeMap()
+	lo.marketplace = repo.ObservedContractAddressByType("market")
+
+	// make sure we have what we need
+	if lo.marketplace == nil {
+		log.Panicf("marketplace contract not found")
+	}
+
 	lo.mgr.add(lo)
 }
 

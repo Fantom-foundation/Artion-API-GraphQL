@@ -23,6 +23,9 @@ const (
 	MetadataRefreshSetSize = 50
 )
 
+// TokenPriceDecimalsCorrection represents the value used to reduce price to stored fixed (6) decimals.
+var TokenPriceDecimalsCorrection = new(big.Int).SetInt64(1000000000000)
+
 // Token represents item list-able in the marketplace.
 type Token struct {
 	Contract        common.Address `bson:"contract"`
@@ -33,19 +36,19 @@ type Token struct {
 	ImageURI        string         `bson:"image"`
 	OrdinalIndex    int64          `bson:"index"`
 	Created         Time           `bson:"created"`
-	IsListed        bool           `bson:"is_listed"`
-	IsAuction       bool           `bson:"is_auction"`
-	HasOffers       bool           `bson:"has_offers"`
-	HasBids         bool           `bson:"has_bids"`
-	AmountLastTrade hexutil.Big    `bson:"amo_trade"`
-	AmountLastOffer hexutil.Big    `bson:"amo_offer"`
-	AmountLastBid   hexutil.Big    `bson:"amo_bid"`
-	AmountLastList  hexutil.Big    `bson:"amo_list"`
+	HasListing      bool           `bson:"has_listing"`
+	HasAuction      bool           `bson:"has_auction"`
+	HasOffer        bool           `bson:"has_offer"`
+	HasBid          bool           `bson:"has_bid"`
+	AmountLastTrade int64          `bson:"amo_trade"`
+	AmountLastOffer int64          `bson:"amo_offer"`
+	AmountLastBid   int64          `bson:"amo_bid"`
+	AmountLastList  int64          `bson:"amo_list"`
 	LastTrade       Time           `bson:"last_trade"`
 	LastOffer       Time           `bson:"last_offer"`
 	LastBid         Time           `bson:"last_bid"`
 	LastList        Time           `bson:"last_list"`
-	Price           hexutil.Big    `bson:"price"`
+	Price           int64          `bson:"price"`
 
 	// metadata refresh helpers
 	MetaUpdate   Time  `bson:"meta_update"`

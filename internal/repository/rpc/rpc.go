@@ -39,8 +39,9 @@ type Opera struct {
 	sigClose chan bool
 	headers  chan *eth.Header
 
-	abiFantom721  *abi.ABI
-	abiFantom1155 *abi.ABI
+	abiFantom721   *abi.ABI
+	abiFantom1155  *abi.ABI
+	abiMarketplace *abi.ABI
 }
 
 // New provides a new instance of the RPC access point.
@@ -94,6 +95,11 @@ func loadABI(o *Opera) (err error) {
 	}
 
 	o.abiFantom1155, err = loadABIFile("contracts/abi/FantomArtTradable.json")
+	if err != nil {
+		return err
+	}
+
+	o.abiMarketplace, err = loadABIFile("contracts/abi/FantomMarketplace.json")
 	if err != nil {
 		return err
 	}
