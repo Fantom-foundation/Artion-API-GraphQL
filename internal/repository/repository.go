@@ -35,9 +35,9 @@ type Proxy struct {
 	rpc       *rpc.Opera
 	uri       *uri.Downloader
 	db        *db.MongoDbBridge
-	shareddb  *db.SharedMongoDbBridge
+	shared    *db.SharedMongoDbBridge
 	cache     *cache.MemCache
-	log        logger.Logger
+	log       logger.Logger
 	callGroup *singleflight.Group
 }
 
@@ -103,12 +103,12 @@ func newProxy() *Proxy {
 
 	// make Proxy instance
 	p := Proxy{
-		rpc:   rpc.New(),
-		uri:   uri.New(cfg),
-		db:    db.New(),
-		shareddb: db.NewShared(),
-		cache: cache.New(),
-		log:   log,
+		rpc:       rpc.New(),
+		uri:       uri.New(cfg),
+		db:        db.New(),
+		shared:    db.NewShared(),
+		cache:     cache.New(),
+		log:       log,
 		callGroup: new(singleflight.Group),
 	}
 
@@ -116,6 +116,9 @@ func newProxy() *Proxy {
 		log.Panicf("repository init failed")
 		return nil
 	}
+
+	// register contracts to the repository
+	p.registerContracts()
 
 	log.Notice("repository ready")
 	return &p
@@ -128,5 +131,17 @@ func (p *Proxy) Close() {
 	}
 	if p.db != nil {
 		p.db.Close()
+	}
+}
+
+// registerContracts will pass contract addresses to the RPC provider.
+func (p *Proxy) registerContracts() {
+	var types = []string{"auction"}
+
+	for _, ct := range types {
+		err := p.rpc.RegisterContract(ct, p.ObservedContractAddressByType(ct))
+		if err != nil {
+			log.Panicf("mandatory contract %c not available", ct)
+		}
 	}
 }

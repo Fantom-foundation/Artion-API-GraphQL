@@ -5,9 +5,12 @@ package rpc
 import (
 	"artion-api-graphql/internal/config"
 	"artion-api-graphql/internal/logger"
+	"artion-api-graphql/internal/repository/rpc/contracts"
 	"bytes"
 	"embed"
+	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
 	eth "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	client "github.com/ethereum/go-ethereum/rpc"
@@ -30,18 +33,51 @@ var cfg *config.Config
 // log represents the logger to be used by the repository.
 var log logger.Logger
 
+// contractsMap represents a map of contract type to address as provided
+// by the repository initializer.
+var contractsMap = map[string]common.Address{}
+
 // Opera represents the implementation of the Blockchain interface for Fantom Opera node.
 type Opera struct {
+	// basics of the connection
 	rpc *client.Client
 	ftm *ethclient.Client
 
+	// sync tools
 	wg       *sync.WaitGroup
 	sigClose chan bool
-	headers  chan *eth.Header
 
+	// captured header queue
+	headers chan *eth.Header
+
+	// decode ABI structures
 	abiFantom721   *abi.ABI
 	abiFantom1155  *abi.ABI
 	abiMarketplace *abi.ABI
+
+	// contracts
+	auctionContract *contracts.FantomAuction
+}
+
+// RegisterContract adds a new contract address to the RPC provider.
+func (o *Opera) RegisterContract(ct string, addr *common.Address) (err error) {
+	// address provided?
+	if nil == addr {
+		return fmt.Errorf("empty address on %s", ct)
+	}
+
+	// load the contract instance
+	switch ct {
+	case "auction":
+		o.auctionContract, err = contracts.NewFantomAuction(*addr, o.ftm)
+		if err == nil {
+			log.Noticef("loaded %s contract at %s", ct, addr.String())
+		}
+	default:
+		err = fmt.Errorf("unknown contract type %s", ct)
+	}
+
+	return err
 }
 
 // New provides a new instance of the RPC access point.
@@ -103,6 +139,7 @@ func loadABI(o *Opera) (err error) {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 

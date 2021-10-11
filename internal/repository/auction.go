@@ -16,3 +16,8 @@ func (p *Proxy) GetAuction(contract *common.Address, tokenID *big.Int) (*types.A
 func (p *Proxy) StoreAuction(au *types.Auction) error {
 	return p.db.StoreAuction(au)
 }
+
+// ExtendAuctionDetailAt adds contract stored details to the provided auction record.
+func (p *Proxy) ExtendAuctionDetailAt(au *types.Auction, block *big.Int) error {
+	return p.rpc.ExtendAuctionDetailAt(au, block)
+}
