@@ -6,6 +6,7 @@ import (
 	"artion-api-graphql/internal/config"
 	"artion-api-graphql/internal/logger"
 	"artion-api-graphql/internal/repository"
+	"artion-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -138,6 +139,7 @@ func (rs *RootResolver) Token(args struct {
 }
 
 func (rs *RootResolver) Tokens(args struct{
+	Filter *types.TokenFilter
 	SortBy *string
 	SortDir *string
 	PaginationInput
@@ -151,7 +153,7 @@ func (rs *RootResolver) Tokens(args struct{
 		return nil, err
 	}
 
-	list, err := repository.R().ListTokens(sorting, isSortingDirectionDesc(args.SortDir), cursor, count, backward)
+	list, err := repository.R().ListTokens(args.Filter, sorting, isSortingDirectionDesc(args.SortDir), cursor, count, backward)
 	if err != nil {
 		return nil, err
 	}

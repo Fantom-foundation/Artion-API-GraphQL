@@ -21,6 +21,7 @@ func (db *MongoDbBridge) getTotalCount(col *mongo.Collection, filter *bson.D) (i
 	return totalCount, err
 }
 
+// cursorToFilter converts cursor and sorting setting into Mongo filter
 func cursorToFilter(cursor types.Cursor, sort sorting.Sorting, backward bool) (bson.E, error) {
 	curParams, err := sorting.CursorToParams(cursor)
 	if err != nil {
@@ -68,9 +69,9 @@ func (db *MongoDbBridge) findPaginated(col *mongo.Collection, inputFilter *bson.
 		direction = -1
 	}
 	if sorting.SortedFieldBson() != "" {
-		opt.SetSort(bson.D{{Key: sorting.SortedFieldBson(), Value: direction}, {Key: fieldId, Value: direction}})
+		opt.SetSort(bson.D{{Key: sorting.SortedFieldBson(), Value: direction}, {Key: sorting.OrdinalFieldBson(), Value: direction}})
 	} else {
-		opt.SetSort(bson.D{{Key: fieldId, Value: direction}})
+		opt.SetSort(bson.D{{Key: sorting.OrdinalFieldBson(), Value: direction}})
 	}
 	opt.SetLimit(int64(count + 1))
 

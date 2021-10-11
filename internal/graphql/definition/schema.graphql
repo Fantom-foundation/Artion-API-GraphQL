@@ -15,7 +15,7 @@ type Query {
 
     token(contract: Address!, tokenId: BigInt!): Token!
 
-    tokens(sortBy: TokenSorting, sortDir: SortingDirection, first: Int, after: Cursor, last: Int, before: Cursor): TokenConnection!
+    tokens(filter: TokenFilter, sortBy: TokenSorting, sortDir: SortingDirection, first: Int, after: Cursor, last: Int, before: Cursor): TokenConnection!
 
     listings(first: Int, after: Cursor, last: Int, before: Cursor): ListingConnection!
 

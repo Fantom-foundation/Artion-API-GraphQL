@@ -52,3 +52,12 @@ enum TokenSorting {
     LAST_LISTING
     LAST_TRADE
 }
+
+input TokenFilter {
+    search: String
+    hasListing: Boolean
+    hasAuction: Boolean
+    hasOffer: Boolean
+    hasBids: Boolean
+    collections: [Address!]
+}

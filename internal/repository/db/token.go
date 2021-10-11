@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"math/big"
 	"time"
@@ -43,8 +44,14 @@ const (
 	// fiTokenIsListed is the column marking listed token.
 	fiTokenIsListed = "is_listed"
 
-	// fiTokenHasOffers is the column marking tokens with offers.
+	// fiTokenIsAuction is the column marking auctioned token.
+	fiTokenIsAuction = "is_auction"
+
+	// fiTokenHasOffers is the column marking offered token.
 	fiTokenHasOffers = "has_offers"
+
+	// fiTokenHasBids is the column marking auctioned token with at least one bid.
+	fiTokenHasBids = "has_bids"
 
 	// fiTokenListedPrice is the column storing the latest price token is listed at.
 	fiTokenListedPrice = "amo_list"
@@ -239,9 +246,9 @@ func (db *MongoDbBridge) TokenMetadataRefreshSet() ([]*types.Token, error) {
 	return list[:i], nil
 }
 
-func (db *MongoDbBridge) ListTokens(sorting sorting.TokenSorting, sortDesc bool, cursor types.Cursor, count int, backward bool) (out *types.TokenList, err error) {
-	filter := bson.D{}
-	return db.listTokens(&filter, sorting, sortDesc, cursor, count, backward)
+func (db *MongoDbBridge) ListTokens(filter *types.TokenFilter, sorting sorting.TokenSorting, sortDesc bool, cursor types.Cursor, count int, backward bool) (out *types.TokenList, err error) {
+	bsonFilter := tokenFilterToBson(filter)
+	return db.listTokens(&bsonFilter, sorting, sortDesc, cursor, count, backward)
 }
 
 func (db *MongoDbBridge) ListCollectionTokens(collection common.Address, cursor types.Cursor, count int, backward bool) (out *types.TokenList, err error) {
@@ -296,4 +303,41 @@ func (db *MongoDbBridge) listTokens(filter *bson.D, sorting sorting.TokenSorting
 		list.Reverse()
 	}
 	return &list, nil
+}
+
+func tokenFilterToBson(f *types.TokenFilter) bson.D {
+	filter := bson.D{}
+	if f == nil {
+		return filter
+	}
+	if f.Search != nil {
+		filter = append(filter, bson.E{Key: fiTokenName, Value: primitive.Regex{
+			Pattern: *f.Search,
+			Options: "i",
+		}})
+	}
+	if f.HasListing != nil {
+		filter = append(filter, bson.E{Key: fiTokenIsListed, Value: *f.HasListing })
+	}
+	if f.HasAuction != nil {
+		filter = append(filter, bson.E{Key: fiTokenIsAuction, Value: *f.HasAuction })
+	}
+	if f.HasOffer != nil {
+		filter = append(filter, bson.E{Key: fiTokenHasOffers, Value: *f.HasOffer })
+	}
+	if f.HasBids != nil {
+		filter = append(filter, bson.E{Key: fiTokenHasBids, Value: *f.HasBids })
+	}
+	if f.Collections != nil && len(*f.Collections) > 0 {
+		if len(*f.Collections) == 1 {
+			filter = append(filter, bson.E{Key: fiTokenContract, Value: (*f.Collections)[0].String() })
+		} else {
+			values := make([]string, len(*f.Collections))
+			for i, value := range *f.Collections {
+				values[i] = value.String()
+			}
+			filter = append(filter, bson.E{Key: fiTokenContract, Value: bson.D{{Key: "$in", Value: values}}})
+		}
+	}
+	return filter
 }

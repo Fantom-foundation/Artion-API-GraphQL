@@ -70,8 +70,8 @@ func (p *Proxy) TokenMarkSold(contract *common.Address, tokenID *big.Int, price 
 	return p.db.TokenMarkSold(contract, tokenID, price, ts)
 }
 
-func (p *Proxy) ListTokens(sorting sorting.TokenSorting, sortDesc bool, cursor types.Cursor, count int, backward bool) (list *types.TokenList, err error) {
-	return p.db.ListTokens(sorting, sortDesc, cursor, count, backward)
+func (p *Proxy) ListTokens(filter *types.TokenFilter, sorting sorting.TokenSorting, sortDesc bool, cursor types.Cursor, count int, backward bool) (list *types.TokenList, err error) {
+	return p.db.ListTokens(filter, sorting, sortDesc, cursor, count, backward)
 }
 
 func (p *Proxy) ListCollectionTokens(collection common.Address, cursor types.Cursor, count int, backward bool) (out *types.TokenList, err error) {
