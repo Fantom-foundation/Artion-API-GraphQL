@@ -111,10 +111,10 @@ func (db *MongoDbBridge) ListOwnerships(contract *common.Address, tokenId *hexut
 	if owner != nil {
 		filter = append(filter, primitive.E{Key: fiOwnershipOwner, Value: owner.String()})
 	}
-	return db.listOwnerships(&filter, cursor, count, backward)
+	return db.listOwnerships(filter, cursor, count, backward)
 }
 
-func (db *MongoDbBridge) listOwnerships(filter *bson.D, cursor types.Cursor, count int, backward bool) (out *types.OwnershipList, err error) {
+func (db *MongoDbBridge) listOwnerships(filter bson.D, cursor types.Cursor, count int, backward bool) (out *types.OwnershipList, err error) {
 	var list types.OwnershipList
 	col := db.client.Database(db.dbName).Collection(coTokenOwnerships)
 	ctx := context.Background()

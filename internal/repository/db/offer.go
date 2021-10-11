@@ -122,10 +122,10 @@ func (db *MongoDbBridge) ListOffers(contract *common.Address, tokenId *hexutil.B
 	if creator != nil {
 		filter = append(filter, primitive.E{Key: fiOfferProposer, Value: creator.String()})
 	}
-	return db.listOffers(&filter, cursor, count, backward)
+	return db.listOffers(filter, cursor, count, backward)
 }
 
-func (db *MongoDbBridge) listOffers(filter *bson.D, cursor types.Cursor, count int, backward bool) (out *types.OfferList, err error) {
+func (db *MongoDbBridge) listOffers(filter bson.D, cursor types.Cursor, count int, backward bool) (out *types.OfferList, err error) {
 	var list types.OfferList
 	col := db.client.Database(db.dbName).Collection(coOffers)
 	ctx := context.Background()

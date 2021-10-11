@@ -253,12 +253,12 @@ func (db *MongoDbBridge) ListTokens(filter *types.TokenFilter, sorting sorting.T
 
 	bsonFilter := tokenFilterToBson(filter)
 
-	list.TotalCount, err = db.getTotalCount(col, &bsonFilter)
+	list.TotalCount, err = db.getTotalCount(col, bsonFilter)
 	if err != nil {
 		return nil, err
 	}
 
-	ld, err := db.findPaginated(col, &bsonFilter, cursor, count, sorting, backward != sortDesc)
+	ld, err := db.findPaginated(col, bsonFilter, cursor, count, sorting, backward != sortDesc)
 	if err != nil {
 		log.Errorf("error loading tokens list; %s", err.Error())
 		return nil, err

@@ -122,10 +122,10 @@ func (db *MongoDbBridge) ListListings(contract *common.Address, tokenId *hexutil
 	if owner != nil {
 		filter = append(filter, primitive.E{Key: fiListingOwner, Value: owner.String()})
 	}
-	return db.listListings(&filter, cursor, count, backward)
+	return db.listListings(filter, cursor, count, backward)
 }
 
-func (db *MongoDbBridge) listListings(filter *bson.D, cursor types.Cursor, count int, backward bool) (out *types.ListingList, err error) {
+func (db *MongoDbBridge) listListings(filter bson.D, cursor types.Cursor, count int, backward bool) (out *types.ListingList, err error) {
 	var list types.ListingList
 	col := db.client.Database(db.dbName).Collection(coListings)
 	ctx := context.Background()

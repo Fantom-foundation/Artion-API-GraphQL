@@ -55,11 +55,10 @@ func (db *MongoDbBridge) GetCollection(address common.Address) (NFTCollection *t
 }
 
 func (db *MongoDbBridge) ListCollections(cursor types.Cursor, count int, backward bool) (out *types.CollectionList, err error) {
-	filter := bson.D{}
-	return db.listCollections(&filter, cursor, count, backward)
+	return db.listCollections(bson.D{}, cursor, count, backward)
 }
 
-func (db *MongoDbBridge) listCollections(filter *bson.D, cursor types.Cursor, count int, backward bool) (out *types.CollectionList, err error) {
+func (db *MongoDbBridge) listCollections(filter bson.D, cursor types.Cursor, count int, backward bool) (out *types.CollectionList, err error) {
 	var list types.CollectionList
 	col := db.client.Database(db.dbName).Collection(coCollection)
 	ctx := context.Background()
