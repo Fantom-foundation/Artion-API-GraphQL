@@ -18,6 +18,33 @@ type Token {
     # URL of the token image on the proxy
     imageProxy: String
 
+    # Time when was the token created on chain.
+    created: Time!
+
+    # Whether is the item listed for sale. (Buy now)
+    hasListing: Boolean!
+
+    # Whether has the item some offers to sell.
+    hasOffer: Boolean!
+
+    # Whether has the item some running auction.
+    hasAuction: Boolean!
+
+    # Whether has the item some running auction and at least one bid on it.
+    hasBids: Boolean!
+
+    # Last listing creation time.
+    lastListing: Time
+
+    # Last trade (transfer) time.
+    lastTrade: Time
+
+    # Last offer creation time.
+    lastOffer: Time
+
+    # Last auction bid time.
+    lastBid: Time
+
     # List owners of the token and their token balances
     ownerships(first: Int, after: Cursor, last: Int, before: Cursor): OwnershipConnection!
 

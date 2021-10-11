@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
+	"time"
 )
 
 // Token object is constructed from query, data from db are loaded on demand into "dbToken" field.
@@ -107,6 +108,78 @@ func (t Token) ImageProxy() (*string, error) {
 	}
 	url := "/token-image/" + t.Contract.String() + "/" + t.TokenId.String()
 	return &url, nil
+}
+
+func (t Token) Created() (types.Time, error) {
+	err := t.load()
+	if err != nil {
+		return types.Time{}, err
+	}
+	return t.dbToken.Created, nil
+}
+
+func (t Token) HasListing() (bool, error) {
+	err := t.load()
+	if err != nil {
+		return false, err
+	}
+	return t.dbToken.IsListed, nil
+}
+
+func (t Token) HasOffer() (bool, error) {
+	err := t.load()
+	if err != nil {
+		return false, err
+	}
+	return t.dbToken.HasOffers, nil
+}
+
+func (t Token) HasAuction() (bool, error) {
+	err := t.load()
+	if err != nil {
+		return false, err
+	}
+	return t.dbToken.IsAuction, nil
+}
+
+func (t Token) HasBids() (bool, error) {
+	err := t.load()
+	if err != nil {
+		return false, err
+	}
+	return t.dbToken.HasBids, nil
+}
+
+func (t Token) LastListing() (*types.Time, error) {
+	err := t.load()
+	if err != nil || time.Time(t.dbToken.LastList).IsZero() {
+		return nil, err
+	}
+	return &t.dbToken.LastList, nil
+}
+
+func (t Token) LastTrade() (*types.Time, error) {
+	err := t.load()
+	if err != nil || time.Time(t.dbToken.LastTrade).IsZero() {
+		return nil, err
+	}
+	return &t.dbToken.LastTrade, nil
+}
+
+func (t Token) LastOffer() (*types.Time, error) {
+	err := t.load()
+	if err != nil || time.Time(t.dbToken.LastOffer).IsZero() {
+		return nil, err
+	}
+	return &t.dbToken.LastOffer, nil
+}
+
+func (t Token) LastBid() (*types.Time, error) {
+	err := t.load()
+	if err != nil || time.Time(t.dbToken.LastBid).IsZero() {
+		return nil, err
+	}
+	return &t.dbToken.LastBid, nil
 }
 
 func (t Token) Ownerships(args struct{ PaginationInput }) (con *OwnershipConnection, err error) {
