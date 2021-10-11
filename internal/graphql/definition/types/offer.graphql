@@ -1,14 +1,15 @@
 # Offer represents offer to buy given token from any current owner.
 type Offer {
-    creator: Address!
     contract: Address!
     tokenId: BigInt!
     token: Token!
+    proposedBy: Address!
     quantity: BigInt!
     payToken: Address!
-    pricePerItem: BigInt!
-    startTime: Time!
+    unitPrice: BigInt!
+    created: Time!
     deadline: Time!
+    closed: Time
 }
 
 type OfferEdge {
