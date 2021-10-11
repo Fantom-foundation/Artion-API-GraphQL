@@ -65,6 +65,12 @@ type Ipfs struct {
 
 	// Skip known HTTP-to-IPFS gateways and use our IPFS node instead
 	SkipHttpGateways bool `mapstructure:"skip_http_gateways"`
+
+	// Gateway to process IPFS requests instead of IPFS node (like Pinata)
+	Gateway string `mapstructure:"gateway"`
+
+	// GatewayBearer represents API key (JWT) to be used for Gateway auth
+	GatewayBearer string `mapstructure:"gateway_bearer"`
 }
 
 // Database represents the database access configuration.

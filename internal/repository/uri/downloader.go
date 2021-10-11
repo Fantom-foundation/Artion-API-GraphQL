@@ -22,6 +22,8 @@ const ipfsRequestTimeout = 5 * time.Second
 type Downloader struct {
 	ipfsShell *ipfsapi.Shell
 	skipHttpGateways bool
+	gateway string
+	gatewayBearer string
 }
 
 // New provides new Downloader instance.
@@ -29,6 +31,8 @@ func New(cfg *config.Config) *Downloader {
 	d := &Downloader{
 		ipfsShell: ipfsapi.NewShell(cfg.Ipfs.Url),
 		skipHttpGateways: cfg.Ipfs.SkipHttpGateways,
+		gateway: cfg.Ipfs.Gateway,
+		gatewayBearer: cfg.Ipfs.GatewayBearer,
 	}
 	d.ipfsShell.SetTimeout(ipfsRequestTimeout)
 	return d
@@ -113,15 +117,46 @@ func (d *Downloader) getIpfsUri(uri string) string {
 
 // getFromIpfs downloads the file from IPFS (URI is expected in "/ipfs/{CID}" form).
 func (d *Downloader) getFromIpfs(uri string) (data []byte, mimetype string, err error) {
-	reader, err := d.ipfsShell.Cat(uri)
+	if d.gateway == "" {
+		reader, err := d.ipfsShell.Cat(uri)
+		if err != nil {
+			return nil, "", err
+		}
+		out, err := io.ReadAll(reader)
+		if err != nil {
+			return nil, "", err
+		}
+		return out, "", reader.Close()
+	} else {
+		return d.getFromIpfsGateway(uri)
+	}
+}
+
+// getFromIpfsGateway downloads the file from IPFS HTTP gateway.
+func (d *Downloader) getFromIpfsGateway(uri string) (data []byte, mimetype string, err error) {
+	client := http.Client{}
+	req , err := http.NewRequest("GET", d.gateway + uri, nil)
 	if err != nil {
 		return nil, "", err
 	}
+	if d.gatewayBearer != "" {
+		req.Header.Set("Authorization", "Bearer " + d.gatewayBearer)
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, "", err
+	}
+	if resp.StatusCode != 200 {
+		return nil, "", fmt.Errorf("HTTP gateway returned %s", resp.Status)
+	}
+	reader := resp.Body
 	out, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, "", err
 	}
-	return out, "", reader.Close()
+
+	mimetype = resp.Header.Get("Content-Type")
+	return out, mimetype, reader.Close()
 }
 
 // getFromHttp downloads the file from HTTP.
