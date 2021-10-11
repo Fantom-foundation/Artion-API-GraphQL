@@ -194,18 +194,6 @@ func (t Token) Ownerships(args struct{ PaginationInput }) (con *OwnershipConnect
 	return NewOwnershipConnection(list)
 }
 
-func (t Token) Events(args struct{ PaginationInput }) (con *TokenEventConnection, err error) {
-	cursor, count, backward, err := args.ToRepositoryInput()
-	if err != nil {
-		return nil, err
-	}
-	list, err := repository.R().ListTokenEvents(&t.Contract, &t.TokenId, nil, cursor, count, backward)
-	if err != nil {
-		return nil, err
-	}
-	return NewTokenEventConnection(list)
-}
-
 func (t Token) Listings(args struct{ PaginationInput }) (con *ListingConnection, err error) {
 	cursor, count, backward, err := args.ToRepositoryInput()
 	if err != nil {

@@ -48,9 +48,6 @@ type Token {
     # List owners of the token and their token balances
     ownerships(first: Int, after: Cursor, last: Int, before: Cursor): OwnershipConnection!
 
-    # Events on given token
-    events(first: Int, after: Cursor, last: Int, before: Cursor): TokenEventConnection!
-
     # Current listings of the token
     listings(first: Int, after: Cursor, last: Int, before: Cursor): ListingConnection!
 
