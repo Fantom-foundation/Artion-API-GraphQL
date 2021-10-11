@@ -86,7 +86,13 @@ func newLogObserver(mgr *Manager) *logObserver {
 			common.HexToHash("0x9ba1a3cb55ce8d63d072a886f94d2a744f50cddf82128e897d0661f5ec623158"): marketNFTUnlisted,
 
 			/* Marketplace::event ItemSold(address indexed seller, address indexed buyer, address indexed nft, uint256 tokenId, uint256 quantity, address payToken, int256 unitPrice, uint256 pricePerItem) */
-			common.HexToHash("0x949d1413baca5c0e4ab96b0198d536cac8cdcc17cb909b9ea24594f42ed9fa0d"): marketNFTSold,
+			common.HexToHash("0x949d1413baca5c0e4ab96b0198d536cac8cdcc17cb909b9ea24594f42ed9fa0d"): marketItemSold,
+
+			/* Marketplace::event OfferCreated(address indexed creator, address indexed nft, uint256 tokenId, uint256 quantity, address payToken, uint256 pricePerItem, uint256 deadline) */
+			common.HexToHash("0x89f255157c655b5155655107b77c620998e5ad4e7485d749e4e6d7ddb63e70f6"): marketOfferCreated,
+
+			/* Marketplace::event OfferCanceled(address indexed creator, address indexed nft, uint256 tokenId) */
+			common.HexToHash("0xc6e24dcedb16cc237925b586889d0a38102c719734d6cc56acb89b013099b3a7"): marketOfferCanceled,
 		},
 	}
 }

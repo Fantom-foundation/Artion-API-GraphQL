@@ -86,7 +86,7 @@ func (mw *nftMetadataWorker) update(tok *types.Token) error {
 		log.Errorf("NFT metadata [%s] failed on %s/%s; %s", tok.Uri, tok.Contract.String(), tok.TokenId.String(), err.Error())
 
 		tok.ScheduleMetaUpdateOnFailure()
-		if e := repo.TokenUpdateMetadataRefreshSchedule(tok); e != nil {
+		if e := repo.UpdateTokenMetadataRefreshSchedule(tok); e != nil {
 			log.Errorf("token schedule update failed;", e.Error())
 		}
 
@@ -105,7 +105,7 @@ func (mw *nftMetadataWorker) update(tok *types.Token) error {
 	}
 
 	// update the token in persistent storage
-	if err := repo.TokenUpdateMetadata(tok); err != nil {
+	if err := repo.UpdateTokenMetadata(tok); err != nil {
 		log.Errorf("failed metadata update on %s/%s; %s", tok.Contract.String(), tok.TokenId.String(), err.Error())
 		return err
 	}

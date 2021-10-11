@@ -44,7 +44,7 @@ func erc721TokenMinted(evt *eth.Log, lo *logObserver) {
 	log.Infof("ERC-721 token %s found at %s block %d", tok.TokenId.String(), tok.Contract.String(), evt.BlockNumber)
 
 	// write token to the persistent storage
-	if err := repo.TokenStore(tok); err != nil {
+	if err := repo.StoreToken(tok); err != nil {
 		log.Errorf("could not store token %s at %s; %s", tok.TokenId.String(), tok.Contract.String(), err.Error())
 		return
 	}

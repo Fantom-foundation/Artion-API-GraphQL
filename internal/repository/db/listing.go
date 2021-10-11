@@ -1,3 +1,4 @@
+// Package db provides access to the persistent storage.
 package db
 
 import (
@@ -9,32 +10,46 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"math/big"
+	"time"
 )
 
 const (
-	// CoListings is the name of database collection.
+	// coListings is the name of database collection.
 	coListings = "listings"
 
 	// fiListingContract is the name of the DB column storing NFT contract address.
 	fiListingContract = "contract"
 
-	// FiListingTokenId represents the name of the DB column storing NFT token ID.
+	// fiListingTokenId represents the name of the DB column storing NFT token ID.
 	fiListingTokenId = "token"
 
-	// FiListingOwner represents the name of the DB column storing token owner.
+	// fiListingOwner represents the name of the DB column storing token owner.
 	fiListingOwner = "owner"
+
+	// fiListingStartTime represents the name of the DB column storing listing start.
+	fiListingStartTime = "start"
+
+	// fiListingClosed represents the name of the DB column storing date/time of listing having been closed.
+	fiListingClosed = "closed"
 )
 
-// ListingGet provides the token listing stored in the database, if available.
-func (db *MongoDbBridge) ListingGet(contract *common.Address, tokenID *big.Int, owner *common.Address) (*types.Listing, error) {
+// GetListing provides the token listing stored in the database, if available.
+func (db *MongoDbBridge) GetListing(contract *common.Address, tokenID *big.Int, owner *common.Address) (*types.Listing, error) {
 	// get the collection
 	col := db.client.Database(db.dbName).Collection(coListings)
 
 	sr := col.FindOne(context.Background(), bson.D{{Key: fieldId, Value: types.ListingID(contract, tokenID, owner)}})
 	if sr.Err() != nil {
-		log.Errorf("could not find listing %s/%s of owner %s; %s",
+		if sr.Err() == mongo.ErrNoDocuments {
+			log.Warningf("could not find listing %s/%s of owner %s; %s",
+				contract.String(), (*hexutil.Big)(tokenID).String(), owner.String(), sr.Err().Error())
+			return nil, sr.Err()
+		}
+
+		log.Errorf("failed to lookup listing %s/%s of owner %s; %s",
 			contract.String(), (*hexutil.Big)(tokenID).String(), owner.String(), sr.Err().Error())
 		return nil, sr.Err()
 	}
@@ -49,8 +64,8 @@ func (db *MongoDbBridge) ListingGet(contract *common.Address, tokenID *big.Int, 
 	return &row, nil
 }
 
-// ListingStore adds the provided listing into the database.
-func (db *MongoDbBridge) ListingStore(lst *types.Listing) error {
+// StoreListing adds the provided listing into the database.
+func (db *MongoDbBridge) StoreListing(lst *types.Listing) error {
 	if lst == nil {
 		return fmt.Errorf("no value to store")
 	}
@@ -75,6 +90,25 @@ func (db *MongoDbBridge) ListingStore(lst *types.Listing) error {
 		return err
 	}
 	return nil
+}
+
+// HasOpenListings checks if the given NFT has standing listing(s).
+func (db *MongoDbBridge) HasOpenListings(contract *common.Address, tokenID *big.Int) bool {
+	col := db.client.Database(db.dbName).Collection(coListings)
+
+	// check for count of any un-closed offers with future deadline; we need only 1
+	count, err := col.CountDocuments(context.Background(), bson.D{
+		{Key: fiListingContract, Value: *contract},
+		{Key: fiListingTokenId, Value: hexutil.Big(*tokenID)},
+		{Key: fiListingClosed, Value: bson.D{{Key: "$types", Value: 10}}},
+		{Key: fiListingStartTime, Value: bson.D{{Key: "$lte", Value: types.Time(time.Now().UTC())}}},
+	}, options.Count().SetLimit(1))
+
+	if err != nil {
+		log.Errorf("can not count listings; %s", err.Error())
+		return false
+	}
+	return count > 0
 }
 
 func (db *MongoDbBridge) ListListings(contract *common.Address, tokenId *hexutil.Big, owner *common.Address, cursor types.Cursor, count int, backward bool) (out *types.ListingList, err error) {

@@ -19,25 +19,25 @@ func (p *Proxy) Token(contract *common.Address, tokenId *hexutil.Big) (*types.To
 	key.WriteString(tokenId.String())
 
 	token, err, _ := p.callGroup.Do(key.String(), func() (interface{}, error) {
-		return p.db.TokenGet(contract, (*big.Int)(tokenId))
+		return p.db.GetToken(contract, (*big.Int)(tokenId))
 	})
 	return token.(*types.Token), err
 }
 
-// TokenStore puts the given token into the persistent storage.
+// StoreToken puts the given token into the persistent storage.
 // The function is used for both insert and update operation.
-func (p *Proxy) TokenStore(token *types.Token) error {
-	return p.db.TokenStore(token)
+func (p *Proxy) StoreToken(token *types.Token) error {
+	return p.db.StoreToken(token)
 }
 
-// TokenUpdateMetadata updates basic metadata of the NFT token.
-func (p *Proxy) TokenUpdateMetadata(nft *types.Token) error {
-	return p.db.TokenUpdateMetadata(nft)
+// UpdateTokenMetadata updates basic metadata of the NFT token.
+func (p *Proxy) UpdateTokenMetadata(nft *types.Token) error {
+	return p.db.UpdateTokenMetadata(nft)
 }
 
-// TokenUpdateMetadataRefreshSchedule sets the NFT metadata update schedule time.
-func (p *Proxy) TokenUpdateMetadataRefreshSchedule(nft *types.Token) error {
-	return p.db.TokenUpdateMetadataRefreshSchedule(nft)
+// UpdateTokenMetadataRefreshSchedule sets the NFT metadata update schedule time.
+func (p *Proxy) UpdateTokenMetadataRefreshSchedule(nft *types.Token) error {
+	return p.db.UpdateTokenMetadataRefreshSchedule(nft)
 }
 
 // TokenMetadataRefreshSet pulls s set of NFT tokens scheduled to be updated up to this time.
@@ -50,9 +50,19 @@ func (p *Proxy) TokenMarkListed(contract *common.Address, tokenID *big.Int, pric
 	return p.db.TokenMarkListed(contract, tokenID, price, ts)
 }
 
+// TokenMarkOffered marks the given NFT as having offer for the given price.
+func (p *Proxy) TokenMarkOffered(contract *common.Address, tokenID *big.Int, price *hexutil.Big, ts *time.Time) error {
+	return p.db.TokenMarkOffered(contract, tokenID, price, ts)
+}
+
 // TokenMarkUnlisted marks the given NFT as not listed for direct sale.
 func (p *Proxy) TokenMarkUnlisted(contract *common.Address, tokenID *big.Int) error {
 	return p.db.TokenMarkUnlisted(contract, tokenID)
+}
+
+// TokenMarkUnOffered marks the given NFT as not having offer anymore.
+func (p *Proxy) TokenMarkUnOffered(contract *common.Address, tokenID *big.Int) error {
+	return p.db.TokenMarkUnOffered(contract, tokenID)
 }
 
 // TokenMarkSold marks the given NFT as sold on a listing for direct sale for the given price.
