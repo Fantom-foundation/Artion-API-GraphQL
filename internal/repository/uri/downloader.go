@@ -63,6 +63,16 @@ func (d *Downloader) GetImage(uri string) (image *types.Image, err error) {
 	return &out, nil
 }
 
+// GetImageThumbnail downloads image from given URI scale it to thumbnail size
+func (d *Downloader) GetImageThumbnail(uri string) (thumbnail *types.Image, err error) {
+	image, err := d.GetImage(uri)
+	if err != nil || image == nil {
+		return nil, err
+	}
+	thumb, err := createThumbnail(*image)
+	return &thumb, err
+}
+
 // getFromUri resolves the URI and download file from the URI using appropriate protocol
 func (d *Downloader) getFromUri(uri string) (data []byte, mimetype string, err error) {
 	if strings.HasPrefix(uri, "data:") {
