@@ -107,7 +107,10 @@ func (lo *logObserver) name() string {
 
 // init configures the log observer and subscribes it with the manager.
 func (lo *logObserver) init() {
+	// link channels
 	lo.inEvents = lo.mgr.blkObserver.outEvents
+
+	// get needed data sets
 	lo.contracts = repo.ObservedContractsAddressList()
 	lo.nftTypes = repo.NFTContractsTypeMap()
 	lo.marketplace = repo.ObservedContractAddressByType("market")
@@ -117,6 +120,7 @@ func (lo *logObserver) init() {
 		log.Panicf("marketplace contract not found")
 	}
 
+	// add and run
 	lo.mgr.add(lo)
 }
 

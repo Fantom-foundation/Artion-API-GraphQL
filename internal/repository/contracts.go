@@ -27,6 +27,8 @@ func (p *Proxy) ObservedContractAddressByType(t string) *common.Address {
 		log.Errorf("contract lookup failed for %s, %s", t, err.Error())
 		return nil
 	}
+
+	log.Noticef("%s contract is %s", t, adr.String())
 	return adr
 }
 
