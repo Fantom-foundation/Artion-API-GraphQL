@@ -40,8 +40,8 @@ func IndexDefinitionListings() []mongo.IndexModel {
 	return ix
 }
 
-// IndexesDefinitionOwnership provides a list of indexes expected to exist on tokens' ownership records.
-func IndexesDefinitionOwnership() []mongo.IndexModel {
+// IndexDefinitionOwnership provides a list of indexes expected to exist on tokens' ownership records.
+func IndexDefinitionOwnership() []mongo.IndexModel {
 	ix := make([]mongo.IndexModel, 2)
 
 	ixContractToken := "ix_contract_token"
@@ -52,8 +52,8 @@ func IndexesDefinitionOwnership() []mongo.IndexModel {
 	return ix
 }
 
-// IndexesDefinitionUsers provides a list of indexes expected to exist on users' collection.
-func IndexesDefinitionUsers() []mongo.IndexModel {
+// IndexDefinitionUsers provides a list of indexes expected to exist on users' collection.
+func IndexDefinitionUsers() []mongo.IndexModel {
 	ix := make([]mongo.IndexModel, 2)
 
 	ixUser := "ix_username"
@@ -76,5 +76,20 @@ func IndexDefinitionOffers() []mongo.IndexModel {
 
 	ixCreated := "ix_created"
 	ix[1] = mongo.IndexModel{Keys: bson.D{{Key: "created", Value: 1}}, Options: &options.IndexOptions{Name: &ixCreated}}
+	return ix
+}
+
+// IndexDefinitionAuctions provides a list of indexes expected to exist on auctions' collection.
+func IndexDefinitionAuctions() []mongo.IndexModel {
+	ix := make([]mongo.IndexModel, 2)
+
+	ixContractToken := "ix_contract_token"
+	ix[0] = mongo.IndexModel{Keys: bson.D{{Key: "contract", Value: 1}, {Key: "token", Value: 1}}, Options: &options.IndexOptions{Name: &ixContractToken}}
+
+	ixOwner := "ix_owner"
+	ix[1] = mongo.IndexModel{Keys: bson.D{{Key: "owner", Value: 1}}, Options: &options.IndexOptions{Name: &ixOwner}}
+
+	ixOrdinal := "ix_ordinal"
+	ix[1] = mongo.IndexModel{Keys: bson.D{{Key: "index", Value: -1}}, Options: &options.IndexOptions{Name: &ixOrdinal}}
 	return ix
 }
