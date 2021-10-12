@@ -19,8 +19,7 @@ type TokenLikeEdge struct {
 }
 
 func (edge TokenLikeEdge) Cursor() (types.Cursor, error) {
-	// dbToken is always already loaded when in Edge
-	return sorting.TokenLikeSortingCreated.GetCursor((*types.TokenLike)(edge.Node))
+	return sorting.TokenLikeSortingNone.GetCursor((*types.TokenLike)(edge.Node))
 }
 
 type TokenLikeConnection struct {

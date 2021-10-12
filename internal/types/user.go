@@ -7,9 +7,13 @@ import (
 
 // User represents user account/profile.
 type User struct {
-	Address  common.Address `bson:"_id"`
-	Username string         `bson:"username"`
-	Bio      string         `bson:"bio"`
-	Email    string         `bson:"email"`
-	Avatar   string         `bson:"avatar"`
+	Address  common.Address     `bson:"address"`
+	Username string             `bson:"alias"`
+	Email    string             `bson:"email"`
+	Bio      string             `bson:"bio"`
+	Avatar   string             `bson:"imageHash"`
+	Banner   string             `bson:"bannerHash"`
+	Bundles  []string           `bson:"bundleIDs"`
+	Created  Time               `bson:"createdAt"`
+	Updated  Time               `bson:"updatedAt"`
 }

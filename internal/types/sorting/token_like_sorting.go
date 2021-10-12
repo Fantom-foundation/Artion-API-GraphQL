@@ -5,11 +5,11 @@ import "artion-api-graphql/internal/types"
 type TokenLikeSorting int8
 
 const (
-	TokenLikeSortingCreated TokenLikeSorting = iota
+	TokenLikeSortingNone TokenLikeSorting = iota
 )
 
 func (ts TokenLikeSorting) SortedFieldBson() string {
-	return "created"
+	return ""
 }
 
 func (ts TokenLikeSorting) OrdinalFieldBson() string {
@@ -18,7 +18,6 @@ func (ts TokenLikeSorting) OrdinalFieldBson() string {
 
 func (ts TokenLikeSorting) GetCursor(like *types.TokenLike) (types.Cursor, error) {
 	params := make(map[string]interface{})
-	params["_id"] = like.ID()
-	params["created"] = like.Created
+	params["_id"] = like.Id
 	return CursorFromParams(params)
 }

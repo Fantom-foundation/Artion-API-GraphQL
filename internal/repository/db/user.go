@@ -8,17 +8,35 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"time"
 )
 
 const (
 	// coUsers is the name of database collection.
-	coUsers = "users"
+	coUsers = "Account"
+
+	// fiUserAddress is the column storing the address of the user.
+	fiUserAddress = "address"
+
+	fiUserUsername = "alias"
+
+	fiUserEmail = "email"
+
+	fiUserBio = "bio"
+
+	fiUserAvatar = "imageHash"
+
+	fiUserBanner = "bannerHash"
+
+	fiUserCreated = "createdAt"
+
+	fiUserUpdated = "updatedAt"
 )
 
 func (sdb *SharedMongoDbBridge) GetUser(address common.Address) (user *types.User, err error) {
 	col := sdb.client.Database(sdb.dbName).Collection(coUsers)
 
-	filter := bson.D{{ Key: fieldId, Value: address.String() }}
+	filter := bson.D{{ Key: fiUserAddress, Value: address.String() }}
 	result := col.FindOne(context.Background(), filter)
 
 	if result.Err() != nil {
@@ -43,8 +61,24 @@ func (sdb *SharedMongoDbBridge) UpsertUser(User *types.User) error {
 	}
 	col := sdb.client.Database(sdb.dbName).Collection(coUsers)
 
-	filter := bson.D{{ Key: fieldId, Value: User.Address.String() }}
-	if _, err := col.ReplaceOne(context.Background(), filter, User, options.Replace().SetUpsert(true)); err != nil {
+	if _, err := col.UpdateOne(
+		context.Background(),
+		bson.D{{ Key: fiUserAddress, Value: User.Address.String() }},
+		bson.D{
+			{ Key: "$set", Value: bson.D{
+				{Key: fiUserUsername, Value: User.Username},
+				{Key: fiUserEmail, Value: User.Email},
+				{Key: fiUserBio, Value: User.Bio},
+				{Key: fiUserAvatar, Value: User.Avatar},
+				{Key: fiUserBanner, Value: User.Banner},
+				{Key: fiUserUpdated, Value: types.Time(time.Now())},
+			} },
+			{Key: "$setOnInsert", Value: bson.D{
+				{Key: fiUserCreated, Value: types.Time(time.Now())},
+			}},
+		},
+		options.Update().SetUpsert(true),
+	); err != nil {
 		log.Errorf("can not update User; %s", err)
 		return err
 	}

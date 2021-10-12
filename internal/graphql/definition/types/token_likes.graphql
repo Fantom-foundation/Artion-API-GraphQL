@@ -8,9 +8,6 @@ type TokenLike {
 
     # The liked token
     token: Token!
-
-    # Time when was the like given (useful for sorting)
-    created: Time!
 }
 
 type TokenLikeEdge {
