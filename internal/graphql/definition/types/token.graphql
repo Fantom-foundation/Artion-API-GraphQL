@@ -45,6 +45,9 @@ type Token {
     # Last auction bid time.
     lastBid: Time
 
+    # How much users likes this token.
+    likes: BigInt!
+
     # List owners of the token and their token balances
     ownerships(first: Int, after: Cursor, last: Int, before: Cursor): OwnershipConnection!
 

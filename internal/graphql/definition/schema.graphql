@@ -25,6 +25,8 @@ type Query {
 
     loggedUser: User
 
+    loggedUserTokenLikes(first: Int, after: Cursor, last: Int, before: Cursor): TokenLikeConnection!
+
 }
 
 # Mutation endpoints for modifying the data
@@ -38,5 +40,11 @@ type Mutation {
 
     # Update user profile
     updateUser(username: String!, bio: String!, email: String!, avatar: String!): Boolean!
+
+    # Set token as liked (add into favourites)
+    likeToken(contract: Address!, tokenId: BigInt!): Boolean!
+
+    # Unset token as liked (remove from favourites)
+    unlikeToken(contract: Address!, tokenId: BigInt!): Boolean!
 
 }

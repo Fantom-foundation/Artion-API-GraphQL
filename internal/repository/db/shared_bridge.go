@@ -1,20 +1,8 @@
 // Package db provides access to the persistent storage.
 package db
 
-import (
-	"context"
-	"sync"
-)
-import "go.mongodb.org/mongo-driver/mongo"
-
-// SharedMongoDbBridge represents Mongo DB abstraction layer.
-type SharedMongoDbBridge struct {
-	client *mongo.Client
-	dbName string
-
-	// init state marks
-	initUsers       *sync.Once
-}
+// SharedMongoDbBridge represents MongoDbBridge attached to database shared/replicated between nodes.
+type SharedMongoDbBridge MongoDbBridge
 
 // NewShared creates a new Mongo Db connection bridge.
 func NewShared() *SharedMongoDbBridge {
@@ -32,13 +20,11 @@ func NewShared() *SharedMongoDbBridge {
 	return &SharedMongoDbBridge{
 		client: con,
 		dbName: cfg.SharedDb.DbName,
+		sig:    make([]chan bool, 0),
 	}
 }
 
 // Close terminates the database connection.
-func (db *SharedMongoDbBridge) Close() {
-	err := db.client.Disconnect(context.Background())
-	if err != nil {
-		log.Errorf("can not disconnect database; %s", err.Error())
-	}
+func (sdb *SharedMongoDbBridge) Close() {
+	(*MongoDbBridge)(sdb).Close()
 }

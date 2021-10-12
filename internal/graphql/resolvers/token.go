@@ -182,6 +182,14 @@ func (t Token) LastBid() (*types.Time, error) {
 	return &t.dbToken.LastBid, nil
 }
 
+func (t Token) Likes() (hexutil.Big, error) {
+	count, err := repository.R().GetTokenLikesCount(&t.Contract, (*big.Int)(&t.TokenId))
+	if err != nil {
+		return hexutil.Big{}, err
+	}
+	return hexutil.Big(*big.NewInt(count)), nil
+}
+
 func (t Token) Ownerships(args struct{ PaginationInput }) (con *OwnershipConnection, err error) {
 	cursor, count, backward, err := args.ToRepositoryInput()
 	if err != nil {

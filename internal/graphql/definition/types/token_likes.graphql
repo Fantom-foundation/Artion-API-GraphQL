@@ -1,0 +1,30 @@
+# TokenLike represents like given by a user to a token.
+type TokenLike {
+    # Address of the token contract
+    contract: Address!
+
+    # ID of the token (in given token contract)
+    tokenId: BigInt!
+
+    # The liked token
+    token: Token!
+
+    # Time when was the like given (useful for sorting)
+    created: Time!
+}
+
+type TokenLikeEdge {
+    cursor: Cursor!
+    node: TokenLike!
+}
+
+type TokenLikeConnection {
+    # Edges contains provided edges of the sequential list.
+    edges: [TokenLikeEdge!]!
+
+    # TotalCount is the total amount of items in the list.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of the list.
+    pageInfo: PageInfo!
+}
