@@ -29,9 +29,6 @@ const (
 	// fiListingOwner represents the name of the DB column storing token owner.
 	fiListingOwner = "owner"
 
-	// fiListingStartTime represents the name of the DB column storing listing start.
-	fiListingStartTime = "start"
-
 	// fiListingClosed represents the name of the DB column storing date/time of listing having been closed.
 	fiListingClosed = "closed"
 )
@@ -92,23 +89,42 @@ func (db *MongoDbBridge) StoreListing(lst *types.Listing) error {
 	return nil
 }
 
-// HasOpenListings checks if the given NFT has standing listing(s).
-func (db *MongoDbBridge) HasOpenListings(contract *common.Address, tokenID *big.Int) bool {
-	col := db.client.Database(db.dbName).Collection(coListings)
+// OpenListingSince pulls the earliest date of open listing for the token.
+// If there is no open listing, it returns nil.
+func (db *MongoDbBridge) OpenListingSince(contract *common.Address, tokenID *big.Int) *types.Time {
+	var row struct {
+		Since types.Time `bson:"val"`
+	}
 
-	// check for count of any un-closed offers with future deadline; we need only 1
-	count, err := col.CountDocuments(context.Background(), bson.D{
-		{Key: fiListingContract, Value: *contract},
-		{Key: fiListingTokenId, Value: hexutil.Big(*tokenID)},
-		{Key: fiListingClosed, Value: bson.D{{Key: "$type", Value: 10}}},
-		{Key: fiListingStartTime, Value: bson.D{{Key: "$lte", Value: types.Time(time.Now().UTC())}}},
-	}, options.Count().SetLimit(1))
+	col := db.client.Database(db.dbName).Collection(coListings)
+	err := db.AggregateSingle(col, &mongo.Pipeline{
+		bson.D{
+			{Key: "$match", Value: bson.D{
+				{Key: fiListingContract, Value: *contract},
+				{Key: fiListingTokenId, Value: hexutil.Big(*tokenID)},
+				{Key: fiListingClosed, Value: bson.D{{Key: "$type", Value: 10}}},
+			}},
+		},
+		bson.D{
+			{Key: "$group", Value: bson.D{
+				{Key: "_id", Value: nil},
+				{Key: "val", Value: bson.D{{Key: "$min", Value: "$start"}}},
+			}},
+		},
+	}, &row)
 
 	if err != nil {
-		log.Errorf("can not count listings; %s", err.Error())
-		return false
+		// no listing at all?
+		if err == mongo.ErrNoDocuments {
+			log.Infof("no open listing available for %s/%s", contract.String(), (*hexutil.Big)(tokenID).String())
+			return nil
+		}
+		log.Criticalf("failed earliest listing check of %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err.Error())
+		return nil
 	}
-	return count > 0
+
+	log.Infof("open listing on %s/%s since %s", contract.String(), (*hexutil.Big)(tokenID).String(), time.Time(row.Since).Format(time.RFC1123))
+	return &row.Since
 }
 
 func (db *MongoDbBridge) ListListings(contract *common.Address, tokenId *hexutil.Big, owner *common.Address, cursor types.Cursor, count int, backward bool) (out *types.ListingList, err error) {
