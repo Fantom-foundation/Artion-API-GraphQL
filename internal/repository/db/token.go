@@ -65,6 +65,9 @@ const (
 	// fiTokenOfferPrice is the column storing the latest price token was sold for.
 	fiTokenOfferPrice = "amo_offer"
 
+	// fiTokenBidPrice is the column storing the latest price a bid was placed on token for.
+	fiTokenBidPrice = "amo_bid"
+
 	// fiTokenLastTrade is the column storing the latest trade date/time.
 	fiTokenLastTrade = "last_trade"
 
@@ -76,6 +79,9 @@ const (
 
 	// fiTokenLastAuction is the column storing the latest auction date/time.
 	fiTokenLastAuction = "last_auction"
+
+	// fiTokenLastBid is the column storing the latest auction bid date/time.
+	fiTokenLastBid = "last_bid"
 )
 
 // GetToken loads specific NFT token for the given contract address and token ID
@@ -201,6 +207,15 @@ func (db *MongoDbBridge) TokenMarkAuctioned(contract *common.Address, tokenID *b
 	})
 }
 
+// TokenMarkBid marks the given NFT as having auction bid for the given price.
+func (db *MongoDbBridge) TokenMarkBid(contract *common.Address, tokenID *big.Int, price int64, ts *time.Time) error {
+	return db.UpdateToken(contract, tokenID, bson.D{
+		{Key: fiTokenHasBid, Value: true},
+		{Key: fiTokenBidPrice, Value: price},
+		{Key: fiTokenLastBid, Value: ts},
+	})
+}
+
 // TokenMarkUnlisted marks the given NFT as listed for direct sale for the given price.
 func (db *MongoDbBridge) TokenMarkUnlisted(contract *common.Address, tokenID *big.Int) error {
 	return db.UpdateToken(contract, tokenID, bson.D{
@@ -221,6 +236,13 @@ func (db *MongoDbBridge) TokenMarkUnAuctioned(contract *common.Address, tokenID 
 	return db.UpdateToken(contract, tokenID, bson.D{
 		{Key: fiTokenHasAuctionSince, Value: aucSince},
 		{Key: fiTokenHasAuctionUntil, Value: aucUntil},
+	})
+}
+
+// TokenMarkUnBid marks the given NFT as not having a bid anymore.
+func (db *MongoDbBridge) TokenMarkUnBid(contract *common.Address, tokenID *big.Int) error {
+	return db.UpdateToken(contract, tokenID, bson.D{
+		{Key: fiTokenHasBid, Value: false},
 	})
 }
 
