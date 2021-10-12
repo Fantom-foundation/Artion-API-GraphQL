@@ -42,9 +42,10 @@ type Token struct {
 	HasOfferUntil   *Time          `bson:"offer_until"`
 	HasBid          bool           `bson:"has_bid"`
 	LastTrade       *Time          `bson:"last_trade"`
-	LastOffer       *Time          `bson:"last_offer"`
-	LastBid         *Time          `bson:"last_bid"`
 	LastList        *Time          `bson:"last_list"`
+	LastOffer       *Time          `bson:"last_offer"`
+	LastAuction     *Time          `bson:"last_auction"`
+	LastBid         *Time          `bson:"last_bid"`
 	AmountLastTrade int64          `bson:"amo_trade"`
 	AmountLastOffer int64          `bson:"amo_offer"`
 	AmountLastBid   int64          `bson:"amo_bid"`

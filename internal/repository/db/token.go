@@ -73,6 +73,9 @@ const (
 
 	// fiTokenLastOffer is the column storing the latest offer date/time.
 	fiTokenLastOffer = "last_offer"
+
+	// fiTokenLastAuction is the column storing the latest auction date/time.
+	fiTokenLastAuction = "last_auction"
 )
 
 // GetToken loads specific NFT token for the given contract address and token ID
@@ -188,6 +191,16 @@ func (db *MongoDbBridge) TokenMarkListed(contract *common.Address, tokenID *big.
 	})
 }
 
+// TokenMarkAuctioned marks the given NFT as auctioned for the given price.
+func (db *MongoDbBridge) TokenMarkAuctioned(contract *common.Address, tokenID *big.Int, _ int64, ts *time.Time) error {
+	aucSince, aucUntil := db.OpenAuctionRange(contract, tokenID)
+	return db.UpdateToken(contract, tokenID, bson.D{
+		{Key: fiTokenLastAuction, Value: *ts},
+		{Key: fiTokenHasAuctionSince, Value: aucSince},
+		{Key: fiTokenHasAuctionUntil, Value: aucUntil},
+	})
+}
+
 // TokenMarkUnlisted marks the given NFT as listed for direct sale for the given price.
 func (db *MongoDbBridge) TokenMarkUnlisted(contract *common.Address, tokenID *big.Int) error {
 	return db.UpdateToken(contract, tokenID, bson.D{
@@ -199,6 +212,15 @@ func (db *MongoDbBridge) TokenMarkUnlisted(contract *common.Address, tokenID *bi
 func (db *MongoDbBridge) TokenMarkUnOffered(contract *common.Address, tokenID *big.Int) error {
 	return db.UpdateToken(contract, tokenID, bson.D{
 		{Key: fiTokenHasOfferUntil, Value: db.OpenOfferUntil(contract, tokenID)},
+	})
+}
+
+// TokenMarkUnAuctioned marks the given NFT as not having an active auction on.
+func (db *MongoDbBridge) TokenMarkUnAuctioned(contract *common.Address, tokenID *big.Int) error {
+	aucSince, aucUntil := db.OpenAuctionRange(contract, tokenID)
+	return db.UpdateToken(contract, tokenID, bson.D{
+		{Key: fiTokenHasAuctionSince, Value: aucSince},
+		{Key: fiTokenHasAuctionUntil, Value: aucUntil},
 	})
 }
 
@@ -315,7 +337,7 @@ func tokenFilterToBson(f *types.TokenFilter) bson.D {
 	}
 
 	now := types.Time(time.Now().UTC())
-	
+
 	if f.HasListing != nil {
 		if *f.HasListing {
 			filter = filterAddDateTimeLimit(filter, fiTokenHasListingSince, "$lte", now)
