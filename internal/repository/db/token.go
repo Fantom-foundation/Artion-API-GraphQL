@@ -44,8 +44,11 @@ const (
 	// fiTokenHasListingSince is the column marking listed token earliest date/time.
 	fiTokenHasListingSince = "listed_since"
 
-	// fiTokenHasAuction is the column marking auctioned token.
-	fiTokenHasAuction = "has_auction"
+	// fiTokenHasAuctionSince is the column marking the earliest time a token is auctioned.
+	fiTokenHasAuctionSince = "auction_since"
+
+	// fiTokenHasAuctionUntil is the column marking the latest time a token is auctioned.
+	fiTokenHasAuctionUntil = "auction_until"
 
 	// fiTokenHasOfferUntil is the column marking offered token latest date/time.
 	fiTokenHasOfferUntil = "offer_until"
@@ -201,10 +204,13 @@ func (db *MongoDbBridge) TokenMarkUnOffered(contract *common.Address, tokenID *b
 
 // TokenMarkSold marks the given NFT as sold for the given price.
 func (db *MongoDbBridge) TokenMarkSold(contract *common.Address, tokenID *big.Int, price int64, ts *time.Time) error {
+	aucSince, aucUntil := db.OpenAuctionRange(contract, tokenID)
 	return db.UpdateToken(contract, tokenID, bson.D{
 		{Key: fiTokenLastTrade, Value: *ts},
 		{Key: fiTokenHasListingSince, Value: db.OpenListingSince(contract, tokenID)},
 		{Key: fiTokenHasOfferUntil, Value: db.OpenOfferUntil(contract, tokenID)},
+		{Key: fiTokenHasAuctionSince, Value: aucSince},
+		{Key: fiTokenHasAuctionUntil, Value: aucUntil},
 		{Key: fiTokenTradePrice, Value: price},
 	})
 }
@@ -300,32 +306,46 @@ func tokenFilterToBson(f *types.TokenFilter) bson.D {
 	if f == nil {
 		return filter
 	}
+
 	if f.Search != nil {
 		filter = append(filter, bson.E{Key: fiTokenName, Value: primitive.Regex{
 			Pattern: *f.Search,
 			Options: "i",
 		}})
 	}
+
+	now := types.Time(time.Now().UTC())
+	
 	if f.HasListing != nil {
 		if *f.HasListing {
-			filter = filterAddDateTimeLimit(filter, fiTokenHasListingSince, "$lte", types.Time(time.Now().UTC()))
+			filter = filterAddDateTimeLimit(filter, fiTokenHasListingSince, "$lte", now)
 		} else {
-			filter = filterAddDateTimeMiss(filter, fiTokenHasListingSince, "$gt", types.Time(time.Now().UTC()))
+			filter = filterAddDateTimeMiss(filter, fiTokenHasListingSince, "$gt", now)
 		}
 	}
+
 	if f.HasAuction != nil {
-		filter = append(filter, bson.E{Key: fiTokenHasAuction, Value: *f.HasAuction})
+		if *f.HasAuction {
+			filter = filterAddDateTimeLimit(filter, fiTokenHasAuctionSince, "$lte", now)
+			filter = filterAddDateTimeLimit(filter, fiTokenHasAuctionUntil, "$gt", now)
+		} else {
+			filter = filterAddDateTimeMiss(filter, fiTokenHasAuctionSince, "$gt", now)
+			filter = filterAddDateTimeMiss(filter, fiTokenHasAuctionUntil, "$lte", now)
+		}
 	}
+
 	if f.HasOffer != nil {
 		if *f.HasOffer {
-			filter = filterAddDateTimeLimit(filter, fiTokenHasOfferUntil, "$gt", types.Time(time.Now().UTC()))
+			filter = filterAddDateTimeLimit(filter, fiTokenHasOfferUntil, "$gt", now)
 		} else {
-			filter = filterAddDateTimeMiss(filter, fiTokenHasOfferUntil, "$lte", types.Time(time.Now().UTC()))
+			filter = filterAddDateTimeMiss(filter, fiTokenHasOfferUntil, "$lte", now)
 		}
 	}
+
 	if f.HasBids != nil {
 		filter = append(filter, bson.E{Key: fiTokenHasBid, Value: *f.HasBids})
 	}
+
 	if f.Collections != nil && len(*f.Collections) > 0 {
 		if len(*f.Collections) == 1 {
 			filter = append(filter, bson.E{Key: fiTokenContract, Value: (*f.Collections)[0].String()})
