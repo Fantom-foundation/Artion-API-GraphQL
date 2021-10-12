@@ -93,3 +93,15 @@ func IndexDefinitionAuctions() []mongo.IndexModel {
 	ix[1] = mongo.IndexModel{Keys: bson.D{{Key: "index", Value: -1}}, Options: &options.IndexOptions{Name: &ixOrdinal}}
 	return ix
 }
+
+// IndexDefinitionAuctionBids provides a list of indexes expected to exist on auction bids' collection.
+func IndexDefinitionAuctionBids() []mongo.IndexModel {
+	ix := make([]mongo.IndexModel, 2)
+
+	ixContractToken := "ix_contract_token"
+	ix[0] = mongo.IndexModel{Keys: bson.D{{Key: "contract", Value: 1}, {Key: "token", Value: 1}}, Options: &options.IndexOptions{Name: &ixContractToken}}
+
+	ixOwner := "ix_bidder"
+	ix[1] = mongo.IndexModel{Keys: bson.D{{Key: "bidder", Value: 1}}, Options: &options.IndexOptions{Name: &ixOwner}}
+	return ix
+}

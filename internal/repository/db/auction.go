@@ -35,6 +35,12 @@ const (
 
 	// fiAuctionClosed represents the name of the DB column storing date/time of auction having been closed.
 	fiAuctionClosed = "closed"
+
+	// fiAuctionLatestBid is the name of the DB column storing the time of the latest bid date/time.
+	fiAuctionLatestBid = "last_bid"
+
+	// fiAuctionLatestBidder is the name of the DB column storing the address of the latest bidder.
+	fiAuctionLatestBidder = "last_bidder"
 )
 
 // GetAuction provides the auction stored in the database, if available.
@@ -72,7 +78,7 @@ func (db *MongoDbBridge) StoreAuction(au *types.Auction) error {
 	}
 
 	// get the collection
-	col := db.client.Database(db.dbName).Collection(coListings)
+	col := db.client.Database(db.dbName).Collection(coAuctions)
 
 	// try to do the insert
 	id := au.ID()
@@ -99,7 +105,7 @@ func (db *MongoDbBridge) OpenAuctionTimeCheck(contract *common.Address, tokenID 
 		Value types.Time `bson:"val"`
 	}
 
-	col := db.client.Database(db.dbName).Collection(coOffers)
+	col := db.client.Database(db.dbName).Collection(coAuctions)
 	err := db.AggregateSingle(col, &mongo.Pipeline{
 		bson.D{
 			{Key: "$match", Value: bson.D{
@@ -135,4 +141,26 @@ func (db *MongoDbBridge) OpenAuctionTimeCheck(contract *common.Address, tokenID 
 func (db *MongoDbBridge) OpenAuctionRange(contract *common.Address, tokenID *big.Int) (*types.Time, *types.Time) {
 	return db.OpenAuctionTimeCheck(contract, tokenID, "$min", "$start"),
 		db.OpenAuctionTimeCheck(contract, tokenID, "$max", "$end")
+}
+
+// SetAuctionBidder sets a new bidder (or no bidder) into the specified auction.
+func (db *MongoDbBridge) SetAuctionBidder(contract *common.Address, tokenID *big.Int, bidder *common.Address, placed *types.Time) error {
+	col := db.client.Database(db.dbName).Collection(coAuctions)
+
+	rs, err := col.UpdateOne(context.Background(), bson.D{
+		{Key: fiAuctionContract, Value: *contract},
+		{Key: fiAuctionTokenId, Value: (hexutil.Big)(*tokenID)},
+	}, bson.D{
+		{Key: fiAuctionLatestBid, Value: placed},
+		{Key: fiAuctionLatestBidder, Value: bidder},
+	})
+	if err != nil {
+		log.Errorf("could not update auction; %s", err.Error())
+		return err
+	}
+
+	if rs.ModifiedCount > 0 {
+		log.Infof("auction %s/%s bidder updated", contract.String(), (*hexutil.Big)(tokenID).String())
+	}
+	return nil
 }
