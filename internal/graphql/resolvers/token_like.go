@@ -55,11 +55,8 @@ func (o TokenLike) TokenId() (hexutil.Big, error) {
 	return *(*hexutil.Big)(big.NewInt(int64(o.TokenId32))), nil
 }
 
-func (o TokenLike) Token() (Token, error) {
-	return Token{
-		Contract: o.Contract,
-		TokenId: *(*hexutil.Big)(big.NewInt(int64(o.TokenId32))),
-	}, nil
+func (o TokenLike) Token() (*Token, error) {
+	return NewToken(&o.Contract, (*hexutil.Big)(big.NewInt(int64(o.TokenId32))))
 }
 
 func (rs *RootResolver) LoggedUserTokenLikes(ctx context.Context, args struct{ PaginationInput }) (con *TokenLikeConnection, err error) {
@@ -78,7 +75,7 @@ func (rs *RootResolver) LoggedUserTokenLikes(ctx context.Context, args struct{ P
 	return NewTokenLikeConnection(list)
 }
 
-func (rs *RootResolver) LikeToken(ctx context.Context, args struct{
+func (rs *RootResolver) LikeToken(ctx context.Context, args struct {
 	Contract common.Address
 	TokenId  hexutil.Big
 }) (bool, error) {
@@ -95,7 +92,7 @@ func (rs *RootResolver) LikeToken(ctx context.Context, args struct{
 	return err == nil, err
 }
 
-func (rs *RootResolver) UnlikeToken(ctx context.Context, args struct{
+func (rs *RootResolver) UnlikeToken(ctx context.Context, args struct {
 	Contract common.Address
 	TokenId  hexutil.Big
 }) (bool, error) {
