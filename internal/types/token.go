@@ -36,13 +36,14 @@ type Token struct {
 	ImageURI        string         `bson:"image"`
 	OrdinalIndex    int64          `bson:"index"`
 	Created         Time           `bson:"created"`
+	CreatedBy       common.Address `bson:"created_by"`
 	HasListingSince *Time          `bson:"listed_since"`
 	HasAuctionSince *Time          `bson:"auction_since"`
 	HasAuctionUntil *Time          `bson:"auction_until"`
 	HasOfferUntil   *Time          `bson:"offer_until"`
 	HasBid          bool           `bson:"has_bid"`
 	LastTrade       *Time          `bson:"last_trade"`
-	LastList        *Time          `bson:"last_list"`
+	LastListing     *Time          `bson:"last_list"`
 	LastOffer       *Time          `bson:"last_offer"`
 	LastAuction     *Time          `bson:"last_auction"`
 	LastBid         *Time          `bson:"last_bid"`
@@ -74,10 +75,10 @@ func NewToken(con *common.Address, tokenId *big.Int, uri string, ts int64, block
 	}
 }
 
-// TokenIdFromAddress generates unique token ID from an NFT contract address and token ID.
+// TokenID generates unique token ID from an NFT contract address and token ID.
 // Collision approx. for p(n)=1e-10: n=4.000.000.000 tokens indexed
 // Collision approx. for p(n)=1e-12: n=500.000.000 tokens indexed
-func TokenIdFromAddress(adr *common.Address, tokenId *big.Int) primitive.ObjectID {
+func TokenID(adr *common.Address, tokenId *big.Int) primitive.ObjectID {
 	hash := sha256.New()
 	hash.Write(adr.Bytes())
 	hash.Write(tokenId.Bytes())
@@ -89,7 +90,7 @@ func TokenIdFromAddress(adr *common.Address, tokenId *big.Int) primitive.ObjectI
 
 // ID generates unique identifier for the NFT owner record.
 func (t *Token) ID() primitive.ObjectID {
-	return TokenIdFromAddress(&t.Contract, (*big.Int)(&t.TokenId))
+	return TokenID(&t.Contract, (*big.Int)(&t.TokenId))
 }
 
 // ScheduleMetaUpdateOnFailure sets new metadata update time after failed attempt.
@@ -103,4 +104,29 @@ func (t *Token) ScheduleMetaUpdateOnFailure() {
 func (t *Token) ScheduleMetaUpdateOnSuccess() {
 	t.MetaUpdate = Time(time.Now().Add(TokenSuccessMetadataUpdateDelay))
 	t.MetaFailures = 0
+}
+
+// HasListing checks if the given token has any active listing right now.
+func (t *Token) HasListing() bool {
+	if nil == t.HasListingSince {
+		return false
+	}
+	return (*time.Time)(t.HasListingSince).Before(time.Now().UTC())
+}
+
+// HasOffer checks if the given token has any active offers right now.
+func (t *Token) HasOffer() bool {
+	if nil == t.HasOfferUntil {
+		return false
+	}
+	return (*time.Time)(t.HasOfferUntil).After(time.Now().UTC())
+}
+
+// HasAuction checks if the given token has any active auction right now.
+func (t *Token) HasAuction() bool {
+	if nil == t.HasAuctionSince {
+		return false
+	}
+	now := time.Now().UTC()
+	return (*time.Time)(t.HasAuctionSince).Before(now) && (*time.Time)(t.HasAuctionUntil).After(now)
 }

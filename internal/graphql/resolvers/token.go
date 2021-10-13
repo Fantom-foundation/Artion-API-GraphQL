@@ -4,182 +4,92 @@ import (
 	"artion-api-graphql/internal/repository"
 	"artion-api-graphql/internal/types"
 	"artion-api-graphql/internal/types/sorting"
-	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
-	"time"
+	"strings"
 )
 
 // Token object is constructed from query, data from db are loaded on demand into "dbToken" field.
 type Token struct {
-	Contract common.Address
-	TokenId  hexutil.Big
-	dbToken  *types.Token // data for token loaded from Mongo
+	*types.Token
 }
 
+// TokenEdge represents an edge in scrollable Tokens list.
 type TokenEdge struct {
-	Node *Token
+	Node    *Token
 	sorting sorting.TokenSorting
 }
 
-func (edge TokenEdge) Cursor() (types.Cursor, error) {
-	// dbToken is always already loaded when in Edge
-	return edge.sorting.GetCursor(edge.Node.dbToken)
-}
-
+// TokenConnection represents scrollable tokens list connector.
 type TokenConnection struct {
 	Edges      []TokenEdge
 	TotalCount hexutil.Big
 	PageInfo   PageInfo
 }
 
+// NewToken creates a new instance of the resolvable Token.
+func NewToken(contract *common.Address, tokenID *hexutil.Big) (*Token, error) {
+	tok, err := repository.R().Token(contract, tokenID)
+	if err != nil {
+		return nil, err
+	}
+	return &Token{Token: tok}, nil
+}
+
+// NewTokenConnection creates new resolver of scrollable token list connector.
 func NewTokenConnection(list *types.TokenList, sorting sorting.TokenSorting) (con *TokenConnection, err error) {
 	con = new(TokenConnection)
+
 	con.TotalCount = (hexutil.Big)(*big.NewInt(list.TotalCount))
 	con.Edges = make([]TokenEdge, len(list.Collection))
+
 	for i := 0; i < len(list.Collection); i++ {
-		resolverToken := Token{
-			Contract: list.Collection[i].Contract,
-			TokenId:  list.Collection[i].TokenId,
-			dbToken:  list.Collection[i],
+		tok, err := NewToken(&list.Collection[i].Contract, &list.Collection[i].TokenId)
+		if err != nil {
+			return nil, err
 		}
+
 		con.Edges[i] = TokenEdge{
-			Node: &resolverToken,
+			Node:    tok,
 			sorting: sorting,
 		}
 	}
+
 	con.PageInfo.HasNextPage = list.HasNext
 	con.PageInfo.HasPreviousPage = list.HasPrev
+
 	if len(list.Collection) > 0 {
 		startCur, err := con.Edges[0].Cursor()
 		if err != nil {
 			return nil, err
 		}
+
 		endCur, err := con.Edges[len(con.Edges)-1].Cursor()
 		if err != nil {
 			return nil, err
 		}
+
 		con.PageInfo.StartCursor = &startCur
 		con.PageInfo.EndCursor = &endCur
 	}
 	return con, err
 }
 
-func (t *Token) load() error {
-	if t.dbToken == nil {
-		tok, err := repository.R().Token(&t.Contract, &t.TokenId)
-		if err != nil {
-			return fmt.Errorf("unable to load token from database; %s", err)
-		}
-		t.dbToken = tok
+// ImageProxy generates REST path providing the token image from this Artion API.
+func (t Token) ImageProxy() *string {
+	if t.ImageURI == "" {
+		return nil
 	}
-	return nil
-}
 
-func (t Token) Name() (string, error) {
-	err := t.load()
-	if err != nil {
-		return "", err
-	}
-	return t.dbToken.Name, nil
-}
+	var sb strings.Builder
+	sb.WriteString("/token-image/")
+	sb.WriteString(t.Contract.String())
+	sb.WriteString("/")
+	sb.WriteString(t.TokenId.String())
+	uri := sb.String()
 
-func (t Token) Description() (string, error) {
-	err := t.load()
-	if err != nil {
-		return "", err
-	}
-	return t.dbToken.Description, nil
-}
-
-func (t Token) Image() (*string, error) {
-	err := t.load()
-	if err != nil || t.dbToken.ImageURI == "" {
-		return nil, err
-	}
-	return &t.dbToken.ImageURI, nil
-}
-
-func (t Token) ImageProxy() (*string, error) {
-	err := t.load()
-	if err != nil || t.dbToken.ImageURI == "" {
-		return nil, err
-	}
-	url := "/token-image/" + t.Contract.String() + "/" + t.TokenId.String()
-	return &url, nil
-}
-
-func (t Token) Created() (types.Time, error) {
-	err := t.load()
-	if err != nil {
-		return types.Time{}, err
-	}
-	return t.dbToken.Created, nil
-}
-
-func (t Token) HasListing() (bool, error) {
-	err := t.load()
-	if err != nil {
-		return false, err
-	}
-	return t.dbToken.HasListing, nil
-}
-
-func (t Token) HasOffer() (bool, error) {
-	err := t.load()
-	if err != nil {
-		return false, err
-	}
-	return t.dbToken.HasOffer, nil
-}
-
-func (t Token) HasAuction() (bool, error) {
-	err := t.load()
-	if err != nil {
-		return false, err
-	}
-	return t.dbToken.HasAuction, nil
-}
-
-func (t Token) HasBids() (bool, error) {
-	err := t.load()
-	if err != nil {
-		return false, err
-	}
-	return t.dbToken.HasBid, nil
-}
-
-func (t Token) LastListing() (*types.Time, error) {
-	err := t.load()
-	if err != nil || time.Time(t.dbToken.LastList).IsZero() {
-		return nil, err
-	}
-	return &t.dbToken.LastList, nil
-}
-
-func (t Token) LastTrade() (*types.Time, error) {
-	err := t.load()
-	if err != nil || time.Time(t.dbToken.LastTrade).IsZero() {
-		return nil, err
-	}
-	return &t.dbToken.LastTrade, nil
-}
-
-func (t Token) LastOffer() (*types.Time, error) {
-	err := t.load()
-	if err != nil || time.Time(t.dbToken.LastOffer).IsZero() {
-		return nil, err
-	}
-	return &t.dbToken.LastOffer, nil
-}
-
-func (t Token) LastBid() (*types.Time, error) {
-	err := t.load()
-	if err != nil || time.Time(t.dbToken.LastBid).IsZero() {
-		return nil, err
-	}
-	return &t.dbToken.LastBid, nil
+	return &uri
 }
 
 func (t Token) Ownerships(args struct{ PaginationInput }) (con *OwnershipConnection, err error) {
@@ -216,4 +126,10 @@ func (t Token) Offers(args struct{ PaginationInput }) (con *OfferConnection, err
 		return nil, err
 	}
 	return NewOfferConnection(list)
+}
+
+// Cursor generates unique row identifier of the scrollable Tokens list.
+func (edge TokenEdge) Cursor() (types.Cursor, error) {
+	// dbToken is always already loaded when in Edge
+	return edge.sorting.GetCursor(edge.Node.Token)
 }

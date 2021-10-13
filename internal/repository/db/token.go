@@ -87,7 +87,7 @@ const (
 // GetToken loads specific NFT token for the given contract address and token ID
 func (db *MongoDbBridge) GetToken(nft *common.Address, tokenId *big.Int) (token *types.Token, err error) {
 	col := db.client.Database(db.dbName).Collection(coTokens)
-	result := col.FindOne(context.Background(), bson.D{{Key: fieldId, Value: types.TokenIdFromAddress(nft, tokenId)}})
+	result := col.FindOne(context.Background(), bson.D{{Key: fieldId, Value: types.TokenID(nft, tokenId)}})
 
 	var row types.Token
 	if err = result.Decode(&row); err != nil {
@@ -139,7 +139,7 @@ func (db *MongoDbBridge) UpdateToken(contract *common.Address, tokenID *big.Int,
 	col := db.client.Database(db.dbName).Collection(coTokens)
 	rs, err := col.UpdateOne(
 		context.Background(),
-		bson.D{{Key: fieldId, Value: types.TokenIdFromAddress(contract, tokenID)}},
+		bson.D{{Key: fieldId, Value: types.TokenID(contract, tokenID)}},
 		bson.D{{Key: "$set", Value: data}},
 	)
 	if err != nil {

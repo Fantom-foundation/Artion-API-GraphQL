@@ -28,7 +28,7 @@ func (db *MongoDbBridge) exists(col *mongo.Collection, filter *bson.D) bool {
 // AggregateSingle reads and parses single row aggregation pipeline into provided value structure.
 func (db *MongoDbBridge) AggregateSingle(col *mongo.Collection, pipe *mongo.Pipeline, val interface{}) error {
 	// get the lowest listing time
-	agg, err := col.Aggregate(context.Background(), pipe)
+	agg, err := col.Aggregate(context.Background(), *pipe)
 	if err != nil {
 		return err
 	}

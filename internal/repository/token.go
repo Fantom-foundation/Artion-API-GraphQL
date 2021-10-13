@@ -29,7 +29,7 @@ func (p *Proxy) GetUnitPriceAt(contract *common.Address, token *common.Address, 
 	// get the unit price of the given token
 	unit, err := p.rpc.GetUnitPriceAt(contract, token, block)
 	if err != nil {
-		log.Errorf("failed to get the unit price of %s; %s", token.String(), err.Error())
+		log.Warningf("get %s price not available; %s", token.String(), contract.String(), block.Uint64(), err.Error())
 		return 0
 	}
 

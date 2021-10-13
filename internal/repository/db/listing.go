@@ -98,14 +98,14 @@ func (db *MongoDbBridge) OpenListingSince(contract *common.Address, tokenID *big
 
 	col := db.client.Database(db.dbName).Collection(coListings)
 	err := db.AggregateSingle(col, &mongo.Pipeline{
-		bson.D{
+		{
 			{Key: "$match", Value: bson.D{
 				{Key: fiListingContract, Value: *contract},
 				{Key: fiListingTokenId, Value: hexutil.Big(*tokenID)},
 				{Key: fiListingClosed, Value: bson.D{{Key: "$type", Value: 10}}},
 			}},
 		},
-		bson.D{
+		{
 			{Key: "$group", Value: bson.D{
 				{Key: "_id", Value: nil},
 				{Key: "val", Value: bson.D{{Key: "$min", Value: "$start"}}},

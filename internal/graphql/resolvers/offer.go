@@ -9,25 +9,22 @@ import (
 
 type Offer types.Offer
 
-func (o Offer) Token() (Token, error) {
-	return Token{
-		Contract: o.Contract,
-		TokenId:  o.TokenId,
-	}, nil
-}
-
 type OfferEdge struct {
 	Node *Offer
-}
-
-func (edge OfferEdge) Cursor() (types.Cursor, error) {
-	return sorting.OfferSortingNone.GetCursor((*types.Offer)(edge.Node))
 }
 
 type OfferConnection struct {
 	Edges      []OfferEdge
 	TotalCount hexutil.Big
 	PageInfo   PageInfo
+}
+
+func (o Offer) Token() (*Token, error) {
+	return NewToken(&o.Contract, &o.TokenId)
+}
+
+func (edge OfferEdge) Cursor() (types.Cursor, error) {
+	return sorting.OfferSortingNone.GetCursor((*types.Offer)(edge.Node))
 }
 
 func NewOfferConnection(list *types.OfferList) (con *OfferConnection, err error) {
