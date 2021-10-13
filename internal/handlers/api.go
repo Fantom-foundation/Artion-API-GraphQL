@@ -20,7 +20,7 @@ func Api(cfg *config.Config, log logger.Logger) http.Handler {
 	// create new parsed GraphQL schema
 	sch, err := schema.Schema()
 	if err != nil {
-		log.Criticalf("can not get the GraphQL schema; %s", err)
+		log.Panicf("can not get the GraphQL schema; %s", err)
 		return nil
 	}
 

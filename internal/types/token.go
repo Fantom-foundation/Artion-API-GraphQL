@@ -41,7 +41,7 @@ type Token struct {
 	HasAuctionSince *Time          `bson:"auction_since"`
 	HasAuctionUntil *Time          `bson:"auction_until"`
 	HasOfferUntil   *Time          `bson:"offer_until"`
-	HasBid          bool           `bson:"has_bid"`
+	HasBids         bool           `bson:"has_bid"`
 	LastTrade       *Time          `bson:"last_trade"`
 	LastListing     *Time          `bson:"last_list"`
 	LastOffer       *Time          `bson:"last_offer"`
@@ -104,29 +104,4 @@ func (t *Token) ScheduleMetaUpdateOnFailure() {
 func (t *Token) ScheduleMetaUpdateOnSuccess() {
 	t.MetaUpdate = Time(time.Now().Add(TokenSuccessMetadataUpdateDelay))
 	t.MetaFailures = 0
-}
-
-// HasListing checks if the given token has any active listing right now.
-func (t *Token) HasListing() bool {
-	if nil == t.HasListingSince {
-		return false
-	}
-	return (*time.Time)(t.HasListingSince).Before(time.Now().UTC())
-}
-
-// HasOffer checks if the given token has any active offers right now.
-func (t *Token) HasOffer() bool {
-	if nil == t.HasOfferUntil {
-		return false
-	}
-	return (*time.Time)(t.HasOfferUntil).After(time.Now().UTC())
-}
-
-// HasAuction checks if the given token has any active auction right now.
-func (t *Token) HasAuction() bool {
-	if nil == t.HasAuctionSince {
-		return false
-	}
-	now := time.Now().UTC()
-	return (*time.Time)(t.HasAuctionSince).Before(now) && (*time.Time)(t.HasAuctionUntil).After(now)
 }

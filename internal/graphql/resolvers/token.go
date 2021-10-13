@@ -8,12 +8,11 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
 	"strings"
+	"time"
 )
 
 // Token object is constructed from query, data from db are loaded on demand into "dbToken" field.
-type Token struct {
-	*types.Token
-}
+type Token types.Token
 
 // TokenEdge represents an edge in scrollable Tokens list.
 type TokenEdge struct {
@@ -34,7 +33,7 @@ func NewToken(contract *common.Address, tokenID *hexutil.Big) (*Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Token{Token: tok}, nil
+	return (*Token)(tok), nil
 }
 
 // NewTokenConnection creates new resolver of scrollable token list connector.
@@ -76,8 +75,41 @@ func NewTokenConnection(list *types.TokenList, sorting sorting.TokenSorting) (co
 	return con, err
 }
 
+// Image resolves UIR of the token image.
+func (t *Token) Image() *string {
+	if t.ImageURI == "" {
+		return nil
+	}
+	return &t.ImageURI
+}
+
+// HasListing checks if the given token has any active listing right now.
+func (t *Token) HasListing() bool {
+	if nil == t.HasListingSince {
+		return false
+	}
+	return (*time.Time)(t.HasListingSince).Before(time.Now().UTC())
+}
+
+// HasOffer checks if the given token has any active offers right now.
+func (t *Token) HasOffer() bool {
+	if nil == t.HasOfferUntil {
+		return false
+	}
+	return (*time.Time)(t.HasOfferUntil).After(time.Now().UTC())
+}
+
+// HasAuction checks if the given token has any active auction right now.
+func (t *Token) HasAuction() bool {
+	if nil == t.HasAuctionSince {
+		return false
+	}
+	now := time.Now().UTC()
+	return (*time.Time)(t.HasAuctionSince).Before(now) && (*time.Time)(t.HasAuctionUntil).After(now)
+}
+
 // ImageProxy generates REST path providing the token image from this Artion API.
-func (t Token) ImageProxy() *string {
+func (t *Token) ImageProxy() *string {
 	if t.ImageURI == "" {
 		return nil
 	}
@@ -92,7 +124,7 @@ func (t Token) ImageProxy() *string {
 	return &uri
 }
 
-func (t Token) Likes() (hexutil.Big, error) {
+func (t *Token) Likes() (hexutil.Big, error) {
 	count, err := repository.R().GetTokenLikesCount(&t.Contract, (*big.Int)(&t.TokenId))
 	if err != nil {
 		return hexutil.Big{}, err
@@ -100,7 +132,7 @@ func (t Token) Likes() (hexutil.Big, error) {
 	return hexutil.Big(*big.NewInt(count)), nil
 }
 
-func (t Token) Ownerships(args struct{ PaginationInput }) (con *OwnershipConnection, err error) {
+func (t *Token) Ownerships(args struct{ PaginationInput }) (con *OwnershipConnection, err error) {
 	cursor, count, backward, err := args.ToRepositoryInput()
 	if err != nil {
 		return nil, err
@@ -112,7 +144,7 @@ func (t Token) Ownerships(args struct{ PaginationInput }) (con *OwnershipConnect
 	return NewOwnershipConnection(list)
 }
 
-func (t Token) Listings(args struct{ PaginationInput }) (con *ListingConnection, err error) {
+func (t *Token) Listings(args struct{ PaginationInput }) (con *ListingConnection, err error) {
 	cursor, count, backward, err := args.ToRepositoryInput()
 	if err != nil {
 		return nil, err
@@ -124,7 +156,7 @@ func (t Token) Listings(args struct{ PaginationInput }) (con *ListingConnection,
 	return NewListingConnection(list)
 }
 
-func (t Token) Offers(args struct{ PaginationInput }) (con *OfferConnection, err error) {
+func (t *Token) Offers(args struct{ PaginationInput }) (con *OfferConnection, err error) {
 	cursor, count, backward, err := args.ToRepositoryInput()
 	if err != nil {
 		return nil, err
@@ -139,5 +171,5 @@ func (t Token) Offers(args struct{ PaginationInput }) (con *OfferConnection, err
 // Cursor generates unique row identifier of the scrollable Tokens list.
 func (edge TokenEdge) Cursor() (types.Cursor, error) {
 	// dbToken is always already loaded when in Edge
-	return edge.sorting.GetCursor(edge.Node.Token)
+	return edge.sorting.GetCursor((*types.Token)(edge.Node))
 }
