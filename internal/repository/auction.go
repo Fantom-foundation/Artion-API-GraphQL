@@ -21,3 +21,8 @@ func (p *Proxy) StoreAuction(au *types.Auction) error {
 func (p *Proxy) ExtendAuctionDetailAt(au *types.Auction, block *big.Int) error {
 	return p.rpc.ExtendAuctionDetailAt(au, block)
 }
+
+// SetAuctionBidder sets a new bidder (or no bidder) into the specified auction.
+func (p *Proxy) SetAuctionBidder(contract *common.Address, tokenID *big.Int, bidder *common.Address, placed *types.Time) error {
+	return p.db.SetAuctionBidder(contract, tokenID, bidder, placed)
+}

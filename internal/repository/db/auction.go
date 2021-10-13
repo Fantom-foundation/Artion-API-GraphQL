@@ -28,13 +28,19 @@ const (
 	// fiAuctionOwner = "owner"
 
 	// fiAuctionStartTime represents the name of the DB column storing auction start.
-	fiAuctionStartTime = "start"
+	// fiAuctionStartTime = "start"
 
 	// fiAuctionEndTime represents the name of the DB column storing auction end.
-	fiAuctionEndTime = "end"
+	// fiAuctionEndTime = "end"
 
 	// fiAuctionClosed represents the name of the DB column storing date/time of auction having been closed.
 	fiAuctionClosed = "closed"
+
+	// fiAuctionLatestBid is the name of the DB column storing the time of the latest bid date/time.
+	fiAuctionLatestBid = "last_bid"
+
+	// fiAuctionLatestBidder is the name of the DB column storing the address of the latest bidder.
+	fiAuctionLatestBidder = "last_bidder"
 )
 
 // GetAuction provides the auction stored in the database, if available.
@@ -72,7 +78,7 @@ func (db *MongoDbBridge) StoreAuction(au *types.Auction) error {
 	}
 
 	// get the collection
-	col := db.client.Database(db.dbName).Collection(coListings)
+	col := db.client.Database(db.dbName).Collection(coAuctions)
 
 	// try to do the insert
 	id := au.ID()
@@ -93,23 +99,68 @@ func (db *MongoDbBridge) StoreAuction(au *types.Auction) error {
 	return nil
 }
 
-// HasOpenAuctions checks if the given NFT has standing auction(s).
-func (db *MongoDbBridge) HasOpenAuctions(contract *common.Address, tokenID *big.Int) bool {
-	col := db.client.Database(db.dbName).Collection(coListings)
+// OpenAuctionTimeCheck provides the active auction date/time of given range.
+func (db *MongoDbBridge) OpenAuctionTimeCheck(contract *common.Address, tokenID *big.Int, operator string, field string) *types.Time {
+	var row struct {
+		Value types.Time `bson:"val"`
+	}
 
-	// check for count of any started and un-closed auctions with future deadline; we need only 1
-	now := types.Time(time.Now().UTC())
-	count, err := col.CountDocuments(context.Background(), bson.D{
-		{Key: fiAuctionContract, Value: *contract},
-		{Key: fiAuctionTokenId, Value: hexutil.Big(*tokenID)},
-		{Key: fiAuctionClosed, Value: bson.D{{Key: "$type", Value: 10}}},
-		{Key: fiAuctionStartTime, Value: bson.D{{Key: "$lte", Value: now}}},
-		{Key: fiAuctionEndTime, Value: bson.D{{Key: "$gt", Value: now}}},
-	}, options.Count().SetLimit(1))
+	col := db.client.Database(db.dbName).Collection(coAuctions)
+	err := db.AggregateSingle(col, &mongo.Pipeline{
+		bson.D{
+			{Key: "$match", Value: bson.D{
+				{Key: fiAuctionContract, Value: *contract},
+				{Key: fiAuctionTokenId, Value: hexutil.Big(*tokenID)},
+				{Key: fiAuctionClosed, Value: bson.D{{Key: "$type", Value: 10}}},
+			}},
+		},
+		bson.D{
+			{Key: "$group", Value: bson.D{
+				{Key: "_id", Value: nil},
+				{Key: "val", Value: bson.D{{Key: operator, Value: field}}},
+			}},
+		},
+	}, &row)
 
 	if err != nil {
-		log.Errorf("can not count auctions; %s", err.Error())
-		return false
+		// no offer at all?
+		if err == mongo.ErrNoDocuments {
+			log.Infof("no open auction for %s/%s", contract.String(), (*hexutil.Big)(tokenID).String())
+			return nil
+		}
+		log.Criticalf("failed auction check of %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err.Error())
+		return nil
 	}
-	return count > 0
+
+	log.Infof("open auction check %s/%s %s %s",
+		contract.String(), (*hexutil.Big)(tokenID).String(), operator, time.Time(row.Value).Format(time.RFC1123))
+	return &row.Value
+}
+
+// OpenAuctionRange loads open auction date/time range.
+func (db *MongoDbBridge) OpenAuctionRange(contract *common.Address, tokenID *big.Int) (*types.Time, *types.Time) {
+	return db.OpenAuctionTimeCheck(contract, tokenID, "$min", "$start"),
+		db.OpenAuctionTimeCheck(contract, tokenID, "$max", "$end")
+}
+
+// SetAuctionBidder sets a new bidder (or no bidder) into the specified auction.
+func (db *MongoDbBridge) SetAuctionBidder(contract *common.Address, tokenID *big.Int, bidder *common.Address, placed *types.Time) error {
+	col := db.client.Database(db.dbName).Collection(coAuctions)
+
+	rs, err := col.UpdateOne(context.Background(), bson.D{
+		{Key: fiAuctionContract, Value: *contract},
+		{Key: fiAuctionTokenId, Value: (hexutil.Big)(*tokenID)},
+	}, bson.D{
+		{Key: fiAuctionLatestBid, Value: placed},
+		{Key: fiAuctionLatestBidder, Value: bidder},
+	})
+	if err != nil {
+		log.Errorf("could not update auction; %s", err.Error())
+		return err
+	}
+
+	if rs.ModifiedCount > 0 {
+		log.Infof("auction %s/%s bidder updated", contract.String(), (*hexutil.Big)(tokenID).String())
+	}
+	return nil
 }

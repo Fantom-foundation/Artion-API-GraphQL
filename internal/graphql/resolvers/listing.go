@@ -9,11 +9,8 @@ import (
 
 type Listing types.Listing
 
-func (l Listing) Token() (Token, error) {
-	return Token{
-		Contract: l.Contract,
-		TokenId:  l.TokenId,
-	}, nil
+func (l Listing) Token() (*Token, error) {
+	return NewToken(&l.Contract, &l.TokenId)
 }
 
 type ListingEdge struct {

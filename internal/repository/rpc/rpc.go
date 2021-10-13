@@ -56,6 +56,7 @@ type Opera struct {
 	abiMarketplace *abi.ABI
 
 	// contracts
+	marketplace     *contracts.FantomMarketplace
 	auctionContract *contracts.FantomAuction
 }
 
@@ -70,6 +71,11 @@ func (o *Opera) RegisterContract(ct string, addr *common.Address) (err error) {
 	switch ct {
 	case "auction":
 		o.auctionContract, err = contracts.NewFantomAuction(*addr, o.ftm)
+		if err == nil {
+			log.Noticef("loaded %s contract at %s", ct, addr.String())
+		}
+	case "market":
+		o.marketplace, err = contracts.NewFantomMarketplace(*addr, o.ftm)
 		if err == nil {
 			log.Noticef("loaded %s contract at %s", ct, addr.String())
 		}

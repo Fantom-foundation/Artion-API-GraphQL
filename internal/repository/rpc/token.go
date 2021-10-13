@@ -4,28 +4,23 @@ package rpc
 
 import (
 	"context"
-	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 )
 
 // GetUnitPriceAt extracts token price using Marketplace contract.
 func (o *Opera) GetUnitPriceAt(contract *common.Address, token *common.Address, block *big.Int) (*big.Int, error) {
-	// prepare params
-	input, err := o.abiMarketplace.Pack("getPrice", *token)
+	// try on block
+	val, err := o.marketplace.GetPrice(&bind.CallOpts{
+		Pending:     false,
+		From:        common.Address{},
+		BlockNumber: block,
+		Context:     context.Background(),
+	}, *token)
 	if err != nil {
-		log.Errorf("can not pack data; %s", err.Error())
-		return nil, err
+		log.Warningf("get %s price failed for block #%d; %s", token.String(), block.Uint64(), err.Error())
+		return o.marketplace.GetPrice(nil, *token)
 	}
-
-	// call the contract
-	data, err := o.ftm.CallContract(context.Background(), ethereum.CallMsg{
-		From: common.Address{},
-		To:   contract,
-		Data: input,
-	}, block)
-	if err != nil {
-		return nil, err
-	}
-	return new(big.Int).SetBytes(data), nil
+	return val, nil
 }

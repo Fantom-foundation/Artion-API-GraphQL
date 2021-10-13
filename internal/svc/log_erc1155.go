@@ -23,18 +23,16 @@ func erc1155TokenTransfer(evt *eth.Log, lo *logObserver) {
 	}
 
 	// extract data
-	from := new(common.Address)
-	from.SetBytes(evt.Topics[2].Bytes())
-	to := new(common.Address)
-	to.SetBytes(evt.Topics[3].Bytes())
+	from := common.BytesToAddress(evt.Topics[2].Bytes())
+	to := common.BytesToAddress(evt.Topics[3].Bytes())
 	tokenId := new(big.Int).SetBytes(evt.Data[:32])
 
 	// add recipient ownership record; we can do it first even for new tokens
 	if err := repo.StoreOwnership(&types.Ownership{
 		Contract: evt.Address,
 		TokenId:  hexutil.Big(*tokenId),
-		Owner:    *to,
-		Qty:      balanceOf(&evt.Address, tokenId, to, evt.BlockNumber, lo),
+		Owner:    to,
+		Qty:      balanceOf(&evt.Address, tokenId, &to, evt.BlockNumber, lo),
 		Updated:  types.Time(time.Now()),
 	}); err != nil {
 		log.Errorf("failed to update recipient ownership at %s/%d; %s",
@@ -44,7 +42,7 @@ func erc1155TokenTransfer(evt *eth.Log, lo *logObserver) {
 	// make sure we know the token
 	// if this is a mint call (the sender is zero), we just add the NFT record
 	if 0 == bytes.Compare(zeroAddress.Bytes(), from.Bytes()) {
-		addERC1155Token(&evt.Address, tokenId, evt, lo)
+		addERC1155Token(&evt.Address, tokenId, &to, evt, lo)
 		return
 	}
 
@@ -52,8 +50,8 @@ func erc1155TokenTransfer(evt *eth.Log, lo *logObserver) {
 	if err := repo.StoreOwnership(&types.Ownership{
 		Contract: evt.Address,
 		TokenId:  hexutil.Big(*tokenId),
-		Owner:    *to,
-		Qty:      balanceOf(&evt.Address, tokenId, from, evt.BlockNumber, lo),
+		Owner:    to,
+		Qty:      balanceOf(&evt.Address, tokenId, &from, evt.BlockNumber, lo),
 		Updated:  types.Time(time.Now()),
 	}); err != nil {
 		log.Errorf("failed to update sender ownership at %s/%d; %s",
@@ -87,7 +85,7 @@ func balanceOf(con *common.Address, tokenId *big.Int, owner *common.Address, blo
 }
 
 // addERC1155Token adds a new ERC1155 type of token into the repository.
-func addERC1155Token(adr *common.Address, tokenID *big.Int, evt *eth.Log, lo *logObserver) {
+func addERC1155Token(adr *common.Address, tokenID *big.Int, creator *common.Address, evt *eth.Log, lo *logObserver) {
 	// extract the token URI from the contract
 	uri, err := repo.Erc1155TokenUri(adr, tokenID)
 	if err != nil {
@@ -103,6 +101,8 @@ func addERC1155Token(adr *common.Address, tokenID *big.Int, evt *eth.Log, lo *lo
 
 	// make the token
 	tok := types.NewToken(adr, tokenID, uri, int64(blk.Time), evt.BlockNumber, evt.Index)
+	tok.CreatedBy = *creator
+	
 	log.Infof("ERC-1155 token #%s found at %s", tok.TokenId.String(), tok.Contract.String())
 
 	// write token to the persistent storage

@@ -32,7 +32,7 @@ const (
 	fiOfferClosed = "closed"
 
 	// fiOfferDeadline is the name of the DB column of the offer expiring date/time.
-	fiOfferDeadline = "deadline"
+	// fiOfferDeadline = "deadline"
 )
 
 // GetOffer provides the token offer stored in the database, if available.
@@ -91,24 +91,41 @@ func (db *MongoDbBridge) StoreOffer(offer *types.Offer) error {
 	return nil
 }
 
-// HasOpenOffers checks if the given NFT has standing offer(s).
-func (db *MongoDbBridge) HasOpenOffers(contract *common.Address, tokenID *big.Int) bool {
-	col := db.client.Database(db.dbName).Collection(coOffers)
-
-	// check for count of any un-closed offers with future deadline; we need only 1
-	count, err := col.CountDocuments(context.Background(), bson.D{
-		{Key: fiOfferContract, Value: *contract},
-		{Key: fiOfferTokenId, Value: hexutil.Big(*tokenID)},
-		{Key: fiOfferClosed, Value: bson.D{{Key: "$type", Value: 10}}},
-		{Key: fiOfferDeadline, Value: bson.D{{Key: "$gt", Value: types.Time(time.Now().UTC())}}},
-	}, options.Count().SetLimit(1))
-
-	if err != nil {
-		log.Errorf("can not count offers; %s", err.Error())
-		return false
+// OpenOfferUntil provides the latest active offer date/time if any.
+func (db *MongoDbBridge) OpenOfferUntil(contract *common.Address, tokenID *big.Int) *types.Time {
+	var row struct {
+		Until types.Time `bson:"val"`
 	}
 
-	return count > 0
+	col := db.client.Database(db.dbName).Collection(coOffers)
+	err := db.AggregateSingle(col, &mongo.Pipeline{
+		bson.D{
+			{Key: "$match", Value: bson.D{
+				{Key: fiOfferContract, Value: *contract},
+				{Key: fiOfferTokenId, Value: hexutil.Big(*tokenID)},
+				{Key: fiOfferClosed, Value: bson.D{{Key: "$type", Value: 10}}},
+			}},
+		},
+		bson.D{
+			{Key: "$group", Value: bson.D{
+				{Key: "_id", Value: nil},
+				{Key: "val", Value: bson.D{{Key: "$max", Value: "$deadline"}}},
+			}},
+		},
+	}, &row)
+
+	if err != nil {
+		// no offer at all?
+		if err == mongo.ErrNoDocuments {
+			log.Infof("no open offer available for %s/%s", contract.String(), (*hexutil.Big)(tokenID).String())
+			return nil
+		}
+		log.Criticalf("failed latest offer check of %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err.Error())
+		return nil
+	}
+
+	log.Infof("open offer on %s/%s until %s", contract.String(), (*hexutil.Big)(tokenID).String(), time.Time(row.Until).Format(time.RFC1123))
+	return &row.Until
 }
 
 func (db *MongoDbBridge) ListOffers(contract *common.Address, tokenId *hexutil.Big, creator *common.Address, cursor types.Cursor, count int, backward bool) (out *types.OfferList, err error) {

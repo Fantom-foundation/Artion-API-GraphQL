@@ -24,6 +24,7 @@ func (db *MongoDbBridge) updateDatabaseIndexes() {
 	// define index list loaders
 	var ixLoaders = map[string]IndexListProvider{
 		coAuctions:        IndexDefinitionAuctions,
+		coAuctionBids:     IndexDefinitionAuctionBids,
 		coCollection:      IndexDefinitionCollections,
 		coListings:        IndexDefinitionListings,
 		coOffers:          IndexDefinitionOffers,

@@ -27,8 +27,8 @@ var log logger.Logger
 // as needed.
 var cfg *config.Config
 
-// instance represents a singleton instance of the root resolver
-var instance *RootResolver
+// resolver represents a singleton resolver of the root resolver
+var resolver *RootResolver
 
 // oneInstance is the sync guarding root resolver singleton creation.
 var oneInstance sync.Once
@@ -44,16 +44,16 @@ func SetConfig(c *config.Config) {
 	cfg = c
 }
 
-// Resolver returns a singleton instance fo the root instance.
+// Resolver returns a singleton resolver fo the root resolver.
 func Resolver() *RootResolver {
 	// make sure to instantiate the Repository only once
 	oneInstance.Do(func() {
-		instance = newResolver()
+		resolver = newResolver()
 	})
-	return instance
+	return resolver
 }
 
-// new creates an instance of root resolver and initializes its internal structure.
+// new creates an resolver of root resolver and initializes its internal structure.
 func newResolver() *RootResolver {
 	if cfg == nil {
 		panic(fmt.Errorf("missing configuration"))
@@ -134,13 +134,12 @@ func (rs *RootResolver) Token(args struct {
 	Contract common.Address
 	TokenId  hexutil.Big
 }) (*Token, error) {
-	token := Token{Contract: args.Contract, TokenId: args.TokenId}
-	return &token, nil
+	return NewToken(&args.Contract, &args.TokenId)
 }
 
-func (rs *RootResolver) Tokens(args struct{
-	Filter *types.TokenFilter
-	SortBy *string
+func (rs *RootResolver) Tokens(args struct {
+	Filter  *types.TokenFilter
+	SortBy  *string
 	SortDir *string
 	PaginationInput
 }) (con *TokenConnection, err error) {

@@ -9,11 +9,8 @@ import (
 
 type Ownership types.Ownership
 
-func (o Ownership) Token() (Token, error) {
-	return Token{
-		Contract: o.Contract,
-		TokenId:  o.TokenId,
-	}, nil
+func (o Ownership) Token() (*Token, error) {
+	return NewToken(&o.Contract, &o.TokenId)
 }
 
 func (o Ownership) OwnerUser() (User, error) {

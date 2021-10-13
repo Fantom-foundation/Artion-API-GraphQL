@@ -99,6 +99,27 @@ func newLogObserver(mgr *Manager) *logObserver {
 
 			/* Auction::event AuctionCreated(address indexed nftAddress, uint256 indexed tokenId, address payToken) */
 			common.HexToHash("0xca437d90ed6373b827a01275bd2fdfe7e6406d7ecd400662ee0533d3546ab17a"): auctionCreated,
+
+			/* Auction::event UpdateAuctionStartTime(address indexed nftAddress, uint256 indexed tokenId, uint256 startTime) */
+			common.HexToHash("0xf123182d1bfce603eb20a2f74cce94af6542f353a4c2a8d5cfadf41822b32b38"): auctionStartTimeUpdated,
+
+			/* Auction::event UpdateAuctionEndTime(address indexed nftAddress, uint256 indexed tokenId, uint256 endTime) */
+			common.HexToHash("0xd8aaad775c4c9b21112b5cb22ab4618c74936d873850fbd6f2e691701119ffe1"): auctionEndTimeUpdated,
+
+			/* Auction::event UpdateAuctionReservePrice(address indexed nftAddress, uint256 indexed tokenId, address payToken, uint256 reservePrice) */
+			common.HexToHash("0x1492815b4a41d34cc0015f8ba8013fa45717ea6d8591db6036bdca706981fe83"): auctionReserveUpdated,
+
+			/* Auction::event AuctionCancelled(address indexed nftAddress, uint256 indexed tokenId) */
+			common.HexToHash("0x018b64b6242d32aa550e95d78985b938d71af5b3f10827b0683f55da16393048"): auctionCanceled,
+
+			/* Auction::event AuctionResulted(address indexed nftAddress, uint256 indexed tokenId, address indexed winner, address payToken, int256 unitPrice, uint256 winningBid) */
+			common.HexToHash("0x0427247b7170429ed72451c5779575834ddc75e9788eb907e40025c62ed7a258"): auctionResolved,
+
+			/* Auction::event BidPlaced(address indexed nftAddress, uint256 indexed tokenId, address indexed bidder, uint256 bid) */
+			common.HexToHash("0x0158f5674dc243762459b88cfc91b10d2d1ef9d40821cca978c2b680aa444682"): auctionBidPlaced,
+
+			/* Auction::event BidWithdrawn(address indexed nftAddress, uint256 indexed tokenId, address indexed bidder, uint256 bid) */
+			common.HexToHash("0x867b8ea96dd803063f905a19f8117cbb1866ec7a594dfede75ab4a5235f61d7c"): auctionBidWithdrawn,
 		},
 	}
 }
