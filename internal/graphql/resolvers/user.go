@@ -69,6 +69,18 @@ func (user User) Ownerships(args struct{ PaginationInput }) (con *OwnershipConne
 	return NewOwnershipConnection(list)
 }
 
+func (user User) TokenLikes(args struct{ PaginationInput }) (con *TokenLikeConnection, err error) {
+	cursor, count, backward, err := args.ToRepositoryInput()
+	if err != nil {
+		return nil, err
+	}
+	list, err := repository.R().ListUserTokenLikes(&user.Address, cursor, count, backward)
+	if err != nil {
+		return nil, err
+	}
+	return NewTokenLikeConnection(list)
+}
+
 func (rs *RootResolver) User(args struct{ Address common.Address }) (user User, err error) {
 	dbUser, err := repository.R().GetUser(args.Address)
 	if err != nil {

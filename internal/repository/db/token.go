@@ -9,6 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"math/big"
 	"time"
@@ -85,13 +86,16 @@ const (
 )
 
 // GetToken loads specific NFT token for the given contract address and token ID
-func (db *MongoDbBridge) GetToken(nft *common.Address, tokenId *big.Int) (token *types.Token, err error) {
+func (db *MongoDbBridge) GetToken(contract *common.Address, tokenId *big.Int) (token *types.Token, err error) {
 	col := db.client.Database(db.dbName).Collection(coTokens)
-	result := col.FindOne(context.Background(), bson.D{{Key: fieldId, Value: types.TokenID(nft, tokenId)}})
+	result := col.FindOne(context.Background(), bson.D{{Key: fieldId, Value: types.TokenID(contract, tokenId)}})
 
 	var row types.Token
 	if err = result.Decode(&row); err != nil {
-		log.Errorf("can not decode token; %s", err.Error())
+		if err == mongo.ErrNoDocuments {
+			return nil, nil
+		}
+		log.Errorf("can not decode token %s at %s; %s", tokenId.String(), contract.String(), err.Error())
 		return nil, err
 	}
 	return &row, err

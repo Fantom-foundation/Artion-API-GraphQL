@@ -26,11 +26,11 @@ build/artionapi: internal/graphql/schema/gen/schema.graphql
 	-o build/artionapi \
 	./cmd/artionapi
 
-test:
+test: internal/graphql/schema/gen/schema.graphql
 	go test ./...
 
-internal/graphql/schema/gen/schema.graphql: internal/graphql/definition
-	@bash tools/make_graphql_bundle.sh $@ $<
+internal/graphql/schema/gen/schema.graphql:
+	@bash tools/make_graphql_bundle.sh $@ internal/graphql/definition
 
 internal/repository/rpc/contracts/FantomArtTradable.go: internal/repository/rpc/contracts/abi/FantomArtTradable.json
 	abigen --type FantomArtTradable --pkg contracts --abi $< --out $@
@@ -50,7 +50,7 @@ db_observed: doc/db/observed.json
 db_status: doc/db/status.json
 	mongoimport --db=artion --collection=status --file=$<
 
-.PHONY: build/artionapi help test
+.PHONY: build/artionapi internal/graphql/schema/gen/schema.graphql help test
 all: help
 help: Makefile
 	@echo

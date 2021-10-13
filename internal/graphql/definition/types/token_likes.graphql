@@ -7,7 +7,7 @@ type TokenLike {
     tokenId: BigInt!
 
     # The liked token
-    token: Token!
+    token: Token
 }
 
 type TokenLikeEdge {

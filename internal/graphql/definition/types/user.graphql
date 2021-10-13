@@ -23,6 +23,9 @@ type User {
 
     # List owned tokens and their amount
     ownerships(first: Int, after: Cursor, last: Int, before: Cursor): OwnershipConnection!
+
+    # List user favourite tokens
+    tokenLikes(first: Int, after: Cursor, last: Int, before: Cursor): TokenLikeConnection!
 }
 
 # User represents user account/profile.
