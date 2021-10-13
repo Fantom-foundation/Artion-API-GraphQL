@@ -16,6 +16,12 @@ func (o Ownership) Token() (Token, error) {
 	}, nil
 }
 
+func (o Ownership) OwnerUser() (User, error) {
+	return User{
+		Address: o.Owner,
+	}, nil
+}
+
 type OwnershipEdge struct {
 	Node *Ownership
 }
