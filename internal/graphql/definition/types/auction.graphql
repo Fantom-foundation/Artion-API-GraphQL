@@ -1,0 +1,33 @@
+# Auction represents an auction being conducted on a NFT token.
+type Auction {
+    contract: Address!
+    tokenId: BigInt!
+    owner: Address!
+    quantity: BigInt!
+    payToken: Address!
+    reservePrice: BigInt!
+    created: Time!
+    startTime: Time!
+    endTime: Time!
+    closed: Time
+    lastBidPlaced: Time
+    lastBidder: Address
+    winner: Address
+    resolved: Time
+}
+
+type AuctionEdge {
+    cursor: Cursor!
+    node: Auction!
+}
+
+type AuctionConnection {
+    # Edges contains provided edges of the sequential list.
+    edges: [AuctionEdge!]!
+
+    # TotalCount is the total amount of items in the list.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of the list.
+    pageInfo: PageInfo!
+}

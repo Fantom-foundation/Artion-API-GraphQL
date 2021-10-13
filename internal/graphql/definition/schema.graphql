@@ -16,7 +16,7 @@ type Query {
     collections(first: Int, after: Cursor, last: Int, before: Cursor): CollectionConnection!
 
     # Get token by address and id
-    token(contract: Address!, tokenId: BigInt!): Token!
+    token(contract: Address!, tokenId: BigInt!): Token
 
     # List all tokens (with defined filter and sorting)
     tokens(filter: TokenFilter, sortBy: TokenSorting, sortDir: SortingDirection, first: Int, after: Cursor, last: Int, before: Cursor): TokenConnection!

@@ -56,6 +56,9 @@ type Token {
 
     # Current offers of the token
     offers(first: Int, after: Cursor, last: Int, before: Cursor): OfferConnection!
+
+    # Current auctions of the token
+    auctions(first: Int, after: Cursor, last: Int, before: Cursor): AuctionConnection!
 }
 
 type TokenEdge {

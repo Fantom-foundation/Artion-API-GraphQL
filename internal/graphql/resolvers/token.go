@@ -168,6 +168,18 @@ func (t *Token) Offers(args struct{ PaginationInput }) (con *OfferConnection, er
 	return NewOfferConnection(list)
 }
 
+func (t *Token) Auctions(args struct{ PaginationInput }) (con *AuctionConnection, err error) {
+	cursor, count, backward, err := args.ToRepositoryInput()
+	if err != nil {
+		return nil, err
+	}
+	list, err := repository.R().ListAuctions(&t.Contract, &t.TokenId, nil, cursor, count, backward)
+	if err != nil {
+		return nil, err
+	}
+	return NewAuctionConnection(list)
+}
+
 // Cursor generates unique row identifier of the scrollable Tokens list.
 func (edge TokenEdge) Cursor() (types.Cursor, error) {
 	// dbToken is always already loaded when in Edge
