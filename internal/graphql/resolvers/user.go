@@ -4,6 +4,7 @@ import (
 	"artion-api-graphql/internal/auth"
 	"artion-api-graphql/internal/repository"
 	"artion-api-graphql/internal/types"
+	"artion-api-graphql/internal/types/sorting"
 	"context"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -79,6 +80,23 @@ func (user User) TokenLikes(args struct{ PaginationInput }) (con *TokenLikeConne
 		return nil, err
 	}
 	return NewTokenLikeConnection(list)
+}
+
+func (user User) CreatedTokens(args struct {
+	PaginationInput
+}) (con *TokenConnection, err error) {
+	cursor, count, backward, err := args.ToRepositoryInput()
+	if err != nil {
+		return nil, err
+	}
+	filter := types.TokenFilter{
+		CreatedBy: &user.Address,
+	}
+	list, err := repository.R().ListTokens(&filter, sorting.TokenSortingCreated, true, cursor, count, backward)
+	if err != nil {
+		return nil, err
+	}
+	return NewTokenConnection(list, sorting.TokenSortingCreated)
 }
 
 func (rs *RootResolver) User(args struct{ Address common.Address }) (user User, err error) {

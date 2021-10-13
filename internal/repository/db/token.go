@@ -42,6 +42,9 @@ const (
 	// of the metadata update schedule of the NFT token.
 	fiTokenMetadataUpdateFailures = "meta_failures"
 
+	// fiTokenCreatedBy is the column marking creator of the token.
+	fiTokenCreatedBy = "created_by"
+
 	// fiTokenHasListingSince is the column marking listed token earliest date/time.
 	fiTokenHasListingSince = "listed_since"
 
@@ -405,5 +408,10 @@ func tokenFilterToBson(f *types.TokenFilter) bson.D {
 			filter = append(filter, bson.E{Key: fiTokenContract, Value: bson.D{{Key: "$in", Value: values}}})
 		}
 	}
+
+	if f.CreatedBy != nil {
+		filter = append(filter, bson.E{Key: fiTokenCreatedBy, Value: *f.CreatedBy})
+	}
+
 	return filter
 }

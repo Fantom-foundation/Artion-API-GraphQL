@@ -26,6 +26,9 @@ type User {
 
     # List user favourite tokens
     tokenLikes(first: Int, after: Cursor, last: Int, before: Cursor): TokenLikeConnection!
+
+    # List tokens created by the user
+    createdTokens(first: Int, after: Cursor, last: Int, before: Cursor): TokenConnection!
 }
 
 # User represents user account/profile.

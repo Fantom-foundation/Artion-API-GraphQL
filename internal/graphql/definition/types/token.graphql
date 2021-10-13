@@ -87,4 +87,5 @@ input TokenFilter {
     hasOffer: Boolean
     hasBids: Boolean
     collections: [Address!]
+    createdBy: Address
 }

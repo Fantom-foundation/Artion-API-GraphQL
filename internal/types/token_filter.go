@@ -11,4 +11,5 @@ type TokenFilter struct {
 	HasOffer   *bool
 	HasBids    *bool
 	Collections *[]common.Address
+	CreatedBy  *common.Address
 }
