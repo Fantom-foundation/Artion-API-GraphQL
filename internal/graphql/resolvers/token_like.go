@@ -9,7 +9,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
-	"time"
 )
 
 type TokenLike types.TokenLike
@@ -52,10 +51,14 @@ func NewTokenLikeConnection(list *types.TokenLikeList) (con *TokenLikeConnection
 	return con, err
 }
 
+func (o TokenLike) TokenId() (hexutil.Big, error) {
+	return *(*hexutil.Big)(big.NewInt(int64(o.TokenId32))), nil
+}
+
 func (o TokenLike) Token() (Token, error) {
 	return Token{
 		Contract: o.Contract,
-		TokenId:  o.TokenId,
+		TokenId: *(*hexutil.Big)(big.NewInt(int64(o.TokenId32))),
 	}, nil
 }
 
@@ -84,10 +87,9 @@ func (rs *RootResolver) LikeToken(ctx context.Context, args struct{
 		return false, err
 	}
 	tokenLike := types.TokenLike{
-		User:     *user,
-		Contract: args.Contract,
-		TokenId:  args.TokenId,
-		Created:  types.Time(time.Now()),
+		User:      *user,
+		Contract:  args.Contract,
+		TokenId32: int32(args.TokenId.ToInt().Int64()),
 	}
 	err = repository.R().AddTokenLike(&tokenLike)
 	return err == nil, err
@@ -102,9 +104,9 @@ func (rs *RootResolver) UnlikeToken(ctx context.Context, args struct{
 		return false, err
 	}
 	tokenLike := types.TokenLike{
-		User:     *user,
-		Contract: args.Contract,
-		TokenId:  args.TokenId,
+		User:      *user,
+		Contract:  args.Contract,
+		TokenId32: int32(args.TokenId.ToInt().Int64()),
 	}
 	err = repository.R().RemoveTokenLike(&tokenLike)
 	return err == nil, err

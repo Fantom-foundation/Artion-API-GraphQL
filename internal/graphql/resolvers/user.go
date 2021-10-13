@@ -50,6 +50,13 @@ func (user User) AvatarProxy() (*string, error) {
 	return &url, nil
 }
 
+func (user User) Banner() (*string, error) {
+	if user.dbUser == nil || user.dbUser.Banner == "" {
+		return nil, nil
+	}
+	return &user.dbUser.Banner, nil
+}
+
 func (user User) Ownerships(args struct{ PaginationInput }) (con *OwnershipConnection, err error) {
 	cursor, count, backward, err := args.ToRepositoryInput()
 	if err != nil {
@@ -89,6 +96,7 @@ func (rs *RootResolver) UpdateUser(ctx context.Context, args struct{
 	Bio      string
 	Email    string
 	Avatar   string
+	Banner   string
 }) (bool, error) {
 	address, err := auth.GetIdentityOrErr(ctx)
 	if err != nil {
@@ -100,6 +108,7 @@ func (rs *RootResolver) UpdateUser(ctx context.Context, args struct{
 		Bio: args.Bio,
 		Email: args.Email,
 		Avatar: args.Avatar,
+		Banner: args.Banner,
 	}
 	err = repository.R().UpsertUser(&user)
 	return err == nil, err

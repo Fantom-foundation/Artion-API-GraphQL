@@ -92,5 +92,5 @@ func UserAvatarResolver(path string) (imageUri string, err error) {
 	if user == nil || user.Avatar == "" {
 		return "", fmt.Errorf("user has no avatar; %s", err)
 	}
-	return user.Avatar, nil
+	return "/ipfs/" + user.Avatar, nil
 }

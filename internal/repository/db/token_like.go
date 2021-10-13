@@ -6,16 +6,15 @@ import (
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"math/big"
+	"strings"
 )
 
 const (
 	// coTokenLikes is the name of database collection.
-	coTokenLikes = "Like"
+	coTokenLikes = "likes"
 
 	// fiTokenLikeContract is the column storing the address of the NFT token contract.
 	fiTokenLikeContract = "contractAddress"
@@ -31,12 +30,13 @@ func (sdb *SharedMongoDbBridge) AddTokenLike(tokenLike *types.TokenLike) error {
 	if tokenLike == nil {
 		return fmt.Errorf("no value to store")
 	}
-	if tokenLike.Id.IsZero() {
-		tokenLike.Id = primitive.NewObjectID()
-	}
 
 	col := sdb.client.Database(sdb.dbName).Collection(coTokenLikes)
-	_, err := col.InsertOne(context.Background(), tokenLike)
+	_, err := col.InsertOne(context.Background(), bson.D{
+		{Key: fiTokenLikeUser, Value: strings.ToLower(tokenLike.User.String())},
+		{Key: fiTokenLikeContract, Value: strings.ToLower(tokenLike.Contract.String())},
+		{Key: fiTokenLikeToken, Value: tokenLike.TokenId32},
+	})
 	if err != nil {
 		if mongo.IsDuplicateKeyError(err) {
 			return nil // ignore already-exists error
@@ -56,9 +56,9 @@ func (sdb *SharedMongoDbBridge) RemoveTokenLike(tokenLike *types.TokenLike) erro
 	_, err := col.DeleteOne(
 		context.Background(),
 		bson.D{
-			{Key: fiTokenLikeContract, Value: tokenLike.Contract.String()},
-			{Key: fiTokenLikeToken, Value: tokenLike.TokenId.String()},
-			{Key: fiTokenLikeUser, Value: tokenLike.User.String()},
+			{Key: fiTokenLikeUser, Value: strings.ToLower(tokenLike.User.String())},
+			{Key: fiTokenLikeContract, Value: strings.ToLower(tokenLike.Contract.String())},
+			{Key: fiTokenLikeToken, Value: tokenLike.TokenId32},
 		},
 	)
 	if err != nil {
@@ -72,13 +72,13 @@ func (sdb *SharedMongoDbBridge) RemoveTokenLike(tokenLike *types.TokenLike) erro
 func (sdb *SharedMongoDbBridge) GetTokenLikesCount(contract *common.Address, tokenId *big.Int) (count int64, err error) {
 	col := sdb.client.Database(sdb.dbName).Collection(coTokenLikes)
 	return col.CountDocuments(context.Background(), bson.D{
-		{Key: fiTokenLikeContract, Value: contract.String() },
-		{Key: fiTokenLikeToken, Value: (*hexutil.Big)(tokenId).String() },
+		{Key: fiTokenLikeContract, Value: strings.ToLower(contract.String()) },
+		{Key: fiTokenLikeToken, Value: int32(tokenId.Int64()) },
 	})
 }
 
 func (sdb *SharedMongoDbBridge) ListUserTokenLikes(user *common.Address, cursor types.Cursor, count int, backward bool) (out *types.TokenLikeList, err error) {
-	filter := bson.D{ {Key: fiTokenLikeUser, Value: user.String()} }
+	filter := bson.D{ {Key: fiTokenLikeUser, Value: strings.ToLower(user.String())} }
 	return sdb.listTokenLikes(filter, cursor, count, backward)
 }
 

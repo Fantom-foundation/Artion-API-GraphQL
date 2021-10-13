@@ -12,11 +12,14 @@ type User {
     # User email (null when not set or visible)
     email: String
 
-    # URL of the user avatar image
+    # IPFS hash of the user avatar image
     avatar: String
 
     # URL of the user avatar on the proxy
     avatarProxy: String
+
+    # IPFS hash of the user banner image
+    banner: String
 
     # List owned tokens and their amount
     ownerships(first: Int, after: Cursor, last: Int, before: Cursor): OwnershipConnection!
@@ -35,4 +38,7 @@ input InputUserProfile {
 
     # URL of the user avatar image
     avatar: String!
+
+    # URL of the user banner image
+    banner: String!
 }

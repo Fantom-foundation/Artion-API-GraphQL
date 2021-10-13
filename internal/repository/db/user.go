@@ -8,12 +8,13 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"strings"
 	"time"
 )
 
 const (
 	// coUsers is the name of database collection.
-	coUsers = "Account"
+	coUsers = "accounts"
 
 	// fiUserAddress is the column storing the address of the user.
 	fiUserAddress = "address"
@@ -36,7 +37,7 @@ const (
 func (sdb *SharedMongoDbBridge) GetUser(address common.Address) (user *types.User, err error) {
 	col := sdb.client.Database(sdb.dbName).Collection(coUsers)
 
-	filter := bson.D{{ Key: fiUserAddress, Value: address.String() }}
+	filter := bson.D{{ Key: fiUserAddress, Value: strings.ToLower(address.String()) }}
 	result := col.FindOne(context.Background(), filter)
 
 	if result.Err() != nil {
@@ -63,7 +64,7 @@ func (sdb *SharedMongoDbBridge) UpsertUser(User *types.User) error {
 
 	if _, err := col.UpdateOne(
 		context.Background(),
-		bson.D{{ Key: fiUserAddress, Value: User.Address.String() }},
+		bson.D{{ Key: fiUserAddress, Value: strings.ToLower(User.Address.String()) }},
 		bson.D{
 			{ Key: "$set", Value: bson.D{
 				{Key: fiUserUsername, Value: User.Username},
@@ -74,6 +75,7 @@ func (sdb *SharedMongoDbBridge) UpsertUser(User *types.User) error {
 				{Key: fiUserUpdated, Value: types.Time(time.Now())},
 			} },
 			{Key: "$setOnInsert", Value: bson.D{
+				{Key: fiUserAddress, Value: strings.ToLower(User.Address.String())},
 				{Key: fiUserCreated, Value: types.Time(time.Now())},
 			}},
 		},
