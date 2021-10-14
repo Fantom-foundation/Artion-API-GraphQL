@@ -35,11 +35,13 @@ type Query {
 
     # List authenticated user favourite tokens (DEPRECATED - use tokenLike() in User)
     loggedUserTokenLikes(first: Int, after: Cursor, last: Int, before: Cursor): TokenLikeConnection!
+
+    # Get currently set shipping address for tokens redeem.
+    loggedUserShippingAddress: ShippingAddress
 }
 
 # Mutation endpoints for modifying the data
 type Mutation {
-
     # Generate login challenge to be signed by private key and used to log-in
     initiateLogin: String!
 
@@ -55,4 +57,6 @@ type Mutation {
     # Unset token as liked (remove from favourites)
     unlikeToken(contract: Address!, tokenId: BigInt!): Boolean!
 
+    # Update shipping address for tokens redeem.
+    updateShippingAddress(address: InputShippingAddress!): Boolean!
 }

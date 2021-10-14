@@ -1,0 +1,59 @@
+# ShippingAddress represents user shipping address for tokens redeem.
+type ShippingAddress {
+    # Address of the user wallet
+    user: Address!
+
+    # Full name (in address)
+    fullname: String!
+
+    # Phone (for delivery)
+    phone: String!
+
+    # 1th line of address - Street address or P.O. Box
+    street: String!
+
+    # 2th line of address - Apt, suite, unit, building, floor...
+    apartment: String!
+
+    # City
+    city: String!
+
+    # State (for multi-states countries only)
+    state: String!
+
+    # Country
+    country: String!
+
+    # ZIP / Postal code
+    zip: String!
+
+    # Last modification time
+    updated: Time!
+}
+
+# InputShippingAddress represents user shipping address for tokens redeem.
+input InputShippingAddress {
+    # Full name (in address)
+    fullname: String!
+
+    # Phone (for delivery)
+    phone: String!
+
+    # 1th line of address - Street address or P.O. Box
+    street: String!
+
+    # 2th line of address - Apt, suite, unit, building, floor...
+    apartment: String!
+
+    # City
+    city: String!
+
+    # State (for multi-states countries only)
+    state: String!
+
+    # Country
+    country: String!
+
+    # ZIP / Postal code
+    zip: String!
+}
