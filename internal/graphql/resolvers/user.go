@@ -5,6 +5,7 @@ import (
 	"artion-api-graphql/internal/repository"
 	"artion-api-graphql/internal/types"
 	"artion-api-graphql/internal/types/sorting"
+	"bytes"
 	"context"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -28,11 +29,11 @@ func (user User) Bio() (*string, error) {
 	return &user.dbUser.Bio, nil
 }
 
-func (user User) Email() (*string, error) {
-	if user.dbUser == nil {
+func (user User) Email(ctx context.Context) (*string, error) {
+	logged, _ := auth.GetIdentityOrNil(ctx) // email available only for the user itself
+	if logged == nil || ! bytes.Equal(logged.Bytes(), user.Address.Bytes()) || user.dbUser == nil {
 		return nil, nil
 	}
-	// TODO: check permission
 	return &user.dbUser.Email, nil
 }
 
