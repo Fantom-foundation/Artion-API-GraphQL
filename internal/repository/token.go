@@ -11,6 +11,13 @@ import (
 	"time"
 )
 
+// TokenPriceDecimalsDiff is the amount of decimals we need to remove from prices.
+// Prices come in 18 decimals, we want to preserve 6 decimals on multiplied result by removing 3 from each number.
+var TokenPriceDecimalsDiff = new(big.Int).SetInt64(1_000_000_000_000_000)
+
+// TokenPriceDecimalsCorrection represents the value used to reduce price to stored fixed (4) decimals.
+var TokenPriceDecimalsCorrection = new(big.Int).Mul(TokenPriceDecimalsDiff, TokenPriceDecimalsDiff)
+
 // Token reads NFT detail from the persistent database.
 func (p *Proxy) Token(contract *common.Address, tokenId *hexutil.Big) (*types.Token, error) {
 	var key strings.Builder
@@ -33,8 +40,8 @@ func (p *Proxy) GetUnitPriceAt(contract *common.Address, token *common.Address, 
 		return 0
 	}
 
-	// recalculate to total and update to fixed decimals int64
-	return new(big.Int).Div(new(big.Int).Mul(val, unit), types.TokenPriceDecimalsCorrection).Int64()
+	// recalculate to total updated to fixed decimals int64
+	return new(big.Int).Div(new(big.Int).Mul(val, unit), TokenPriceDecimalsCorrection).Int64()
 }
 
 // StoreToken puts the given token into the persistent storage.

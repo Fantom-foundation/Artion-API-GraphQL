@@ -23,9 +23,6 @@ const (
 	MetadataRefreshSetSize = 50
 )
 
-// TokenPriceDecimalsCorrection represents the value used to reduce price to stored fixed (4) decimals.
-var TokenPriceDecimalsCorrection = new(big.Int).SetInt64(100_000_000_000_000)
-
 // Token represents item list-able in the marketplace.
 type Token struct {
 	Contract        common.Address `bson:"contract"`
