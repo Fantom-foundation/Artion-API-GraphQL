@@ -168,16 +168,12 @@ func (t *Token) Offers(args struct{ PaginationInput }) (con *OfferConnection, er
 	return NewOfferConnection(list)
 }
 
-func (t *Token) Auctions(args struct{ PaginationInput }) (con *AuctionConnection, err error) {
-	cursor, count, backward, err := args.ToRepositoryInput()
+func (t *Token) Auction() (auction *Auction, err error) {
+	a, err := repository.R().GetAuction(&t.Contract, (*big.Int)(&t.TokenId))
 	if err != nil {
 		return nil, err
 	}
-	list, err := repository.R().ListAuctions(&t.Contract, &t.TokenId, nil, cursor, count, backward)
-	if err != nil {
-		return nil, err
-	}
-	return NewAuctionConnection(list)
+	return (*Auction)(a), nil
 }
 
 // Cursor generates unique row identifier of the scrollable Tokens list.

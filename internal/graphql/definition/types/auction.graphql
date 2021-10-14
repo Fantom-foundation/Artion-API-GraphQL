@@ -15,19 +15,3 @@ type Auction {
     winner: Address
     resolved: Time
 }
-
-type AuctionEdge {
-    cursor: Cursor!
-    node: Auction!
-}
-
-type AuctionConnection {
-    # Edges contains provided edges of the sequential list.
-    edges: [AuctionEdge!]!
-
-    # TotalCount is the total amount of items in the list.
-    totalCount: BigInt!
-
-    # PageInfo is an information about the current page of the list.
-    pageInfo: PageInfo!
-}

@@ -3,13 +3,11 @@ package db
 
 import (
 	"artion-api-graphql/internal/types"
-	"artion-api-graphql/internal/types/sorting"
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"math/big"
@@ -165,61 +163,4 @@ func (db *MongoDbBridge) SetAuctionBidder(contract *common.Address, tokenID *big
 		log.Infof("auction %s/%s bidder updated", contract.String(), (*hexutil.Big)(tokenID).String())
 	}
 	return nil
-}
-
-func (db *MongoDbBridge) ListAuctions(contract *common.Address, tokenId *hexutil.Big, owner *common.Address, cursor types.Cursor, count int, backward bool) (out *types.AuctionList, err error) {
-	filter := bson.D{}
-	if contract != nil {
-		filter = append(filter, primitive.E{Key: fiAuctionContract, Value: contract.String()})
-	}
-	if tokenId != nil {
-		filter = append(filter, primitive.E{Key: fiAuctionTokenId, Value: tokenId.String()})
-	}
-	if owner != nil {
-		filter = append(filter, primitive.E{Key: fiAuctionOwner, Value: owner.String()})
-	}
-
-	var list types.AuctionList
-	col := db.client.Database(db.dbName).Collection(coAuctions)
-	ctx := context.Background()
-
-	list.TotalCount, err = db.getTotalCount(col, filter)
-	if err != nil {
-		return nil, err
-	}
-
-	ld, err := db.findPaginated(col, filter, cursor, count, sorting.AuctionSortingNone, backward)
-	if err != nil {
-		log.Errorf("error loading Auctions list; %s", err.Error())
-		return nil, err
-	}
-
-	// close the cursor as we leave
-	defer func() {
-		err = ld.Close(ctx)
-		if err != nil {
-			log.Errorf("error closing Auctions list cursor; %s", err.Error())
-		}
-	}()
-
-	for ld.Next(ctx) {
-		if len(list.Collection) < count {
-			var row types.Auction
-			if err = ld.Decode(&row); err != nil {
-				log.Errorf("can not decode the Auction in list; %s", err.Error())
-				return nil, err
-			}
-			list.Collection = append(list.Collection, &row)
-		} else {
-			list.HasNext = true
-		}
-	}
-
-	if cursor != "" {
-		list.HasPrev = true
-	}
-	if backward {
-		list.Reverse()
-	}
-	return &list, nil
 }
