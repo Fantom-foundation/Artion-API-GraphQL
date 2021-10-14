@@ -49,6 +49,7 @@ func auctionBidPlaced(evt *eth.Log, lo *logObserver) {
 		return
 	}
 
+	auction.LastBid = &bid.Amount
 	auction.LastBidder = &bid.Bidder
 	auction.LastBidPlaced = &bid.Placed
 
@@ -92,5 +93,21 @@ func auctionBidWithdrawn(evt *eth.Log, _ *logObserver) {
 	// mark the token as being re-auctioned
 	if err := repo.TokenMarkUnBid(&contract, tokenID); err != nil {
 		log.Errorf("could not mark token as not having bid; %s", err.Error())
+	}
+
+	// pull the auction involved
+	auction, err := repo.GetAuction(&contract, tokenID)
+	if err != nil {
+		log.Errorf("auction %s/%s not found; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err.Error())
+		return
+	}
+	
+	auction.LastBid = nil
+	auction.LastBidder = nil
+	auction.LastBidPlaced = nil
+
+	// store the listing into database
+	if err := repo.StoreAuction(auction); err != nil {
+		log.Errorf("could not store auction; %s", err.Error())
 	}
 }

@@ -6,10 +6,12 @@ type Auction {
     quantity: BigInt!
     payToken: Address!
     reservePrice: BigInt!
+    minBidAmount: BigInt!
     created: Time!
     startTime: Time!
     endTime: Time!
     closed: Time
+    lastBid: BigInt
     lastBidPlaced: Time
     lastBidder: Address
     winner: Address

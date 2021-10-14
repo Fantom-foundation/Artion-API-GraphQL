@@ -26,3 +26,18 @@ func (p *Proxy) ExtendAuctionDetailAt(au *types.Auction, block *big.Int) error {
 func (p *Proxy) SetAuctionBidder(contract *common.Address, tokenID *big.Int, bidder *common.Address, placed *types.Time) error {
 	return p.db.SetAuctionBidder(contract, tokenID, bidder, placed)
 }
+
+// AuctionGetMinBid provides a minimal bid amount required to participate in the auction.
+func (p *Proxy) AuctionGetMinBid(contract *common.Address, tokenID *big.Int) (*big.Int, error) {
+	// get the highest bid
+	hb, err := p.rpc.AuctionHighestBidAmount(contract, tokenID)
+	if err != nil {
+		return nil, err
+	}
+
+	// for zero highest bid, we use min. bid instead
+	if 0 == new(big.Int).Cmp(hb) {
+		return new(big.Int).Add(p.rpc.AuctionMinimalBidAmount(contract, tokenID), p.rpc.AuctionMinBidIncrement()), nil
+	}
+	return new(big.Int).Add(hb, p.rpc.AuctionMinBidIncrement()), nil
+}
