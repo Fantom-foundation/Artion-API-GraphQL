@@ -30,6 +30,7 @@ var TokenPriceDecimalsCorrection = new(big.Int).SetInt64(100_000_000_000_000)
 type Token struct {
 	Contract        common.Address `bson:"contract"`
 	TokenId         hexutil.Big    `bson:"token"`
+	IsActive        bool           `bson:"is_active"`
 	Uri             string         `bson:"uri"`
 	Name            string         `bson:"name"`
 	Description     string         `bson:"desc"`
@@ -68,6 +69,7 @@ func NewToken(con *common.Address, tokenId *big.Int, uri string, ts int64, block
 	return &Token{
 		Contract:     *con,
 		TokenId:      hexutil.Big(*tokenId),
+		IsActive:     false,
 		Uri:          uri,
 		Created:      Time(time.Unix(ts, 0)),
 		OrdinalIndex: OrdinalIndex(int64(block), int64(index)),

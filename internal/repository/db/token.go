@@ -22,6 +22,9 @@ const (
 	// fiTokenContract is the column storing the address of the NFT token contract.
 	fiTokenContract = "contract"
 
+	// fiTokenIsActive is the column storing the NFT token activity mark.
+	fiTokenIsActive = "is_active"
+
 	// fiTokenMetadataURI is the column storing the NFT token metadata URI.
 	fiTokenMetadataURI = "uri"
 
@@ -171,6 +174,7 @@ func (db *MongoDbBridge) UpdateTokenMetadata(nft *types.Token) error {
 		{Key: fiTokenImageURI, Value: nft.ImageURI},
 		{Key: fiTokenMetadataUpdate, Value: nft.MetaUpdate},
 		{Key: fiTokenMetadataUpdateFailures, Value: nft.MetaFailures},
+		{Key: fiTokenIsActive, Value: nft.IsActive},
 	})
 }
 

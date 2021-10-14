@@ -3,6 +3,7 @@ package svc
 
 import (
 	"artion-api-graphql/internal/types"
+	"strings"
 	"time"
 )
 
@@ -98,11 +99,14 @@ func (mw *nftMetadataWorker) update(tok *types.Token) error {
 
 	// update the data
 	tok.ScheduleMetaUpdateOnSuccess()
-	tok.Name = md.Name
-	tok.Description = md.Description
+	tok.Name = strings.TrimSpace(md.Name)
+	tok.Description = strings.TrimSpace(md.Description)
 	if md.Image != nil {
-		tok.ImageURI = *md.Image
+		tok.ImageURI = strings.TrimSpace(*md.Image)
 	}
+
+	// does this token make a sense?
+	tok.IsActive = tok.Name != "" || tok.Description != "" || tok.ImageURI != ""
 
 	// update the token in persistent storage
 	if err := repo.UpdateTokenMetadata(tok); err != nil {
