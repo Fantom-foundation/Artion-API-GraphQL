@@ -22,10 +22,10 @@ type Query {
     tokens(filter: TokenFilter, sortBy: TokenSorting, sortDir: SortingDirection, first: Int, after: Cursor, last: Int, before: Cursor): TokenConnection!
 
     # List all tokens listings (DEPRECATED - use tokens() with hasListing filter)
-    listings(first: Int, after: Cursor, last: Int, before: Cursor): ListingConnection!
+    #listings(first: Int, after: Cursor, last: Int, before: Cursor): ListingConnection!
 
     # List all tokens offers (DEPRECATED - use tokens() with hasOffer filter)
-    offers(first: Int, after: Cursor, last: Int, before: Cursor): OfferConnection!
+    #offers(first: Int, after: Cursor, last: Int, before: Cursor): OfferConnection!
 
     # Get user by address
     user(address: Address!): User!
@@ -34,7 +34,7 @@ type Query {
     loggedUser: User
 
     # List authenticated user favourite tokens (DEPRECATED - use tokenLike() in User)
-    loggedUserTokenLikes(first: Int, after: Cursor, last: Int, before: Cursor): TokenLikeConnection!
+    #loggedUserTokenLikes(first: Int, after: Cursor, last: Int, before: Cursor): TokenLikeConnection!
 
     # Get currently set shipping address for tokens redeem.
     loggedUserShippingAddress: ShippingAddress
