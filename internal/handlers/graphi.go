@@ -23,10 +23,15 @@ const graphiqlTemplate = `
 		   <div id="graphiql" style="height: 100vh;">Loading...</div>
 		   <script>
 				   function graphQLFetcher(graphQLParams) {
+						   const myHeaders = new Headers();
+						   if (typeof token !== 'undefined') {
+						       myHeaders.append('Authorization', 'Bearer ' + token);
+						   }
 						   return fetch("/graphql", {
 								   method: "post",
 								   body: JSON.stringify(graphQLParams),
 								   credentials: "include",
+								   headers: myHeaders,
 						   }).then(function (response) {
 								   return response.text();
 						   }).then(function (responseBody) {
