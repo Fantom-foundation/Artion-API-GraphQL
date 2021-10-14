@@ -21,9 +21,11 @@ type Auction struct {
 	StartTime     Time            `bson:"start"`
 	EndTime       Time            `bson:"end"`
 	Closed        *Time           `bson:"closed"`
-	LastBidPlaced *Time           `bson:"last_bid"`
+	LastBid       *hexutil.Big    `bson:"last_bid"`
+	LastBidPlaced *Time           `bson:"last_bid_ts"`
 	LastBidder    *common.Address `bson:"last_bidder"`
 	Winner        *common.Address `bson:"winner"`
+	WinningBid    *hexutil.Big    `bson:"win_bid"`
 	Resolved      *Time           `bson:"resolved"`
 	OrdinalIndex  int64           `bson:"index"`
 }

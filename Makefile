@@ -44,6 +44,9 @@ internal/repository/rpc/contracts/FantomNFTFactory.go: internal/repository/rpc/c
 internal/repository/rpc/contracts/FantomNFTTradable.go: internal/repository/rpc/contracts/abi/FantomNFTTradable.json
 	abigen --type FantomNFTTradable --pkg contracts --abi $< --out $@
 
+internal/repository/rpc/contracts/FantomAuction.go: internal/repository/rpc/contracts/abi/FantomAuction.json
+	abigen --type FantomAuction --pkg contracts --abi $< --out $@
+
 db_observed: doc/db/observed.json
 	mongoimport --db=artion --collection=observed --file=$<
 

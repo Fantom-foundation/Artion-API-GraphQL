@@ -38,6 +38,7 @@ func auctionCreated(evt *eth.Log, lo *logObserver) {
 		StartTime:     types.Time{},
 		EndTime:       types.Time{},
 		Closed:        nil,
+		LastBid:       nil,
 		LastBidPlaced: nil,
 		LastBidder:    nil,
 		Winner:        nil,
@@ -227,6 +228,7 @@ func auctionResolved(evt *eth.Log, lo *logObserver) {
 	contract := common.BytesToAddress(evt.Topics[1].Bytes())
 	tokenID := new(big.Int).SetBytes(evt.Topics[2].Bytes())
 	winner := common.BytesToAddress(evt.Topics[3].Bytes())
+	winAmount := new(big.Int).SetBytes(evt.Data[32:64])
 	payToken := common.BytesToAddress(evt.Data[:32])
 
 	// pull the auction involved
@@ -240,6 +242,7 @@ func auctionResolved(evt *eth.Log, lo *logObserver) {
 	auction.Resolved = &ts
 	auction.Closed = &ts
 	auction.Winner = &winner
+	auction.WinningBid = (*hexutil.Big)(winAmount)
 
 	// store the listing into database
 	if err := repo.StoreAuction(auction); err != nil {
