@@ -47,12 +47,6 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
-        "internalType": "address",
-        "name": "oldOwner",
-        "type": "address"
-      },
-      {
         "indexed": true,
         "internalType": "address",
         "name": "nftAddress",
@@ -396,11 +390,6 @@
       },
       {
         "internalType": "uint256",
-        "name": "minBid",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
         "name": "reservePrice",
         "type": "uint256"
       },
@@ -482,11 +471,6 @@
         "type": "uint256"
       },
       {
-        "internalType": "bool",
-        "name": "minBidReserve",
-        "type": "bool"
-      },
-      {
         "internalType": "uint256",
         "name": "_endTimestamp",
         "type": "uint256"
@@ -541,11 +525,6 @@
         "internalType": "bool",
         "name": "_resulted",
         "type": "bool"
-      },
-      {
-        "internalType": "uint256",
-        "name": "minBid",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",

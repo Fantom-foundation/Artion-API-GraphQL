@@ -57,7 +57,7 @@ func (o *Opera) AuctionMinimalBidAmount(contract *common.Address, tokenID *big.I
 		log.Errorf("can not get auction %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err.Error())
 		return new(big.Int)
 	}
-	return res.MinBid
+	return res.ReservePrice
 }
 
 // AuctionMinBidIncrement collects the amount of minimal bid increment for auctions.
