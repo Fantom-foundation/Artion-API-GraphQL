@@ -12,8 +12,3 @@ type TokenLike struct {
 	Contract  common.Address     `bson:"contractAddress"`
 	TokenId32 int32              `bson:"tokenID"`
 }
-
-// GenerateId generates unique identifier for the record.
-func (t *TokenLike) GenerateId() {
-	t.Id = primitive.NewObjectID()
-}

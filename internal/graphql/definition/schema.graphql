@@ -51,11 +51,17 @@ type Mutation {
     # Update user profile
     updateUser(username: String!, bio: String!, email: String!, avatar: String!, banner: String!): Boolean!
 
-    # Set token as liked (add into favourites)
+    # Add token into favourite tokens of logged user.
     likeToken(contract: Address!, tokenId: BigInt!): Boolean!
 
-    # Unset token as liked (remove from favourites)
+    # Remove token from favourite tokens of logged user.
     unlikeToken(contract: Address!, tokenId: BigInt!): Boolean!
+
+    # Add user into users followed by the logged user.
+    followUser(user: Address!): Boolean!
+
+    # Remove user from users followed by the logged user.
+    unfollowUser(user: Address!): Boolean!
 
     # Update shipping address for tokens redeem.
     updateShippingAddress(address: InputShippingAddress!): Boolean!

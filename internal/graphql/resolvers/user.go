@@ -99,13 +99,41 @@ func (user User) CreatedTokens(args struct {
 	return NewTokenConnection(list, sorting.TokenSortingCreated)
 }
 
-func (rs *RootResolver) User(args struct{ Address common.Address }) (user User, err error) {
-	dbUser, err := repository.R().GetUser(args.Address)
+func (user User) Followers(args struct{ PaginationInput }) (con *FollowConnection, err error) {
+	cursor, count, backward, err := args.ToRepositoryInput()
+	if err != nil {
+		return nil, err
+	}
+	list, err := repository.R().ListUserFollowers(user.Address, cursor, count, backward)
+	if err != nil {
+		return nil, err
+	}
+	return NewFollowConnection(list)
+}
+
+func (user User) Following(args struct{ PaginationInput }) (con *FollowConnection, err error) {
+	cursor, count, backward, err := args.ToRepositoryInput()
+	if err != nil {
+		return nil, err
+	}
+	list, err := repository.R().ListUserFollowed(user.Address, cursor, count, backward)
+	if err != nil {
+		return nil, err
+	}
+	return NewFollowConnection(list)
+}
+
+func getUserByAddress(address common.Address) (user User, err error) {
+	dbUser, err := repository.R().GetUser(address)
 	if err != nil {
 		return User{}, err
 	} else {
-		return User{ Address: args.Address, dbUser: dbUser }, nil
+		return User{ Address: address, dbUser: dbUser }, nil
 	}
+}
+
+func (rs *RootResolver) User(args struct{ Address common.Address }) (user User, err error) {
+	return getUserByAddress(args.Address)
 }
 
 func (rs *RootResolver) LoggedUser(ctx context.Context) (user *User, err error) {

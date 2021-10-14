@@ -1,0 +1,30 @@
+# Follow represents "following" of one user by another user.
+type Follow {
+    # The follower address
+    follower: Address!
+
+    # The follower
+    followerUser: User!
+
+    # The followed user address
+    followed: Address!
+
+    # The followed user
+    followedUser: User!
+}
+
+type FollowEdge {
+    cursor: Cursor!
+    node: Follow!
+}
+
+type FollowConnection {
+    # Edges contains provided edges of the sequential list.
+    edges: [FollowEdge!]!
+
+    # TotalCount is the total amount of items in the list.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of the list.
+    pageInfo: PageInfo!
+}

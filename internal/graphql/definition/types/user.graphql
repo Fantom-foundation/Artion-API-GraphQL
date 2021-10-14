@@ -29,6 +29,12 @@ type User {
 
     # List tokens created by the user
     createdTokens(first: Int, after: Cursor, last: Int, before: Cursor): TokenConnection!
+
+    # List followers of the user
+    followers(first: Int, after: Cursor, last: Int, before: Cursor): FollowConnection!
+
+    # List users who are following the user
+    following(first: Int, after: Cursor, last: Int, before: Cursor): FollowConnection!
 }
 
 # User represents user account/profile.
