@@ -16,3 +16,19 @@ func (p *Proxy) GetUser(address common.Address) (*types.User, error) {
 func (p *Proxy) UpsertUser(User *types.User) error {
 	return p.shared.UpsertUser(User)
 }
+
+func (p *Proxy) UploadUserAvatar(address common.Address, image types.Image) error {
+	cid, err := p.pinner.PinFile("user-avatar-"+address.String()+image.Type.Extension(), image.Data)
+	if err != nil {
+		return err
+	}
+	return p.shared.SetUserAvatar(address, cid)
+}
+
+func (p *Proxy) UploadUserBanner(address common.Address, image types.Image) error {
+	cid, err := p.pinner.PinFile("user-banner-"+address.String()+image.Type.Extension(), image.Data)
+	if err != nil {
+		return err
+	}
+	return p.shared.SetUserBanner(address, cid)
+}

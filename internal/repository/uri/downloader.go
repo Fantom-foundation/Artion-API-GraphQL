@@ -57,24 +57,15 @@ func (d *Downloader) GetImage(uri string) (image *types.Image, err error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to download image; %s", err)
 	}
-	if err == nil && mimetype == "" {
-		mimetype = d.mimetypeFromImageUri(uri)
+	imgType := types.ImageTypeFromMimetype(mimetype)
+	if imgType == types.ImageTypeUnknown {
+		imgType = types.ImageTypeFromExtension(uri)
 	}
 	out := types.Image{
-		Data:     data,
-		Mimetype: mimetype,
+		Data: data,
+		Type: imgType,
 	}
 	return &out, nil
-}
-
-// GetImageThumbnail downloads image from given URI scale it to thumbnail size
-func (d *Downloader) GetImageThumbnail(uri string) (thumbnail *types.Image, err error) {
-	image, err := d.GetImage(uri)
-	if err != nil || image == nil {
-		return nil, err
-	}
-	thumb, err := createThumbnail(*image)
-	return &thumb, err
 }
 
 // getFromUri resolves the URI and download file from the URI using appropriate protocol
@@ -201,26 +192,4 @@ func (d *Downloader) decodeJson(data []byte) (*types.JsonMetadata, error) {
 		return nil, err
 	}
 	return &out, nil
-}
-
-// mimetypeFromImageUri tries to guess the image mime-type from extension in URI.
-// To be used when the protocol (like IPFS) does not provide mime-type info.
-func (d *Downloader) mimetypeFromImageUri(uri string) (mimetype string) {
-	uri = strings.ToLower(uri)
-	if strings.HasSuffix(uri, ".svg") {
-		return "image/svg+xml"
-	}
-	if strings.HasSuffix(uri, ".gif") {
-		return "image/gif"
-	}
-	if strings.HasSuffix(uri, ".jpg") || strings.HasSuffix(uri, ".jpeg") {
-		return "image/jpeg"
-	}
-	if strings.HasSuffix(uri, ".png") {
-		return "image/png"
-	}
-	if strings.HasSuffix(uri, ".webp") {
-		return "image/webp"
-	}
-	return ""
 }

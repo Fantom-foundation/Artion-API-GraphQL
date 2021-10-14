@@ -6,6 +6,7 @@ import (
 	"artion-api-graphql/internal/logger"
 	"artion-api-graphql/internal/repository/cache"
 	"artion-api-graphql/internal/repository/db"
+	"artion-api-graphql/internal/repository/pinner"
 	"artion-api-graphql/internal/repository/rpc"
 	"artion-api-graphql/internal/repository/uri"
 	"fmt"
@@ -34,6 +35,7 @@ var instanceMux sync.Mutex
 type Proxy struct {
 	rpc       *rpc.Opera
 	uri       *uri.Downloader
+	pinner    *pinner.Pinner
 	db        *db.MongoDbBridge
 	shared    *db.SharedMongoDbBridge
 	cache     *cache.MemCache
@@ -94,6 +96,9 @@ func passEnvironment() {
 	// in-memory cache
 	cache.SetLogger(log)
 	cache.SetConfig(cfg)
+
+	// pinner
+	pinner.SetLogger(log)
 }
 
 // newProxy creates new instance of Proxy, implementing the Repository interface.
@@ -105,6 +110,7 @@ func newProxy() *Proxy {
 	p := Proxy{
 		rpc:       rpc.New(),
 		uri:       uri.New(cfg),
+		pinner:    pinner.New(cfg),
 		db:        db.New(),
 		shared:    db.NewShared(),
 		cache:     cache.New(),

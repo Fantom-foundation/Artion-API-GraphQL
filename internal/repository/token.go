@@ -139,7 +139,12 @@ func (p *Proxy) GetImageThumbnail(uri string) (image *types.Image, err error) {
 	// TODO: in-memory cache
 	key := "GetImageThumbnail" + uri
 	data, err, _ := p.callGroup.Do(key, func() (interface{}, error) {
-		return p.uri.GetImageThumbnail(uri)
+		image, err := p.uri.GetImage(uri)
+		if err != nil || image == nil {
+			return nil, err
+		}
+		thumb, err := createThumbnail(*image)
+		return &thumb, err
 	})
 	return data.(*types.Image), err
 }

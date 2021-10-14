@@ -1,6 +1,7 @@
 package uri
 
 import (
+	"artion-api-graphql/internal/types"
 	ipfsapi "github.com/ipfs/go-ipfs-api"
 	"github.com/onsi/gomega"
 	"testing"
@@ -50,7 +51,7 @@ func TestDataUriMimetype(t *testing.T) { // requires locally running IPFS node
 	}
 	data,err := downloader.GetImage("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHByZXNlcnZlQXNwZWN0UmF0aW89InhNaW5ZTWluIG1lZXQiIHZpZXdCb3g9IjAgMCAzNTAgMzUwIj48c3R5bGU+LmJhc2UgeyBmaWxsOiB3aGl0ZTsgZm9udC1mYW1pbHk6IHNlcmlmOyBmb250LXNpemU6IDE0cHg7IH08L3N0eWxlPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9ImJsYWNrIiAvPjx0ZXh0IHg9IjEwIiB5PSIyMCIgY2xhc3M9ImJhc2UiPmNhdGVnb3J5IEFybW9yPC90ZXh0Pjx0ZXh0IHg9IjEwIiB5PSI0MCIgY2xhc3M9ImJhc2UiPm5hbWUgQnJlYXN0cGxhdGU8L3RleHQ+PHRleHQgeD0iMTAiIHk9IjYwIiBjbGFzcz0iYmFzZSI+Y29zdCAyMDBncDwvdGV4dD48dGV4dCB4PSIxMCIgeT0iODAiIGNsYXNzPSJiYXNlIj53ZWlnaHQgMzBsYjwvdGV4dD48dGV4dCB4PSIxMCIgeT0iMTAwIiBjbGFzcz0iYmFzZSI+cHJvZmljaWVuY3kgTWVkaXVtPC90ZXh0Pjx0ZXh0IHg9IjEwIiB5PSIxMjAiIGNsYXNzPSJiYXNlIj5hcm1vciBib251cyA1PC90ZXh0Pjx0ZXh0IHg9IjEwIiB5PSIxNDAiIGNsYXNzPSJiYXNlIj5tYXggZGV4IDM8L3RleHQ+PHRleHQgeD0iMTAiIHk9IjE2MCIgY2xhc3M9ImJhc2UiPnBlbmFsdHkgLTQ8L3RleHQ+PHRleHQgeD0iMTAiIHk9IjE4MCIgY2xhc3M9ImJhc2UiPnNwZWxsIGZhaWx1cmUgMjUlPC90ZXh0Pjx0ZXh0IHg9IjEwIiB5PSIyMDAiIGNsYXNzPSJiYXNlIj5kZXNjcmlwdGlvbiBJdCBjb21lcyB3aXRoIGEgaGVsbWV0IGFuZCBncmVhdmVzLjwvdGV4dD48dGV4dCB4PSIxMCIgeT0iMjIwIiBjbGFzcz0iYmFzZSI+Y3JhZnRlZCBieSAxMzYyMjgwPC90ZXh0Pjx0ZXh0IHg9IjEwIiB5PSIyNDAiIGNsYXNzPSJiYXNlIj5jcmFmdGVkIGF0IDE2MzI1NzQ2MTg8L3RleHQ+PC9zdmc+")
 	g.Expect(err).To(gomega.BeNil())
-	g.Expect(data.Mimetype).To(gomega.Equal("image/svg+xml"))
+	g.Expect(data.Type).To(gomega.Equal(types.ImageTypeSvg))
 }
 
 func TestIpfsUriConversion(t *testing.T) { // requires locally running IPFS node

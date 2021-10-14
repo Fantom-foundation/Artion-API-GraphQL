@@ -70,12 +70,58 @@ func (sdb *SharedMongoDbBridge) UpsertUser(User *types.User) error {
 				{Key: fiUserUsername, Value: User.Username},
 				{Key: fiUserEmail, Value: User.Email},
 				{Key: fiUserBio, Value: User.Bio},
-				{Key: fiUserAvatar, Value: User.Avatar},
-				{Key: fiUserBanner, Value: User.Banner},
 				{Key: fiUserUpdated, Value: types.Time(time.Now())},
 			} },
 			{Key: "$setOnInsert", Value: bson.D{
 				{Key: fiUserAddress, Value: strings.ToLower(User.Address.String())},
+				{Key: fiUserCreated, Value: types.Time(time.Now())},
+			}},
+		},
+		options.Update().SetUpsert(true),
+	); err != nil {
+		log.Errorf("can not update User; %s", err)
+		return err
+	}
+	return nil
+}
+
+func (sdb *SharedMongoDbBridge) SetUserAvatar(user common.Address, imageCid string) error {
+	col := sdb.client.Database(sdb.dbName).Collection(coUsers)
+
+	if _, err := col.UpdateOne(
+		context.Background(),
+		bson.D{{ Key: fiUserAddress, Value: strings.ToLower(user.String()) }},
+		bson.D{
+			{ Key: "$set", Value: bson.D{
+				{Key: fiUserAvatar, Value: imageCid},
+				{Key: fiUserUpdated, Value: types.Time(time.Now())},
+			} },
+			{Key: "$setOnInsert", Value: bson.D{
+				{Key: fiUserAddress, Value: strings.ToLower(user.String())},
+				{Key: fiUserCreated, Value: types.Time(time.Now())},
+			}},
+		},
+		options.Update().SetUpsert(true),
+	); err != nil {
+		log.Errorf("can not update User; %s", err)
+		return err
+	}
+	return nil
+}
+
+func (sdb *SharedMongoDbBridge) SetUserBanner(user common.Address, imageCid string) error {
+	col := sdb.client.Database(sdb.dbName).Collection(coUsers)
+
+	if _, err := col.UpdateOne(
+		context.Background(),
+		bson.D{{ Key: fiUserAddress, Value: strings.ToLower(user.String()) }},
+		bson.D{
+			{ Key: "$set", Value: bson.D{
+				{Key: fiUserBanner, Value: imageCid},
+				{Key: fiUserUpdated, Value: types.Time(time.Now())},
+			} },
+			{Key: "$setOnInsert", Value: bson.D{
+				{Key: fiUserAddress, Value: strings.ToLower(user.String())},
 				{Key: fiUserCreated, Value: types.Time(time.Now())},
 			}},
 		},

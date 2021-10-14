@@ -42,7 +42,11 @@ func ImageHandler(log logger.Logger, resolver func(path string) (string, error))
 			return
 		}
 
-		w.Header().Add("Content-Type", image.Mimetype)
+		if image.Type.Mimetype() == "" {
+			w.Header()["Content-Type"] = nil
+		} else {
+			w.Header().Add("Content-Type", image.Type.Mimetype())
+		}
 		w.WriteHeader(200)
 		_, err = w.Write(image.Data)
 		if err != nil {
