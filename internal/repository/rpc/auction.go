@@ -16,7 +16,7 @@ import (
 // ExtendAuctionDetailAt adds contract stored details to the provided auction record.
 func (o *Opera) ExtendAuctionDetailAt(au *types.Auction, block *big.Int) error {
 	// get auction details
-	res, err := o.auctionContract.GetAuction(&bind.CallOpts{
+	res, err := o.auctionContract.Auctions(&bind.CallOpts{
 		BlockNumber: block,
 		Context:     context.Background(),
 	}, au.Contract, (*big.Int)(&au.TokenId))
