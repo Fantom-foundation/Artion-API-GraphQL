@@ -15,8 +15,8 @@ type User {
     # IPFS hash of the user avatar image
     avatar: String
 
-    # URL of the user avatar on the proxy
-    avatarProxy: String
+    # URL of the user avatar on the resizing proxy
+    avatarThumb: String
 
     # IPFS hash of the user banner image
     banner: String

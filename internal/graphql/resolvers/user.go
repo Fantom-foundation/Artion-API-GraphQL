@@ -45,7 +45,7 @@ func (user User) Avatar() (*string, error) {
 	return &user.dbUser.Avatar, nil
 }
 
-func (user User) AvatarProxy() (*string, error) {
+func (user User) AvatarThumb() (*string, error) {
 	if user.dbUser == nil || user.dbUser.Avatar == "" {
 		return nil, nil
 	}

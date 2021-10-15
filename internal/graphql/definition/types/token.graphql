@@ -15,8 +15,8 @@ type Token {
     # URL of the token image
     image: String
 
-    # URL of the token image on the proxy
-    imageProxy: String
+    # URL of the token image on the resizing proxy
+    imageThumb: String
 
     # Time when was the token created on chain.
     created: Time!

@@ -108,8 +108,8 @@ func (t *Token) HasAuction() bool {
 	return (*time.Time)(t.HasAuctionSince).Before(now) && (*time.Time)(t.HasAuctionUntil).After(now)
 }
 
-// ImageProxy generates REST path providing the token image thumbnail from this Artion API.
-func (t *Token) ImageProxy() *string {
+// ImageThumb generates REST path providing the token image thumbnail from this Artion API.
+func (t *Token) ImageThumb() *string {
 	if t.ImageURI == "" {
 		return nil
 	}
