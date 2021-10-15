@@ -36,21 +36,3 @@ type User {
     # List users who are following the user
     following(first: Int, after: Cursor, last: Int, before: Cursor): FollowConnection!
 }
-
-# User represents user account/profile.
-input InputUserProfile {
-    # Name/Nickname
-    username: String!
-
-    # User bio (description)
-    bio: String!
-
-    # User email
-    email: String!
-
-    # URL of the user avatar image
-    avatar: String!
-
-    # URL of the user banner image
-    banner: String!
-}

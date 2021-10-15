@@ -155,8 +155,6 @@ func (rs *RootResolver) UpdateUser(ctx context.Context, args struct{
 	Username string
 	Bio      string
 	Email    string
-	Avatar   string
-	Banner   string
 }) (bool, error) {
 	address, err := auth.GetIdentityOrErr(ctx)
 	if err != nil {
@@ -167,8 +165,6 @@ func (rs *RootResolver) UpdateUser(ctx context.Context, args struct{
 		Username: args.Username,
 		Bio: args.Bio,
 		Email: args.Email,
-		Avatar: args.Avatar,
-		Banner: args.Banner,
 	}
 	err = repository.R().UpsertUser(&user)
 	return err == nil, err
