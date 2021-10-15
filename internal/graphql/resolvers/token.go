@@ -4,10 +4,10 @@ import (
 	"artion-api-graphql/internal/repository"
 	"artion-api-graphql/internal/types"
 	"artion-api-graphql/internal/types/sorting"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
-	"strings"
 	"time"
 )
 
@@ -108,19 +108,12 @@ func (t *Token) HasAuction() bool {
 	return (*time.Time)(t.HasAuctionSince).Before(now) && (*time.Time)(t.HasAuctionUntil).After(now)
 }
 
-// ImageProxy generates REST path providing the token image from this Artion API.
+// ImageProxy generates REST path providing the token image thumbnail from this Artion API.
 func (t *Token) ImageProxy() *string {
 	if t.ImageURI == "" {
 		return nil
 	}
-
-	var sb strings.Builder
-	sb.WriteString("/token-image/")
-	sb.WriteString(t.Contract.String())
-	sb.WriteString("/")
-	sb.WriteString(t.TokenId.String())
-	uri := sb.String()
-
+	uri := fmt.Sprintf("/images/token/%s/%s", t.Contract.String(), t.TokenId.String())
 	return &uri
 }
 

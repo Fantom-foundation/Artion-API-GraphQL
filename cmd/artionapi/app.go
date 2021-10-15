@@ -121,8 +121,8 @@ func (app *apiServer) setupHandlers(mux *http.ServeMux) {
 	mux.Handle("/graphi", handlers.GraphiHandler(app.cfg.Server.DomainAddress, app.log))
 
 	// handle images
-	mux.Handle("/token-image/", handlers.ImageHandler(app.log, handlers.TokenImageResolver))
-	mux.Handle("/user-avatar/", handlers.ImageHandler(app.log, handlers.UserAvatarResolver))
+	mux.Handle("/images/token/", handlers.ImageHandler(app.log, handlers.TokenImageResolver))
+	mux.Handle("/images/avatar/", handlers.ImageHandler(app.log, handlers.UserAvatarResolver))
 
 	// handle image upload
 	mux.Handle("/upload-image/user-avatar", handlers.AuthHandler(handlers.UploadImageHandler(app.log, handlers.StoreUserAvatar)))

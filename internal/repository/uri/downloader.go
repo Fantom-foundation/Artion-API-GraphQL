@@ -57,6 +57,9 @@ func (d *Downloader) GetImage(uri string) (image *types.Image, err error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to download image; %s", err)
 	}
+	if mimetype == "" {
+		mimetype = http.DetectContentType(data)
+	}
 	imgType := types.ImageTypeFromMimetype(mimetype)
 	if imgType == types.ImageTypeUnknown {
 		imgType = types.ImageTypeFromExtension(uri)

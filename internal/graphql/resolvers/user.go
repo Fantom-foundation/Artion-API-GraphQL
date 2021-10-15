@@ -7,6 +7,7 @@ import (
 	"artion-api-graphql/internal/types/sorting"
 	"bytes"
 	"context"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -48,7 +49,7 @@ func (user User) AvatarProxy() (*string, error) {
 	if user.dbUser == nil || user.dbUser.Avatar == "" {
 		return nil, nil
 	}
-	url := "/user-avatar/" + user.Address.String()
+	url := fmt.Sprintf("/images/avatar/%s/%s", user.Address.String(), user.dbUser.Avatar)
 	return &url, nil
 }
 

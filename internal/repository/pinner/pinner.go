@@ -79,9 +79,9 @@ func (p Pinner) PinFile(filename string, content []byte) (cid string, err error)
 		return "", err
 	}
 
-	if out, hasErr := dat["error"].(string); hasErr {
-		log.Errorf("pinata error: %s", out)
-		return "", errors.New(out)
+	if errStr, hasErr := dat["error"].(string); hasErr {
+		log.Errorf("pinata error: %s", errStr)
+		return "", errors.New(errStr)
 	}
 	if hash, ok := dat["IpfsHash"].(string); ok {
 		log.Infof("file pinned as "+hash)

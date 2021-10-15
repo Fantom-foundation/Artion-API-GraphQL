@@ -58,11 +58,11 @@ func ImageHandler(log logger.Logger, resolver func(path string) (string, error))
 // TokenImageResolver resolves /token-image/{nft}/{tokenId} to token image URI
 func TokenImageResolver(path string) (imageUri string, err error) {
 	pathParts := strings.Split(path, "/")
-	if len(pathParts) != 4 {
+	if len(pathParts) != 5 {
 		return "", errors.New("invalid amount of slash delimiters in URL")
 	}
-	tokenAddress := common.HexToAddress(pathParts[2])
-	tokenId, err := hexutil.DecodeBig(pathParts[3])
+	tokenAddress := common.HexToAddress(pathParts[3])
+	tokenId, err := hexutil.DecodeBig(pathParts[4])
 	if err != nil {
 		return "", fmt.Errorf("unable to hex-decode tokenId; %s", err)
 	}
@@ -85,10 +85,10 @@ func TokenImageResolver(path string) (imageUri string, err error) {
 // UserAvatarResolver resolves /user-avatar/{address} to user avatar URI
 func UserAvatarResolver(path string) (imageUri string, err error) {
 	pathParts := strings.Split(path, "/")
-	if len(pathParts) != 3 {
+	if len(pathParts) != 5 {
 		return "", errors.New("invalid amount of slash delimiters in URL")
 	}
-	userAddress := common.HexToAddress(pathParts[2])
+	userAddress := common.HexToAddress(pathParts[3])
 	user, err := repository.R().GetUser(userAddress)
 	if err != nil {
 		return "", fmt.Errorf("unable to find user in db; %s", err)
