@@ -59,22 +59,6 @@ func (o TokenLike) Token() (*Token, error) {
 	return NewToken(&o.Contract, (*hexutil.Big)(big.NewInt(int64(o.TokenId32))))
 }
 
-func (rs *RootResolver) LoggedUserTokenLikes(ctx context.Context, args struct{ PaginationInput }) (con *TokenLikeConnection, err error) {
-	user, err := auth.GetIdentityOrErr(ctx)
-	if err != nil {
-		return nil, err
-	}
-	cursor, count, backward, err := args.ToRepositoryInput()
-	if err != nil {
-		return nil, err
-	}
-	list, err := repository.R().ListUserTokenLikes(user, cursor, count, backward)
-	if err != nil {
-		return nil, err
-	}
-	return NewTokenLikeConnection(list)
-}
-
 func (rs *RootResolver) LikeToken(ctx context.Context, args struct {
 	Contract common.Address
 	TokenId  hexutil.Big
