@@ -35,6 +35,7 @@ func ImageHandler(log logger.Logger, resolver func(path string) (string, error))
 			log.Errorf("unable to get image; %s", err)
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Obtaining image failed: " + err.Error()))
+			return
 		}
 		if image == nil || len(image.Data) == 0 {
 			w.WriteHeader(404)

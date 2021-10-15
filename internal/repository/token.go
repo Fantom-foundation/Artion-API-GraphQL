@@ -4,6 +4,7 @@ package repository
 import (
 	"artion-api-graphql/internal/types"
 	"artion-api-graphql/internal/types/sorting"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
@@ -127,7 +128,6 @@ func (p *Proxy) GetTokenJsonMetadata(uri string) (*types.JsonMetadata, error) {
 }
 
 func (p *Proxy) GetImage(uri string) (image *types.Image, err error) {
-	// TODO: in-memory cache
 	key := "GetImage" + uri
 	data, err, _ := p.callGroup.Do(key, func() (interface{}, error) {
 		return p.uri.GetImage(uri)
@@ -136,15 +136,17 @@ func (p *Proxy) GetImage(uri string) (image *types.Image, err error) {
 }
 
 func (p *Proxy) GetImageThumbnail(uri string) (image *types.Image, err error) {
-	// TODO: in-memory cache
 	key := "GetImageThumbnail" + uri
 	data, err, _ := p.callGroup.Do(key, func() (interface{}, error) {
 		image, err := p.uri.GetImage(uri)
 		if err != nil || image == nil {
-			return nil, err
+			return nil, fmt.Errorf("getImage failed; %s", err)
 		}
 		thumb, err := createThumbnail(*image)
-		return &thumb, err
+		if err != nil {
+			return nil, fmt.Errorf("createThumbnail failed; %s", err)
+		}
+		return &thumb, nil
 	})
 	return data.(*types.Image), err
 }
