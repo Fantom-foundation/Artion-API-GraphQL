@@ -57,14 +57,14 @@ func extendNFTCollectionDetails(nft *types.Collection, evt *eth.Log, lo *logObse
 
 	nft.Name, err = repo.CollectionName(&nft.Address)
 	if err != nil {
-		log.Errorf("%s %s name not known; %s", nft.Type, evt.Address.String(), err.Error())
+		log.Errorf("%s %s name not known; %s", nft.Type, nft.Address.String(), err.Error())
 		return err
 	}
 	log.Debugf("NFT contract %s name: %s", nft.Address.String(), nft.Name)
 
 	nft.Symbol, err = repo.CollectionSymbol(&nft.Address)
 	if err != nil {
-		log.Errorf("%s %s symbol not known; %s", nft.Type, evt.Address.String(), err.Error())
+		log.Errorf("%s %s symbol not known; %s", nft.Type, nft.Address.String(), err.Error())
 		return err
 	}
 	log.Debugf("NFT contract %s symbol: %s", nft.Address.String(), nft.Symbol)
@@ -75,6 +75,19 @@ func extendNFTCollectionDetails(nft *types.Collection, evt *eth.Log, lo *logObse
 		return err
 	}
 	nft.Created = types.Time(time.Unix(int64(blk.Time), 0))
+
+	legacyCollection, err := repo.GetLegacyCollection(nft.Address)
+	if err != nil {
+		log.Errorf("%s %s unable to load off-chain data; %s", nft.Type, nft.Address.String(), err.Error())
+		return err
+	}
+
+	nft.Categories, err = legacyCollection.CategoriesAsInts()
+	if err != nil {
+		log.Errorf("%s %s unable to decode categories; %s", nft.Type, nft.Address.String(), err.Error())
+		return err
+	}
+
 	return nil
 }
 

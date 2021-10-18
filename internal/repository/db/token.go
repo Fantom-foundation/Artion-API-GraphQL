@@ -89,6 +89,9 @@ const (
 
 	// fiTokenLastBid is the column storing the latest auction bid date/time.
 	fiTokenLastBid = "last_bid"
+
+	// fiTokenCategories is the column storing categories ids of the token.
+	fiTokenCategories = "categories"
 )
 
 // GetToken loads specific NFT token for the given contract address and token ID
@@ -172,6 +175,7 @@ func (db *MongoDbBridge) UpdateTokenMetadata(nft *types.Token) error {
 		{Key: fiTokenName, Value: nft.Name},
 		{Key: fiTokenDescription, Value: nft.Description},
 		{Key: fiTokenImageURI, Value: nft.ImageURI},
+		{Key: fiTokenCategories, Value: nft.Categories},
 		{Key: fiTokenMetadataUpdate, Value: nft.MetaUpdate},
 		{Key: fiTokenMetadataUpdateFailures, Value: nft.MetaFailures},
 		{Key: fiTokenIsActive, Value: nft.IsActive},

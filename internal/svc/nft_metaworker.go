@@ -105,6 +105,18 @@ func (mw *nftMetadataWorker) update(tok *types.Token) error {
 		tok.ImageURI = strings.TrimSpace(*md.Image)
 	}
 
+	// get and update collection data
+	lc, err := repo.GetLegacyCollection(tok.Contract)
+	if lc == nil {
+		log.Errorf("NFT legacy collection not available for %s; %s", tok.Contract.String(), err.Error())
+		// continue without collection data
+	} else {
+		tok.Categories, err = lc.CategoriesAsInts()
+		if err != nil {
+			log.Errorf("failed to decode categories for token contract %s; %s", tok.Contract.String(), err.Error())
+		}
+	}
+
 	// does this token make a sense?
 	tok.IsActive = tok.Name != "" || tok.Description != "" || tok.ImageURI != ""
 

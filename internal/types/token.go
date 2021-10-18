@@ -50,6 +50,7 @@ type Token struct {
 	AmountLastBid   int64          `bson:"amo_bid"`
 	AmountLastList  int64          `bson:"amo_list"`
 	Price           int64          `bson:"price"`
+	Categories      []int          `bson:"categories"`
 
 	// metadata refresh helpers
 	MetaUpdate   Time  `bson:"meta_update"`
