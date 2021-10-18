@@ -16,7 +16,7 @@ import (
 // Prices come in 18 decimals, we want to preserve 6 decimals on multiplied result by removing 3 from each number.
 var TokenPriceDecimalsDiff = new(big.Int).SetInt64(1_000_000_000_000_000)
 
-// TokenPriceDecimalsCorrection represents the value used to reduce price to stored fixed (4) decimals.
+// TokenPriceDecimalsCorrection represents the value used to reduce price to stored fixed (6) decimals.
 var TokenPriceDecimalsCorrection = new(big.Int).Mul(TokenPriceDecimalsDiff, TokenPriceDecimalsDiff)
 
 // Token reads NFT detail from the persistent database.

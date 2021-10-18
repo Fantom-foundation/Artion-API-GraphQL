@@ -13,6 +13,9 @@ import (
 	"time"
 )
 
+// auctionDefaultDurationShift defines the default duration of an auction, if not defined otherwise.
+const auctionDefaultDurationShift = (24 * 365 * 10) * time.Hour
+
 // ExtendAuctionDetailAt adds contract stored details to the provided auction record.
 func (o *Opera) ExtendAuctionDetailAt(au *types.Auction, block *big.Int) error {
 	// get auction details
@@ -34,8 +37,20 @@ func (o *Opera) ExtendAuctionDetailAt(au *types.Auction, block *big.Int) error {
 	// transfer values
 	au.Owner = res.Owner
 	au.ReservePrice = (hexutil.Big)(*res.ReservePrice)
-	au.StartTime = types.Time(time.Unix(res.StartTime.Int64(), 0))
-	au.EndTime = types.Time(time.Unix(res.EndTime.Int64(), 0))
+
+	// do we have a start time? use creation time, if not
+	if 0 < res.StartTime.Int64() {
+		au.StartTime = types.Time(time.Unix(res.StartTime.Int64(), 0))
+	} else {
+		au.StartTime = au.Created
+	}
+
+	// do we have an end time? use creation + constant if not
+	if 0 < res.EndTime.Int64() && res.EndTime.Int64() > res.StartTime.Int64() {
+		au.EndTime = types.Time(time.Unix(res.EndTime.Int64(), 0))
+	} else {
+		au.EndTime = types.Time(time.Time(au.StartTime).Add(auctionDefaultDurationShift))
+	}
 
 	return nil
 }
