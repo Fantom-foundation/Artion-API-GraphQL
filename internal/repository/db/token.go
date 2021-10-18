@@ -417,6 +417,14 @@ func tokenFilterToBson(f *types.TokenFilter) bson.D {
 		}
 	}
 
+	if f.Categories != nil && len(*f.Categories) > 0 {
+		if len(*f.Categories) == 1 {
+			filter = append(filter, bson.E{Key: fiTokenCategories, Value: (*f.Categories)[0]})
+		} else {
+			filter = append(filter, bson.E{Key: fiTokenCategories, Value: bson.D{{Key: "$in", Value: *f.Categories}}})
+		}
+	}
+
 	if f.CreatedBy != nil {
 		filter = append(filter, bson.E{Key: fiTokenCreatedBy, Value: *f.CreatedBy})
 	}

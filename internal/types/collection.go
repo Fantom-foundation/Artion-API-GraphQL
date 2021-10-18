@@ -14,7 +14,7 @@ type Collection struct {
 	Name       string         `bson:"name"`
 	Symbol     string         `bson:"symbol"`
 	Created    Time           `bson:"created"`
-	Categories []int          `bson:"categories"`
+	Categories []int32        `bson:"categories"`
 	IsActive   bool           `bson:"is_active"`
 }
 
@@ -41,8 +41,8 @@ type LegacyCollection struct {
 	IsActive      bool           `bson:"status"`
 }
 
-func (lc LegacyCollection) CategoriesAsInts() ([]int, error) {
-	var out []int
+func (lc LegacyCollection) CategoriesAsInts() ([]int32, error) {
+	var out []int32
 	for _, value := range lc.Categories {
 		if value == "" {
 			continue
@@ -51,7 +51,7 @@ func (lc LegacyCollection) CategoriesAsInts() ([]int, error) {
 		if err != nil {
 			return nil, err
 		}
-		out = append(out, converted)
+		out = append(out, int32(converted))
 	}
 	return out, nil
 }
