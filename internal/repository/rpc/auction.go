@@ -46,7 +46,7 @@ func (o *Opera) ExtendAuctionDetailAt(au *types.Auction, block *big.Int) error {
 	}
 
 	// do we have an end time? use creation + constant if not
-	if 0 < res.EndTime.Int64() && res.EndTime.Int64() > res.StartTime.Int64() {
+	if 0 < res.EndTime.Int64() {
 		au.EndTime = types.Time(time.Unix(res.EndTime.Int64(), 0))
 	} else {
 		au.EndTime = types.Time(time.Time(au.StartTime).Add(auctionDefaultDurationShift))
