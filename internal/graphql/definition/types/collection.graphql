@@ -15,6 +15,9 @@ type Collection {
     # Time when was the collection created on chain
     created: Time!
 
+    # Categories IDs of the collection
+    categories: [Int!]!
+
     # Whether the collection was deactivated or not
     isActive: Boolean!
 }

@@ -89,6 +89,9 @@ const (
 
 	// fiTokenLastBid is the column storing the latest auction bid date/time.
 	fiTokenLastBid = "last_bid"
+
+	// fiTokenCategories is the column storing categories ids of the token.
+	fiTokenCategories = "categories"
 )
 
 // GetToken loads specific NFT token for the given contract address and token ID
@@ -172,6 +175,7 @@ func (db *MongoDbBridge) UpdateTokenMetadata(nft *types.Token) error {
 		{Key: fiTokenName, Value: nft.Name},
 		{Key: fiTokenDescription, Value: nft.Description},
 		{Key: fiTokenImageURI, Value: nft.ImageURI},
+		{Key: fiTokenCategories, Value: nft.Categories},
 		{Key: fiTokenMetadataUpdate, Value: nft.MetaUpdate},
 		{Key: fiTokenMetadataUpdateFailures, Value: nft.MetaFailures},
 		{Key: fiTokenIsActive, Value: nft.IsActive},
@@ -410,6 +414,14 @@ func tokenFilterToBson(f *types.TokenFilter) bson.D {
 				values[i] = value.String()
 			}
 			filter = append(filter, bson.E{Key: fiTokenContract, Value: bson.D{{Key: "$in", Value: values}}})
+		}
+	}
+
+	if f.Categories != nil && len(*f.Categories) > 0 {
+		if len(*f.Categories) == 1 {
+			filter = append(filter, bson.E{Key: fiTokenCategories, Value: (*f.Categories)[0]})
+		} else {
+			filter = append(filter, bson.E{Key: fiTokenCategories, Value: bson.D{{Key: "$in", Value: *f.Categories}}})
 		}
 	}
 

@@ -97,7 +97,15 @@ func (t Collection) Created() (types.Time, error) {
 	if err != nil {
 		return types.Time{}, err
 	}
-	return types.Time(t.dbCollection.Created), nil
+	return t.dbCollection.Created, nil
+}
+
+func (t Collection) Categories() ([]int32, error) {
+	err := t.load()
+	if err != nil {
+		return nil, err
+	}
+	return t.dbCollection.Categories, nil
 }
 
 func (t Collection) IsActive() (bool, error) {

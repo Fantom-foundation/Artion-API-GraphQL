@@ -1,19 +1,50 @@
 # Auction represents an auction being conducted on a NFT token.
 type Auction {
+    # Address of the token contract
     contract: Address!
+
+    # ID of the token (in given token contract)
     tokenId: BigInt!
+
+    # The seller of the item
     owner: Address!
+
+    # The auctioned amount of tokens (always 1 for ERC-721)
     quantity: BigInt!
+
+    # The token used to pay for the auctioned item (zeros for native token)
     payToken: Address!
+
+    # Starting price - minimal initial bid
     reservePrice: BigInt!
+
+    # Minimal next bid (last bid + minimal increment, or the reserve price)
     minBidAmount: BigInt!
+
+    # When was the auction created
     created: Time!
+
+    # When the auction starts (it is not possible to bid before this time)
     startTime: Time!
+
+    # When is the planned end of the auction
     endTime: Time!
+
+    # When was the auction closed - resolved or cancelled (null if not closed)
     closed: Time
+
+    # The last bid amount
     lastBid: BigInt
+
+    # When was the last bid placed
     lastBidPlaced: Time
+
+    # Who has placed the last bid
     lastBidder: Address
+
+    # Winner of the auction (null if not resolved)
     winner: Address
+
+    # When was the auction resolved (null if not resolved)
     resolved: Time
 }
