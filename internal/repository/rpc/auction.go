@@ -26,7 +26,9 @@ func (o *Opera) ExtendAuctionDetailAt(au *types.Auction, block *big.Int) error {
 	if err != nil {
 		log.Errorf("auction %s/%s not available; %s",
 			au.Contract.String(), au.TokenId.String(), au.Owner.String(), err.Error())
-		return err
+
+		// try V1 contract ABI
+		return o.ExtendAuctionV1DetailAt(au, block)
 	}
 
 	// make sure we have what we came for
@@ -53,6 +55,45 @@ func (o *Opera) ExtendAuctionDetailAt(au *types.Auction, block *big.Int) error {
 		au.EndTime = types.Time(time.Time(au.StartTime).Add(auctionDefaultDurationShift))
 	}
 
+	return nil
+}
+
+// ExtendAuctionV1DetailAt adds contract stored details to the provided auction record using V1 auction ABI.
+func (o *Opera) ExtendAuctionV1DetailAt(au *types.Auction, block *big.Int) error {
+	// get auction details
+	res, err := o.auctionV1Contract.Auctions(&bind.CallOpts{
+		BlockNumber: block,
+		Context:     context.Background(),
+	}, au.Contract, (*big.Int)(&au.TokenId))
+	if err != nil {
+		log.Errorf("auction %s/%s not available; %s",
+			au.Contract.String(), au.TokenId.String(), au.Owner.String(), err.Error())
+		return err
+	}
+
+	// make sure we have what we came for
+	if nil == res.ReservePrice || nil == res.StartTime || nil == res.EndTime {
+		return fmt.Errorf("missing mandatory field on auction %s/%s", au.Contract.String(), au.TokenId.String())
+	}
+
+	// transfer values
+	au.Owner = res.Owner
+	au.ReservePrice = (hexutil.Big)(*res.ReservePrice)
+	au.MinimalBid = (hexutil.Big)(*res.ReservePrice)
+
+	// do we have a start time? use creation time, if not
+	if 0 < res.StartTime.Int64() {
+		au.StartTime = types.Time(time.Unix(res.StartTime.Int64(), 0))
+	} else {
+		au.StartTime = au.Created
+	}
+
+	// do we have an end time? use creation + constant if not
+	if 0 < res.EndTime.Int64() {
+		au.EndTime = types.Time(time.Unix(res.EndTime.Int64(), 0))
+	} else {
+		au.EndTime = types.Time(time.Time(au.StartTime).Add(auctionDefaultDurationShift))
+	}
 	return nil
 }
 

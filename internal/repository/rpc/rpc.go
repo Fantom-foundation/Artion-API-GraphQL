@@ -56,8 +56,9 @@ type Opera struct {
 	abiMarketplace *abi.ABI
 
 	// contracts
-	marketplace     *contracts.FantomMarketplace
-	auctionContract *contracts.FantomAuction
+	marketplace       *contracts.FantomMarketplace
+	auctionContract   *contracts.FantomAuction
+	auctionV1Contract *contracts.FantomAuctionV1
 }
 
 // RegisterContract adds a new contract address to the RPC provider.
@@ -73,6 +74,11 @@ func (o *Opera) RegisterContract(ct string, addr *common.Address) (err error) {
 		o.auctionContract, err = contracts.NewFantomAuction(*addr, o.ftm)
 		if err == nil {
 			log.Noticef("loaded %s contract at %s", ct, addr.String())
+		}
+
+		o.auctionV1Contract, err = contracts.NewFantomAuctionV1(*addr, o.ftm)
+		if err == nil {
+			log.Noticef("loaded V1 %s contract at %s", ct, addr.String())
 		}
 	case "market":
 		o.marketplace, err = contracts.NewFantomMarketplace(*addr, o.ftm)

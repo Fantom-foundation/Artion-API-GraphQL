@@ -47,12 +47,15 @@ internal/repository/rpc/contracts/FantomNFTTradable.go: internal/repository/rpc/
 internal/repository/rpc/contracts/FantomAuction.go: internal/repository/rpc/contracts/abi/FantomAuction.json
 	abigen --type FantomAuction --pkg contracts --abi $< --out $@
 
+internal/repository/rpc/contracts/FantomAuctionV1.go: internal/repository/rpc/contracts/abi/FantomAuctionV1.json
+	abigen --type FantomAuctionV1 --pkg contracts --abi $< --out $@
+
 db_observed: doc/db/observed.json
 	mongoimport --db=artion --collection=observed --file=$<
 
 db_status: doc/db/status.json
 	mongoimport --db=artion --collection=status --file=$<
-	
+
 db_categories: doc/db/categories.json
 	mongoimport --db=artionshared --collection=categories --file=$<
 
