@@ -2,6 +2,8 @@
 package config
 
 import (
+	"crypto/ecdsa"
+	"github.com/ethereum/go-ethereum/common"
 	"time"
 )
 
@@ -89,4 +91,10 @@ type Cache struct {
 type Auth struct {
 	BearerSecret string `mapstructure:"bearer_secret"`
 	NonceSecret  string `mapstructure:"nonce_secret"`
+}
+
+// RandomFeedOracle configures random oracle feed.
+type RandomFeedOracle struct {
+	PrivateKey ecdsa.PrivateKey `mapstructure:"pk"`
+	Contract   common.Address   `mapstructure:"contract"`
 }
