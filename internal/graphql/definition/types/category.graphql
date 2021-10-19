@@ -1,0 +1,6 @@
+# Category is set of token collections.
+type Category {
+    id: Int!
+    name: String!
+    icon: String
+}

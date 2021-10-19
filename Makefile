@@ -52,6 +52,9 @@ db_observed: doc/db/observed.json
 
 db_status: doc/db/status.json
 	mongoimport --db=artion --collection=status --file=$<
+	
+db_categories: doc/db/categories.json
+	mongoimport --db=artionshared --collection=categories --file=$<
 
 .PHONY: build/artionapi internal/graphql/schema/gen/schema.graphql help test
 all: help
