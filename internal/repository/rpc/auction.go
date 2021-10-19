@@ -37,6 +37,7 @@ func (o *Opera) ExtendAuctionDetailAt(au *types.Auction, block *big.Int) error {
 	// transfer values
 	au.Owner = res.Owner
 	au.ReservePrice = (hexutil.Big)(*res.ReservePrice)
+	au.MinimalBid = (hexutil.Big)(*res.MinBid)
 
 	// do we have a start time? use creation time, if not
 	if 0 < res.StartTime.Int64() {

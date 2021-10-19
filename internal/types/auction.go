@@ -16,6 +16,7 @@ type Auction struct {
 	Owner         common.Address  `bson:"owner"`
 	Quantity      hexutil.Big     `bson:"qty"`
 	PayToken      common.Address  `bson:"pay_token"`
+	MinimalBid    hexutil.Big     `bson:"min_bid"`
 	ReservePrice  hexutil.Big     `bson:"price"`
 	Created       Time            `bson:"created"`
 	StartTime     Time            `bson:"start"`

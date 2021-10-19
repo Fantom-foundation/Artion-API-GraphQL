@@ -33,6 +33,7 @@ func auctionCreated(evt *eth.Log, lo *logObserver) {
 		Owner:         common.Address{},
 		Quantity:      hexutil.Big(*new(big.Int).SetInt64(1)),
 		PayToken:      common.BytesToAddress(evt.Data[:]),
+		MinimalBid:    hexutil.Big{},
 		ReservePrice:  hexutil.Big{},
 		Created:       types.Time(time.Unix(int64(blk.Time), 0)),
 		StartTime:     types.Time{},
