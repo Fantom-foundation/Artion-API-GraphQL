@@ -1,14 +1,33 @@
-# Offer represents offer to buy given token from any current owner.
+# Offer represents offer from buyer to any current owner of the token.
 type Offer {
+    # Address of the token contract
     contract: Address!
+
+    # ID of the token (in given token contract)
     tokenId: BigInt!
+
+    # The offered token (detail)
     token: Token!
+
+    # The buyer
     proposedBy: Address!
+
+    # The offered amount (only this exact amount can be sold)
     quantity: BigInt!
+
+    # The token used to pay for the listed item (zeros for native token)
     payToken: Address!
+
+    # The price for one unit of the token (total = unitPrice * quantity)
     unitPrice: BigInt!
+
+    # When was the offer created
     created: Time!
+
+    # When the offer stops to be valid
     deadline: Time!
+
+    # When was the offer taken of cancelled (nil if it was not)
     closed: Time
 }
 

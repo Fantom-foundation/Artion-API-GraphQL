@@ -37,7 +37,7 @@ func (p *Proxy) AuctionGetMinBid(contract *common.Address, tokenID *big.Int) (*b
 
 	// for zero highest bid, we use min. bid instead
 	if 0 == new(big.Int).Cmp(hb) {
-		return new(big.Int).Add(p.rpc.AuctionMinimalBidAmount(contract, tokenID), p.rpc.AuctionMinBidIncrement()), nil
+		return p.rpc.AuctionMinimalBidAmount(contract, tokenID), nil
 	}
 	return new(big.Int).Add(hb, p.rpc.AuctionMinBidIncrement()), nil
 }

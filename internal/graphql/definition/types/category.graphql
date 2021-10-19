@@ -1,6 +1,11 @@
 # Category is set of token collections.
 type Category {
+    # Identifier of the category
     id: Int!
+
+    # Name of the category
     name: String!
+
+    # Icon of the category - SVG file content
     icon: String
 }

@@ -1,13 +1,30 @@
 # Listing represents offer for anybody to buy given token from the owner.
 type Listing {
+    # The seller of the item
     owner: Address!
+
+    # Address of the token contract
     contract: Address!
+
+    # ID of the token (in given token contract)
     tokenId: BigInt!
+
+    # The listed token (detail)
     token: Token!
+
+    # The listed amount (only this exact amount can be bought)
     quantity: BigInt!
+
+    # The token used to pay for the listed item (zeros for native token)
     payToken: Address!
+
+    # The price for one unit of the token (total = unitPrice * quantity)
     unitPrice: BigInt!
+
+    # When sale of the item starts
     startTime: Time!
+
+    # When was the item sold or unlisted
     closed: Time
 }
 
