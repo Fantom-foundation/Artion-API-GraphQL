@@ -350,6 +350,7 @@
     "name": "mint",
     "outputs": [],
     "stateMutability": "payable",
+    "payable": true,
     "type": "function"
   },
   {

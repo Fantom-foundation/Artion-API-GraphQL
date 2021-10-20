@@ -121,6 +121,7 @@
       }
     ],
     "stateMutability": "payable",
+    "payable": true,
     "type": "function"
   },
   {
