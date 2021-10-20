@@ -107,10 +107,11 @@ func (mw *nftMetadataWorker) update(tok *types.Token) error {
 
 	// get and update collection data
 	lc, err := repo.GetLegacyCollection(tok.Contract)
-	if lc == nil {
+	if err != nil {
 		log.Errorf("NFT legacy collection not available for %s; %s", tok.Contract.String(), err.Error())
-		// continue without collection data
-	} else {
+	}
+
+	if lc != nil {
 		tok.Categories, err = lc.CategoriesAsInts()
 		if err != nil {
 			log.Errorf("failed to decode categories for token contract %s; %s", tok.Contract.String(), err.Error())
