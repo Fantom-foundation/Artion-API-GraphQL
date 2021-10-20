@@ -7,7 +7,7 @@ import (
 	"math/big"
 )
 
-// GetUnitPriceAt extracts token price using Marketplace contract.
-func (o *Opera) GetUnitPriceAt(_ *common.Address, token *common.Address, _ *big.Int) (*big.Int, error) {
+// GetPayTokenPrice extracts price of pay token using Marketplace contract.
+func (o *Opera) GetPayTokenPrice(_ *common.Address, token *common.Address, _ *big.Int) (*big.Int, error) {
 	return o.marketplace.GetPrice(nil, *token)
 }

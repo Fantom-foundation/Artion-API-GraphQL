@@ -32,12 +32,12 @@ func (p *Proxy) Token(contract *common.Address, tokenId *hexutil.Big) (*types.To
 	return token.(*types.Token), err
 }
 
-// GetUnitPriceAt converts input unit price on given token to the value stored on token record.
-func (p *Proxy) GetUnitPriceAt(contract *common.Address, token *common.Address, block *big.Int, val *big.Int) int64 {
-	// get the unit price of the given token
-	unit, err := p.rpc.GetUnitPriceAt(contract, token, block)
+// GetUnitPriceAt converts token price in pay-tokens to value in unified units for storing in database.
+func (p *Proxy) GetUnitPriceAt(marketplace *common.Address, payToken *common.Address, block *big.Int, val *big.Int) int64 {
+	// get the unit price of the payToken
+	unit, err := p.rpc.GetPayTokenPrice(marketplace, payToken, block)
 	if err != nil {
-		log.Warningf("get %s price not available; %s", token.String(), contract.String(), block.Uint64(), err.Error())
+		log.Warningf("unable to get price of pay token %s on marketplace %s (block %d); %s", payToken.String(), marketplace.String(), block.Uint64(), err.Error())
 		return 0
 	}
 
@@ -116,7 +116,6 @@ func (p *Proxy) ListTokens(filter *types.TokenFilter, sorting sorting.TokenSorti
 }
 
 func (p *Proxy) GetTokenJsonMetadata(uri string) (*types.JsonMetadata, error) {
-	// TODO: in-memory cache
 	var key strings.Builder
 	key.WriteString("GetTokenJsonMetadata")
 	key.WriteString(uri)
@@ -138,7 +137,7 @@ func (p *Proxy) GetImage(uri string) (image *types.Image, err error) {
 func (p *Proxy) GetImageThumbnail(uri string) (image *types.Image, err error) {
 	key := "GetImageThumbnail" + uri
 	data, err, _ := p.callGroup.Do(key, func() (interface{}, error) {
-		image, err := p.uri.GetImage(uri)
+		image, err := p.GetImage(uri)
 		if err != nil || image == nil {
 			return nil, fmt.Errorf("getImage failed; %s", err)
 		}
