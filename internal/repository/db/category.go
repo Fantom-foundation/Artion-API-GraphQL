@@ -9,7 +9,7 @@ import (
 
 const (
 	// coCategories is the name of database collection.
-	coCategories = "categories"
+	coCategories = "colcats"
 
 	// fiCategoryName is the DB column of the category having name of the category.
 	fiCategoryName = "name"
@@ -18,8 +18,6 @@ const (
 func (sdb *SharedMongoDbBridge) ListCategories() (out []types.Category, err error) {
 	col := sdb.client.Database(sdb.dbName).Collection(coCategories)
 	ctx := context.Background()
-
-	log.Warningf("TEST list cat")
 
 	mc, err := col.Find(ctx, bson.D{}, options.Find().SetSort(bson.D{{Key: fiCategoryName, Value: 1}}))
 	if err != nil {
