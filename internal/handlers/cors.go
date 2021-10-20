@@ -23,7 +23,7 @@ func corsOptions(cfg *config.Config) cors.Options {
 	return cors.Options{
 		AllowedOrigins: cfg.Server.CorsOrigin,
 		AllowedMethods: []string{"HEAD", "GET", "POST"},
-		AllowedHeaders: []string{"Origin", "Accept", "Content-Type", "X-Requested-With"},
+		AllowedHeaders: []string{"Origin", "Accept", "Content-Type", "X-Requested-With", "Authorization"},
 		MaxAge:         300,
 	}
 }
