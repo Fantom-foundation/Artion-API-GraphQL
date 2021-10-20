@@ -100,7 +100,7 @@ func (app *apiServer) makeHttpServer() {
 		WriteTimeout:      time.Second * time.Duration(app.cfg.Server.WriteTimeout),
 		IdleTimeout:       time.Second * time.Duration(app.cfg.Server.IdleTimeout),
 		ReadHeaderTimeout: time.Second * time.Duration(app.cfg.Server.HeaderTimeout),
-		Handler:           srvMux,
+		Handler:           handlers.Cors(app.cfg, app.log, srvMux),
 	}
 
 	// setup handlers
@@ -111,7 +111,7 @@ func (app *apiServer) makeHttpServer() {
 func (app *apiServer) setupHandlers(mux *http.ServeMux) {
 	// setup GraphQL API handler
 	h := http.TimeoutHandler(
-		handlers.Api(app.cfg, app.log),
+		handlers.AuthHandler(handlers.Api(app.log)),
 		time.Second*time.Duration(app.cfg.Server.ResolverTimeout), "Service timeout.",
 	)
 	mux.Handle("/api", h)
