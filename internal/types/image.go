@@ -17,6 +17,7 @@ const (
 	ImageTypeJpeg
 	ImageTypePng
 	ImageTypeWebp
+	ImageTypeMp4
 )
 
 func (i ImageType) Mimetype() string {
@@ -26,6 +27,7 @@ func (i ImageType) Mimetype() string {
 	case ImageTypeJpeg: return "image/jpeg"
 	case ImageTypePng: return "image/png"
 	case ImageTypeWebp: return "image/webp"
+	case ImageTypeMp4: return "video/mp4"
 	}
 	return ""
 }
@@ -37,6 +39,7 @@ func (i ImageType) Extension() string {
 	case ImageTypeJpeg: return ".jpg"
 	case ImageTypePng: return".png"
 	case ImageTypeWebp: return ".webp"
+	case ImageTypeMp4: return ".mp4"
 	}
 	return ""
 }
@@ -48,6 +51,7 @@ func ImageTypeFromMimetype(mimetype string) ImageType {
 	case "image/jpeg": return ImageTypeJpeg
 	case "image/png": return ImageTypePng
 	case "image/webp": return ImageTypeWebp
+	case "video/mp4": return ImageTypeMp4
 	}
 	return ImageTypeUnknown
 }
@@ -68,6 +72,9 @@ func ImageTypeFromExtension(uri string) (mimetype ImageType) {
 	}
 	if strings.HasSuffix(uri, ".webp") {
 		return ImageTypeWebp
+	}
+	if strings.HasSuffix(uri, ".mp4") {
+		return ImageTypeMp4
 	}
 	return ImageTypeUnknown
 }
