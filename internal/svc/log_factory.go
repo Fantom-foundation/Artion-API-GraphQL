@@ -89,7 +89,6 @@ func extendNFTCollectionDetails(nft *types.Collection, evt *eth.Log, lo *logObse
 			return err
 		}
 	}
-
 	return nil
 }
 

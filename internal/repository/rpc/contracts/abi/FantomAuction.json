@@ -710,6 +710,7 @@
     "name": "placeBid",
     "outputs": [],
     "stateMutability": "payable",
+    "payable": true,
     "type": "function"
   },
   {

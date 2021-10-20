@@ -3,8 +3,22 @@
   "schemaPath": "schema.graphql",
   "extensions": {
     "endpoints": {
-      "Default GraphQL Endpoint": {
+      "GraphQL Server A": {
         "url": "https://artion-api-a.fantom.network/graphql",
+        "headers": {
+          "user-agent": "JS GraphQL"
+        },
+        "introspect": false
+      },
+      "GraphQL Server B": {
+        "url": "https://artion-api-b.fantom.network/graphql",
+        "headers": {
+          "user-agent": "JS GraphQL"
+        },
+        "introspect": false
+      },
+      "GraphQL Server C": {
+        "url": "https://artion-api-c.fantom.network/graphql",
         "headers": {
           "user-agent": "JS GraphQL"
         },
