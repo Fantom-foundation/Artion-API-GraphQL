@@ -45,6 +45,14 @@ contract RandomNumberOracle {
     // ProviderDenied is emitted on a disabled provider.
     event ProviderDenied(address provider);
 
+    /**
+     * Reverts if called by any account other than the owner.
+     */
+    modifier onlyOwner() {
+        require(getOwner == msg.sender, "RNG: allowed to owner only");
+        _;
+    }
+
     // constructor initializes the oracle contract.
     constructor (address _provider) public {
         getOwner = msg.sender;
@@ -55,7 +63,7 @@ contract RandomNumberOracle {
     // and notifies an off-chain provider to feed the random number in.
     function requestRandomNumber(bytes32 _seed) external {
         bytes32 requestID = makeRequestID(msg.sender, _seed, getNonce[msg.sender], block.timestamp);
-        require(getRequest[requestID].consumer == address(0), "existing request ID");
+        require(getRequest[requestID].consumer == address(0), "RNG: existing request ID");
 
         // store the request and advance the nonce for the caller
         // we should not need to deal with nonce overflow, since we delete fulfilled requests
@@ -78,8 +86,8 @@ contract RandomNumberOracle {
     // to satisfy pending random number request.
     function fulfillRandomNumber(bytes32 _requestID, uint256 _rnd) external {
         // check conditions
-        require(getProvider[msg.sender], "only provider can fulfill");
-        require(getRequest[_requestID].consumer != address(0), "unknown request ID");
+        require(getProvider[msg.sender], "RNG: only provider can fulfill");
+        require(getRequest[_requestID].consumer != address(0), "RNG: unknown request ID");
 
         // remove the request
         address memory _target = getRequest[_requestID].consumer;
@@ -88,37 +96,30 @@ contract RandomNumberOracle {
 
         // fulfill the request calling the recipient
         (bool success,) = _target.call(payload);
-        require(success, "failed to fulfill");
+        require(success, "RNG: failed to fulfill");
     }
 
     // transferOwnership changes the contract owner.
-    function transferOwnership(address _owner) external {
-        require(msg.sender == getOwner, "owner only");
-
-        getOwner = _owner;
-        emit OwnerChanged(_owner);
+    function transferOwnership(address _newOwner) external onlyOwner {
+        require(_newOwner != address(0), "RandomTrade: zero address not allowed");
+        getOwner = _newOwner;
+        emit OwnerChanged(_newOwner);
     }
 
     // allowProvider enables a new provider address.
-    function allowProvider(address _provider) public {
-        require(msg.sender == getOwner, "owner only");
-
+    function allowProvider(address _provider) public onlyOwner {
         getProvider[_provider] = true;
         emit ProviderAllowed(_provider);
     }
 
     // denyProvider disables a new provider address.
-    function denyProvider(address _provider) public {
-        require(msg.sender == getOwner, "owner only");
-
+    function denyProvider(address _provider) public onlyOwner {
         getProvider[_provider] = false;
         emit ProviderDenied(_provider);
     }
 
     // cancelRequest allows owner to remove given pending request.
-    function cancelRequest(bytes32 _requestID) external {
-        require(msg.sender == getOwner, "owner only");
-
+    function cancelRequest(bytes32 _requestID) external onlyOwner {
         delete (getRequest[_requestID]);
         emit RequestCanceled(_requestID);
     }
