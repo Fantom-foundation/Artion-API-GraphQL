@@ -24,6 +24,9 @@ contract RandomNumberOracle {
     // It's mixed with additional call params to generate call request ID.
     mapping(address => uint256) public getNonce;
 
+    // getConsumer represents a map of allowed random number consumers.
+    mapping(address => bool) public getConsumer;
+
     // getProvider represents a map of allowed random number providers.
     mapping(address => bool) public getProvider;
 
@@ -46,6 +49,12 @@ contract RandomNumberOracle {
     // ProviderDenied is emitted on a disabled provider.
     event ProviderDenied(address provider);
 
+    // ConsumerAllowed is emitted on a new allowed consumer.
+    event ConsumerAllowed(address provider);
+
+    // ConsumerDenied is emitted on a disabled consumer.
+    event ConsumerDenied(address provider);
+
     /**
      * Reverts if called by any account other than the owner.
      */
@@ -63,19 +72,23 @@ contract RandomNumberOracle {
     // requestRandomNumber creates a new request for random number
     // and notifies an off-chain provider to feed the random number in.
     function requestRandomNumber(bytes32 _seed) external {
-        bytes32 requestID = makeRequestID(msg.sender, _seed, getNonce[msg.sender], block.timestamp);
-        require(getRequest[requestID].consumer == address(0), "RNG: existing request ID");
+        // allow requests from allowed consumers only
+        require(getConsumer[msg.sender], "RNG: unknown consumer");
+
+        // make the request ID and check validity
+        bytes32 id = makeRequestID(msg.sender, _seed, getNonce[msg.sender], block.timestamp);
+        require(getRequest[id].consumer == address(0), "RNG: existing request ID");
 
         // store the request and advance the nonce for the caller
         // we should not need to deal with nonce overflow, since we delete fulfilled requests
-        getRequest[requestID] = Request({
+        getRequest[id] = Request({
         seed : _seed,
         consumer : msg.sender
         });
         getNonce[msg.sender] += 1;
 
         // notify provider
-        emit RandomNumberRequested(requestID, _seed);
+        emit RandomNumberRequested(id, _seed);
     }
 
     // makeRequestID generates a new request ID.
@@ -92,7 +105,7 @@ contract RandomNumberOracle {
 
         // remove the request
         address _target = getRequest[_requestID].consumer;
-        bytes memory payload = abi.encodeWithSignature("consumeRandomNumber(bytes32,uint256)", getRequest[_requestID].seed, _rnd);
+        bytes memory payload = abi.encodeWithSelector(IRandomNumberConsumer(_target).consumeRandomNumber.selector, getRequest[_requestID].seed, _rnd);
         delete (getRequest[_requestID]);
 
         // fulfill the request calling the recipient
@@ -117,6 +130,18 @@ contract RandomNumberOracle {
     function denyProvider(address _provider) public onlyOwner {
         getProvider[_provider] = false;
         emit ProviderDenied(_provider);
+    }
+
+    // allowConsumer enables a new consumer address.
+    function allowConsumer(address _consumer) public onlyOwner {
+        getConsumer[_consumer] = true;
+        emit ConsumerAllowed(_consumer);
+    }
+
+    // denyConsumer disables a new consumer address.
+    function denyConsumer(address _consumer) public onlyOwner {
+        getConsumer[_consumer] = false;
+        emit ConsumerDenied(_consumer);
     }
 
     // cancelRequest allows owner to remove given pending request.
