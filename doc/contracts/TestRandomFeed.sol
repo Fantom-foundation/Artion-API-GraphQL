@@ -32,7 +32,7 @@ contract TestRandomFeed is IRandomNumberConsumer {
         require(msg.sender == owner, "owner only");
 
         nonce += 1;
-        id = keccak256(abi.encodePacked(msg.sender, nonce));
+        bytes32 id = keccak256(abi.encodePacked(msg.sender, nonce));
         lastSeed[id] = nonce;
 
         IRandomNumberOracle(oracle).requestRandomNumber(id);
