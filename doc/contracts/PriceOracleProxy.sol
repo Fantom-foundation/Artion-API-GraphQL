@@ -29,14 +29,14 @@ contract PriceOracleProxy is IPriceOracleProxy {
     }
 
     // getPrice provides the price of the given token by address.
-    function getPrice(address _token) external view returns (uint256, uint8) {
+    function getPrice(address _token) external view override returns (uint256, uint8) {
         require(_price[_token] != 0, "PriceOracleProxy: unknown token");
         return (_price[_token], 18);
     }
 
     // setPrice sets a new price for the given token.
-    function setPrice(address _token, uint256 _price) external onlyOwner {
-        _price[_token] = _price;
+    function setPrice(address _token, uint256 _newPrice) external onlyOwner {
+        _price[_token] = _newPrice;
     }
 
     // transferOwnership changes the owner of the contract.
