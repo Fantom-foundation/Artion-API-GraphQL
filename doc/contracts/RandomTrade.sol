@@ -63,7 +63,7 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
     // Equals to `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
     bytes4 private constant _ERC721_RECEIVED = 0x150b7a02;
 
-    // ID of the ERC721 interface.
+    // ID of the ERC721 interface for EIP-165 check.
     bytes4 private constant _INTERFACE_ID_ERC721 = 0x80ac58cd;
 
     // NFT represents a structure of NFT token offered on the trade.
@@ -416,9 +416,9 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
 
     // safeTransfer moves the given amount of pay tokens from this contract to recipient safely.
     function safeTransfer(IERC20 _token, address _to, uint256 _amount) internal {
-        bytes memory data = abi.encodeWithSelector(_token.transfer.selector, _to, _amount);
+        bytes memory payload = abi.encodeWithSelector(_token.transfer.selector, _to, _amount);
 
-        (bool success, bytes memory res) = address(_token).call(data);
+        (bool success, bytes memory res) = address(_token).call(payload);
         require(success, "RandomTrade: pay token transfer failed");
 
         if (res.length > 0) {
@@ -429,9 +429,9 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
 
     // safeTransferFrom moves the given amount of pay tokens from sender to recipient safely.
     function safeTransferFrom(IERC20 _token, address _from, address _to, uint256 _amount) internal {
-        bytes memory data = abi.encodeWithSelector(_token.transferFrom.selector, _from, _to, _amount);
+        bytes memory payload = abi.encodeWithSelector(_token.transferFrom.selector, _from, _to, _amount);
 
-        (bool success, bytes memory res) = address(_token).call(data);
+        (bool success, bytes memory res) = address(_token).call(payload);
         require(success, "RandomTrade: pay token transfer failed");
 
         if (res.length > 0) {
