@@ -10,7 +10,7 @@ require (
 	github.com/btcsuite/btcd v0.22.0-beta // indirect
 	github.com/cespare/cp v1.1.1 // indirect
 	github.com/deckarep/golang-set v1.7.1 // indirect
-	github.com/disintegration/imaging v1.6.2 // indirect
+	github.com/disintegration/imaging v1.6.2
 	github.com/ethereum/go-ethereum v1.10.8
 	github.com/gballet/go-libpcsclite v0.0.0-20191108122812-4678299bea08 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
@@ -36,7 +36,7 @@ require (
 	github.com/status-im/keycard-go v0.0.0-20210911161356-c8058144cee8
 	github.com/tklauser/go-sysconf v0.3.9 // indirect
 	github.com/tyler-smith/go-bip39 v1.1.0 // indirect
-	github.com/u2takey/ffmpeg-go v0.3.0 // indirect
+	github.com/u2takey/ffmpeg-go v0.3.0
 	github.com/u2takey/go-utils v0.0.0-20210821132353-e90f7c6bacb5 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a // indirect
 	go.mongodb.org/mongo-driver v1.7.2
