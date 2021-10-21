@@ -50,6 +50,12 @@ internal/repository/rpc/contracts/FantomAuction.go: internal/repository/rpc/cont
 internal/repository/rpc/contracts/FantomAuctionV1.go: internal/repository/rpc/contracts/abi/FantomAuctionV1.json
 	abigen --type FantomAuctionV1 --pkg contracts --abi $< --out $@
 
+internal/repository/rpc/contracts/RandomNumberOracle.go: internal/repository/rpc/contracts/abi/RandomNumberOracle.json
+	abigen --type RandomNumberOracle --pkg contracts --abi $< --out $@
+
+internal/repository/rpc/contracts/RandomTrade.go: internal/repository/rpc/contracts/abi/RandomTrade.json
+	abigen --type RandomTrade --pkg contracts --abi $< --out $@
+
 db_observed: doc/db/observed.json
 	mongoimport --db=artion --collection=observed --file=$<
 
@@ -58,6 +64,11 @@ db_status: doc/db/status.json
 
 db_categories: doc/db/categories.json
 	mongoimport --db=artionshared --collection=colcats --file=$<
+
+contracts:
+	solc --abi --bin --overwrite --optimize --optimize-runs=200 --metadata --hashes -o doc/contracts/build/ doc/contracts/PriceOracleProxy.sol
+	solc --abi --bin --overwrite --optimize --optimize-runs=200 --metadata --hashes -o doc/contracts/build/ doc/contracts/RandomNumberOracle.sol
+	solc --abi --bin --overwrite --optimize --optimize-runs=200 --metadata --hashes -o doc/contracts/build/ doc/contracts/RandomTrade.sol
 
 .PHONY: build/artionapi internal/graphql/schema/gen/schema.graphql help test
 all: help

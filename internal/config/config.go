@@ -2,6 +2,7 @@
 package config
 
 import (
+	"crypto/ecdsa"
 	"time"
 )
 
@@ -33,6 +34,9 @@ type Config struct {
 
 	// Auth configuration
 	Auth Auth `mapstructure:"auth"`
+
+	// RngOracle provides configuration for random feed oracle handling
+	RngOracle RandomFeedOracle `mapstructure:"rng"`
 }
 
 // Server represents the GraphQL server configuration
@@ -89,4 +93,10 @@ type Cache struct {
 type Auth struct {
 	BearerSecret string `mapstructure:"bearer_secret"`
 	NonceSecret  string `mapstructure:"nonce_secret"`
+}
+
+// RandomFeedOracle configures random oracle feed.
+type RandomFeedOracle struct {
+	PrivateKey ecdsa.PrivateKey `mapstructure:"pk"`
+	ChainID    string           `mapstructure:"chain"`
 }
