@@ -156,7 +156,7 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
 
         getPriceOracle = _priceOracle;
         getRNGOracle = _rngOracle;
-        getPriceOracle = _price;
+        getUnitPrice = _price;
         getUnitPriceDecimals = _priceDecimals;
         getTradeStarts = _start;
         getTradeEnds = _end;
@@ -164,7 +164,7 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
 
     // onERC721Received is called upon ERC-721 token delivery.
     // Implements IERC721Receiver for safe token transfer.
-    function onERC721Received(address operator, address from, uint256 tokenId, bytes calldata data) external returns (bytes4) {
+    function onERC721Received(address operator, address /* from */, uint256 tokenId, bytes calldata /* data */) external override returns (bytes4) {
         // we accept only ERC-721 tokens sent by the current trade owner
         require(isContract(msg.sender), "RandomTrade: invalid caller");
         require(IERC165(msg.sender).supportsInterface(_INTERFACE_ID_ERC721), "RandomTrade: invalid token received");
@@ -183,7 +183,7 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
     // _addToken adds the given token to the trading pool.
     function _addToken(address _contract, uint256 _tokenID) private {
         // gen the id of the token from ERC-721 contract and token ID
-        bytes32 memory id = keccak256(abi.encodePacked(_contract, _tokenID));
+        bytes32 id = keccak256(abi.encodePacked(_contract, _tokenID));
 
         // store the token base
         getNFT[id].nftContract = _contract;
@@ -225,7 +225,7 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
 
         // make the purchase record ID and check it's unique
         _nonce += 1;
-        bytes32 memory id = keccak256(abi.encodePacked(msg.sender, _token, _nonce));
+        bytes32 id = keccak256(abi.encodePacked(msg.sender, _token, _nonce));
         require(getPurchase[id].deposit == 0, "RandomTrade: pending purchase overwrite rejected");
 
         // one less token is available from now
@@ -278,7 +278,7 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
     }
 
     // consumeRandomNumber processes callback with random number.
-    function consumeRandomNumber(bytes32 _seed, uint256 _rnd) external {
+    function consumeRandomNumber(bytes32 _seed, uint256 _rnd) external override {
         // make sure it comes from trusted source
         require(msg.sender == getRNGOracle, "RandomTrade: allowed to RNG oracle only");
 
@@ -336,7 +336,7 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
 
         require(0 < getNFTCount, "RandomTrade: trade pool empty");
         uint256 steps = _shift % getNFTCount;
-        for (i = 0; i < steps; i++) {
+        for (uint256 i = 0; i < steps; i++) {
             getCurrentNFT = getNFT[getCurrentNFT].next;
         }
     }
@@ -399,7 +399,7 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
 
     // setPrice updates the unit price of the tokens in the pool.
     function setPrice(uint256 _price, uint8 _priceDecimals) external onlyOwner {
-        getPriceOracle = _price;
+        getUnitPrice = _price;
         getUnitPriceDecimals = _priceDecimals;
 
         emit PriceChanged(_priceDecimals, _priceDecimals);
@@ -415,9 +415,12 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
     }
 
     // safeTransfer moves the given amount of pay tokens from this contract to recipient safely.
-    function safeTransfer(IERC20 _token, address _to, uint256 _amount) {
-        bytes memory data = abi.encodeWithSelector(_token.transfer.selector, _to, _value);
-        bytes memory res = address(_token).functionCall(data, "RandomTrade: pay token transfer failed");
+    function safeTransfer(IERC20 _token, address _to, uint256 _amount) internal {
+        bytes memory data = abi.encodeWithSelector(_token.transfer.selector, _to, _amount);
+
+        (bool success, bytes memory res) = address(_token).call(data);
+        require(success, "RandomTrade: pay token transfer failed");
+
         if (res.length > 0) {
             // solhint-disable-next-line max-line-length
             require(abi.decode(res, (bool)), "RandomTrade: pay token transfer did not succeed");
@@ -425,9 +428,12 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
     }
 
     // safeTransferFrom moves the given amount of pay tokens from sender to recipient safely.
-    function safeTransferFrom(IERC20 _token, address _from, address _to, uint256 _amount) {
-        bytes memory data = abi.encodeWithSelector(_token.transferFrom.selector, _from, _to, _value);
-        bytes memory res = address(_token).functionCall(data, "RandomTrade: pay token transfer failed");
+    function safeTransferFrom(IERC20 _token, address _from, address _to, uint256 _amount) internal {
+        bytes memory data = abi.encodeWithSelector(_token.transferFrom.selector, _from, _to, _amount);
+
+        (bool success, bytes memory res) = address(_token).call(data);
+        require(success, "RandomTrade: pay token transfer failed");
+
         if (res.length > 0) {
             // solhint-disable-next-line max-line-length
             require(abi.decode(res, (bool)), "RandomTrade: pay token transfer did not succeed");

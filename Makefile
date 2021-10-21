@@ -53,6 +53,12 @@ db_observed: doc/db/observed.json
 db_status: doc/db/status.json
 	mongoimport --db=artion --collection=status --file=$<
 
+contracts:
+	solc --abi --bin --overwrite --optimize --optimize-runs=200 --metadata --hashes -o doc/contracts/build/ doc/contracts/PriceOracleProxy.sol
+	solc --abi --bin --overwrite --optimize --optimize-runs=200 --metadata --hashes -o doc/contracts/build/ doc/contracts/RandomNumberOracle.sol
+	solc --abi --bin --overwrite --optimize --optimize-runs=200 --metadata --hashes -o doc/contracts/build/ doc/contracts/RandomTrade.sol
+
+
 .PHONY: build/artionapi internal/graphql/schema/gen/schema.graphql help test
 all: help
 help: Makefile
