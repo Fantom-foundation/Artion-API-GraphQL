@@ -19,6 +19,8 @@ contract TestRandomFeed is IRandomNumberConsumer {
 
     uint256 public nonce;
 
+    mapping(bytes32 => uint256) public lastSeed;
+
     uint256 public lastRandom;
 
     constructor (address _oracle) public {
@@ -30,13 +32,16 @@ contract TestRandomFeed is IRandomNumberConsumer {
         require(msg.sender == owner, "owner only");
 
         nonce += 1;
-        bytes32 id = keccak256(abi.encodePacked(msg.sender, nonce));
+        id = keccak256(abi.encodePacked(msg.sender, nonce));
+        lastSeed[id] = nonce;
 
         IRandomNumberOracle(oracle).requestRandomNumber(id);
     }
 
     function consumeRandomNumber(bytes32 _seed, uint256 _rnd) external override {
         require(msg.sender == oracle, "oracle only");
+        require(lastSeed[_seed] > 0, "unknown seed");
+
         lastRandom = _rnd;
     }
 }
