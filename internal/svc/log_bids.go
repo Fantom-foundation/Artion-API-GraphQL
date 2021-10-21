@@ -49,6 +49,8 @@ func auctionBidPlaced(evt *eth.Log, lo *logObserver) {
 		return
 	}
 
+	previousBidder := auction.LastBidder
+
 	auction.LastBid = &bid.Amount
 	auction.LastBidder = &bid.Bidder
 	auction.LastBidPlaced = &bid.Placed
@@ -69,6 +71,14 @@ func auctionBidPlaced(evt *eth.Log, lo *logObserver) {
 	}
 
 	log.Infof("added new bid on auction %s/%s by %s", bid.Contract.String(), bid.TokenId.String(), bid.Bidder.String())
+
+	// notify subscribers
+	subscriptionManager := GetSubscriptionsManager()
+	subscriptionManager.PublishAuctionBid(auction)
+	subscriptionManager.PublishUserEvent(auction.Owner, types.Event{ Type: "OWNED_AUCTION_BID", Auction: auction })
+	if previousBidder != nil {
+		subscriptionManager.PublishUserEvent(*previousBidder, types.Event{ Type: "AUCTION_OUTBIDDEN", Auction: auction })
+	}
 }
 
 // auctionBidPlaced processes an event for removed auction bid.

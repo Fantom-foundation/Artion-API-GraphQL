@@ -2,6 +2,7 @@
 schema {
     query: Query
     mutation: Mutation
+    subscription: Subscription
 }
 
 # Entry points for querying the API
@@ -62,4 +63,12 @@ type Mutation {
 
     # Update shipping address for tokens redeem.
     updateShippingAddress(address: InputShippingAddress!): Boolean!
+}
+
+type Subscription {
+    # Subscribe events relevant for given user (owned auction bid, etc.)
+    watchUserEvents(user: Address!): Event!
+
+    # Subscribe auction events
+    watchAuction(contract: Address!, tokenId: BigInt!): Auction!
 }

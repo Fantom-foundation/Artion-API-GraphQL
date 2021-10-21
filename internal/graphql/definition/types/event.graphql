@@ -1,0 +1,14 @@
+# Event represents something what should be reported to client.
+type Event {
+    type: EventType!
+    auction: Auction
+    offer: Offer
+}
+
+enum EventType {
+    OWNED_AUCTION_BID, # new bid in auction created by the user
+    AUCTION_OUTBIDDEN, # new bid in auction where the user was the last bidder
+    AUCTION_RESOLVED,
+    AUCTION_CANCELLED,
+    GOT_OFFER,
+}

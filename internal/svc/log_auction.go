@@ -208,6 +208,13 @@ func auctionCanceled(evt *eth.Log, _ *logObserver) {
 	if err := repo.TokenMarkUnAuctioned(&auction.Contract, (*big.Int)(&auction.TokenId)); err != nil {
 		log.Errorf("could not mark token as not having auction; %s", err.Error())
 	}
+
+	// notify subscribers
+	subscriptionManager := GetSubscriptionsManager()
+	subscriptionManager.PublishUserEvent(auction.Owner, types.Event{ Type: "AUCTION_CANCELLED", Auction: auction })
+	if auction.LastBidder != nil {
+		subscriptionManager.PublishUserEvent(*auction.LastBidder, types.Event{ Type: "AUCTION_CANCELLED", Auction: auction })
+	}
 }
 
 // auctionResolved processes the auction resolved event log.
@@ -259,4 +266,9 @@ func auctionResolved(evt *eth.Log, lo *logObserver) {
 	); err != nil {
 		log.Errorf("could not mark token as sold; %s", err.Error())
 	}
+
+	// notify subscribers
+	subscriptionManager := GetSubscriptionsManager()
+	subscriptionManager.PublishUserEvent(auction.Owner, types.Event{ Type: "AUCTION_RESOLVED", Auction: auction })
+	subscriptionManager.PublishUserEvent(*auction.Winner, types.Event{ Type: "AUCTION_RESOLVED", Auction: auction })
 }
