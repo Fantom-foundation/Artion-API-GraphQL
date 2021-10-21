@@ -49,6 +49,8 @@ func auctionBidPlaced(evt *eth.Log, lo *logObserver) {
 		return
 	}
 
+	previousBidder := auction.LastBidder
+
 	auction.LastBid = &bid.Amount
 	auction.LastBidder = &bid.Bidder
 	auction.LastBidPlaced = &bid.Placed
@@ -69,6 +71,15 @@ func auctionBidPlaced(evt *eth.Log, lo *logObserver) {
 	}
 
 	log.Infof("added new bid on auction %s/%s by %s", bid.Contract.String(), bid.TokenId.String(), bid.Bidder.String())
+
+	// notify subscribers
+	event := types.Event{ Type: "AUCTION_BID", Auction: auction }
+	subscriptionManager := GetSubscriptionsManager()
+	subscriptionManager.PublishAuctionEvent(event)
+	subscriptionManager.PublishUserEvent(auction.Owner, event)
+	if previousBidder != nil {
+		subscriptionManager.PublishUserEvent(*previousBidder, event)
+	}
 }
 
 // auctionBidPlaced processes an event for removed auction bid.
@@ -110,4 +121,10 @@ func auctionBidWithdrawn(evt *eth.Log, _ *logObserver) {
 	if err := repo.StoreAuction(auction); err != nil {
 		log.Errorf("could not store auction; %s", err.Error())
 	}
+
+	// notify subscribers
+	event := types.Event{ Type: "AUCTION_BID_WITHDRAW", Auction: auction }
+	subscriptionManager := GetSubscriptionsManager()
+	subscriptionManager.PublishAuctionEvent(event)
+	subscriptionManager.PublishUserEvent(auction.Owner, event)
 }

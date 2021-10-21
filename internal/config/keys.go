@@ -11,8 +11,6 @@ const (
 
 	// server related keys
 	keyBindAddress      = "server.bind"
-	keyDomainAddress    = "server.domain"
-	keyApiPeers         = "server.peers"
 	keyApiStateOrigin   = "server.origin"
 	keyCorsAllowOrigins = "server.cors_origins"
 

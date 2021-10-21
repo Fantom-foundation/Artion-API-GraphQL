@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body {
+            height: 100%;
+            margin: 0;
+            width: 100%;
+            overflow: hidden;
+        }
+        #graphiql {
+            height: 100vh;
+        }
+    </style>
+    <script
+            crossorigin
+            src="https://unpkg.com/react@16/umd/react.development.js"
+    ></script>
+    <script
+            crossorigin
+            src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"
+    ></script>
+    <link rel="stylesheet" href="https://unpkg.com/graphiql/graphiql.min.css" />
+    <title>GraphiQL - {{ . }}</title>
+</head>
+
+<body>
+<div id="graphiql">Loading...</div>
+<script src="//unpkg.com/graphiql/graphiql.min.js" type="application/javascript"></script>
+<script src="//unpkg.com/subscriptions-transport-ws@0.8.3/browser/client.js"></script>
+<script src="//unpkg.com/graphiql-subscriptions-fetcher@0.0.2/browser/client.js"></script>
+<script>
+    function graphQLFetcher(graphQLParams) {
+        const myHeaders = new Headers();
+        if (typeof token !== 'undefined') {
+            myHeaders.append('Authorization', 'Bearer ' + token);
+        }
+        return fetch("/graphql", {
+            method: "post",
+            body: JSON.stringify(graphQLParams),
+            credentials: "include",
+            headers: myHeaders,
+        }).then(function (response) {
+            return response.text();
+        }).then(function (responseBody) {
+            try {
+                return JSON.parse(responseBody);
+            } catch (error) {
+                return responseBody;
+            }
+        });
+    }
+    const subscriptionsClient = new window.SubscriptionsTransportWs.SubscriptionClient('ws://{{ . }}/graphql', { reconnect: true, lazy: true });
+    const subscriptionsFetcher = window.GraphiQLSubscriptionsFetcher.graphQLFetcher(subscriptionsClient, graphQLFetcher);
+
+    ReactDOM.render(
+        React.createElement(GraphiQL, {
+            fetcher: subscriptionsFetcher,
+            defaultVariableEditorOpen: false,
+        }),
+        document.getElementById('graphiql'),
+    );
+</script>
+</body>
+</html>

@@ -110,15 +110,15 @@ func (app *apiServer) makeHttpServer() {
 // setupHandlers initializes an array of handlers for our HTTP API end-points.
 func (app *apiServer) setupHandlers(mux *http.ServeMux) {
 	// setup GraphQL API handler
-	h := http.TimeoutHandler(
-		handlers.AuthHandler(handlers.Api(app.log)),
-		time.Second*time.Duration(app.cfg.Server.ResolverTimeout), "Service timeout.",
-	)
+	h := //http.TimeoutHandler(
+		handlers.AuthHandler(handlers.Api(app.log))
+		//time.Second*time.Duration(app.cfg.Server.ResolverTimeout), "Service timeout.",
+	//)
 	mux.Handle("/api", h)
 	mux.Handle("/graphql", h)
 
 	// handle GraphiQL interface
-	mux.Handle("/graphi", handlers.GraphiHandler(app.cfg.Server.DomainAddress, app.log))
+	mux.Handle("/graphi", handlers.GraphiHandler(app.log))
 
 	// handle images
 	mux.Handle("/images/token/", handlers.ImageHandler(app.log, handlers.TokenImageResolver))

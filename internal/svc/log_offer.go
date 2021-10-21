@@ -56,6 +56,18 @@ func marketOfferCreated(evt *eth.Log, lo *logObserver) {
 	}
 
 	log.Infof("added new offer of %s/%s proposed by %s", offer.Contract.String(), offer.TokenId.String(), offer.ProposedBy.String())
+
+	// notify subscribers (will be skipped for tokens owned by 100 or more owners)
+	event := types.Event{ Type: "OFFER_CREATED", Offer: &offer }
+	subscriptionManager := GetSubscriptionsManager()
+	owners, err := repo.ListOwnerships(&offer.Contract, &offer.TokenId, nil, "", 100, false)
+	if err != nil {
+		log.Errorf("failed to list owner to get subscribers for token; %s", err)
+	} else if len(owners.Collection) < 100 {
+		for _, ownership := range owners.Collection {
+			subscriptionManager.PublishUserEvent(ownership.Owner, event)
+		}
+	}
 }
 
 // marketOfferCanceled handles log event for NFT token to loose buy offer on the Marketplace.

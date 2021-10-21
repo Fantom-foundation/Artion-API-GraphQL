@@ -42,7 +42,6 @@ type Config struct {
 // Server represents the GraphQL server configuration
 type Server struct {
 	BindAddress     string   `mapstructure:"bind"`
-	DomainAddress   string   `mapstructure:"domain"`
 	CorsOrigin      []string `mapstructure:"cors"`
 	ReadTimeout     int64    `mapstructure:"read_timeout"`
 	WriteTimeout    int64    `mapstructure:"write_timeout"`
