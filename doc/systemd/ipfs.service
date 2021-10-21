@@ -1,0 +1,16 @@
+[Unit]
+Description=IPFS daemon
+After=network.target auditd.service
+
+[Service]
+Type=simple
+User=opera
+Group=opera
+ExecStart=/usr/local/bin/ipfs daemon
+Restart=on-failure
+RestartSec=10s
+TimeoutSec=900
+
+[Install]
+WantedBy=multi-user.target
+

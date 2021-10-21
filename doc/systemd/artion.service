@@ -1,0 +1,17 @@
+[Unit]
+Description=Artion API GraphQL
+After=network.target auditd.service opera.service ipfs.service
+
+[Service]
+Type=simple
+User=opera
+Group=opera
+WorkingDirectory=/home/opera/go/src/Artion-API-GraphQL
+ExecStart=/home/opera/go/src/Artion-API-GraphQL/build/artionapi -cfg=/etc/opera/artion.json
+Restart=on-failure
+RestartSec=10s
+TimeoutSec=900
+
+[Install]
+WantedBy=multi-user.target
+
