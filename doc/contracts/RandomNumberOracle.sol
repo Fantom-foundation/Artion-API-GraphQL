@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.6.0;
 
 // RandomNumberConsumer represents a contract capable of receiving random numbers
@@ -90,7 +91,7 @@ contract RandomNumberOracle {
         require(getRequest[_requestID].consumer != address(0), "RNG: unknown request ID");
 
         // remove the request
-        address memory _target = getRequest[_requestID].consumer;
+        address _target = getRequest[_requestID].consumer;
         bytes memory payload = abi.encodeWithSignature("consumeRandomNumber(bytes32,uint256)", getRequest[_requestID].seed, _rnd);
         delete (getRequest[_requestID]);
 
