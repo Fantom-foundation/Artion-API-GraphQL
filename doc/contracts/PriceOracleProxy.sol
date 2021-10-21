@@ -10,9 +10,13 @@ interface IPriceOracleProxy {
 // PriceOracleProxy implements IPriceOracleProxy with an in-place price storage.
 // It's intended to be replaced by a proxy with 3rd party price oracle support (i.e. Chainlink, TheBand, etc.)
 contract PriceOracleProxy is IPriceOracleProxy {
-    // _price represents the storage of the actual current price per token.
+    // _price represents the actual current price per token.
     // Mapping: (token address -> token price)
     mapping(address => uint256) private _price;
+
+    // _decimals represents the decimals of the price of the token.
+    // Mapping: (token address -> price decimals)
+    mapping(address => uint8) private _decimals;
 
     // getOwner is the address of the contract owner.
     address public getOwner;
@@ -31,12 +35,13 @@ contract PriceOracleProxy is IPriceOracleProxy {
     // getPrice provides the price of the given token by address.
     function getPrice(address _token) external view override returns (uint256, uint8) {
         require(_price[_token] != 0, "PriceOracleProxy: unknown token");
-        return (_price[_token], 18);
+        return (_price[_token], _decimals[_token]);
     }
 
     // setPrice sets a new price for the given token.
-    function setPrice(address _token, uint256 _newPrice) external onlyOwner {
+    function setPrice(address _token, uint256 _newPrice, uint8 _newDecimals) external onlyOwner {
         _price[_token] = _newPrice;
+        _decimals[_token] = _newDecimals;
     }
 
     // transferOwnership changes the owner of the contract.
