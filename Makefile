@@ -47,6 +47,12 @@ internal/repository/rpc/contracts/FantomNFTTradable.go: internal/repository/rpc/
 internal/repository/rpc/contracts/FantomAuction.go: internal/repository/rpc/contracts/abi/FantomAuction.json
 	abigen --type FantomAuction --pkg contracts --abi $< --out $@
 
+internal/repository/rpc/contracts/RandomNumberOracle.go: internal/repository/rpc/contracts/abi/RandomNumberOracle.json
+	abigen --type RandomNumberOracle --pkg contracts --abi $< --out $@
+
+internal/repository/rpc/contracts/RandomTrade.go: internal/repository/rpc/contracts/abi/RandomTrade.json
+	abigen --type RandomTrade --pkg contracts --abi $< --out $@
+
 db_observed: doc/db/observed.json
 	mongoimport --db=artion --collection=observed --file=$<
 

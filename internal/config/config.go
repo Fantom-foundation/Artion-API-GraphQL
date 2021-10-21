@@ -3,7 +3,6 @@ package config
 
 import (
 	"crypto/ecdsa"
-	"github.com/ethereum/go-ethereum/common"
 	"time"
 )
 
@@ -35,6 +34,9 @@ type Config struct {
 
 	// Auth configuration
 	Auth Auth `mapstructure:"auth"`
+
+	// RngOracle provides configuration for random feed oracle handling
+	RngOracle RandomFeedOracle `mapstructure:"rng"`
 }
 
 // Server represents the GraphQL server configuration
@@ -96,5 +98,5 @@ type Auth struct {
 // RandomFeedOracle configures random oracle feed.
 type RandomFeedOracle struct {
 	PrivateKey ecdsa.PrivateKey `mapstructure:"pk"`
-	Contract   common.Address   `mapstructure:"contract"`
+	ChainID    string           `mapstructure:"chain"`
 }

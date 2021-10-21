@@ -120,6 +120,9 @@ func newLogObserver(mgr *Manager) *logObserver {
 
 			/* Auction::event BidWithdrawn(address indexed nftAddress, uint256 indexed tokenId, address indexed bidder, uint256 bid) */
 			common.HexToHash("0x867b8ea96dd803063f905a19f8117cbb1866ec7a594dfede75ab4a5235f61d7c"): auctionBidWithdrawn,
+
+			/* RandomNumberOracle::event RandomNumberRequested(bytes32 requestID, bytes32 seed) */
+			common.HexToHash("0xac2e43d9741627d0f2e7a61dba4f97dfa56414d39e787163b0e6dbde34e3a6b2"): requestedRandomNumber,
 		},
 	}
 }
