@@ -395,7 +395,7 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
     function allowPayToken(address _token) external onlyOwner {
         require(!isPayTokenAllowed[_token], "RandomTrade: already allowed");
 
-        uint256 price = getPrice(_token);
+        uint256 price = _getPrice(_token);
         require(0 < price, "RandomTrade: the pay token not supported by price oracle");
 
         // how many decimals are used by the token
