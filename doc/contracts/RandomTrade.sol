@@ -177,13 +177,13 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
     function onERC721Received(address operator, address /* from */, uint256 tokenId, bytes calldata /* data */) external override returns (bytes4) {
         // we accept only ERC-721 tokens sent by the current trade owner
         require(isContract(msg.sender), "RandomTrade: invalid caller");
-        require(IERC165(msg.sender).supportsInterface(_INTERFACE_ID_ERC721), "RandomTrade: invalid token received");
+        require(IERC165(msg.sender).supportsInterface(_INTERFACE_ID_ERC721), "RandomTrade: invalid NFT received");
 
         // only owner can send tokens
         require(operator == getOwner, "RandomTrade: tokens accepted from the owner only");
 
         // no new tokens after the trade starts
-        require(block.timestamp < getTradeStarts, "RandomTrade: trade already started");
+        require(block.timestamp < getTradeStarts, "RandomTrade: the trade already started");
 
         // add the token to the pool and return expected selector
         _addToken(msg.sender, tokenId);
@@ -222,19 +222,19 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
     // purchase random token from the pool using the given ERC20 token.
     function purchase(address _token) external {
         // no trade before opening, or after the end
-        require(block.timestamp >= getTradeStarts, "RandomTrade: trade not open");
-        require(block.timestamp < getTradeEnds, "RandomTrade: trade is closed");
+        require(block.timestamp >= getTradeStarts, "RandomTrade: the trade not open");
+        require(block.timestamp < getTradeEnds, "RandomTrade: the trade is closed");
 
         // any available tokens?
-        require(0 < getNFTAvailable, "RandomTrade: no tokens available");
+        require(0 < getNFTAvailable, "RandomTrade: no NFT available for purchase");
 
         // the pay token must be whitelisted
-        require(isPayTokenAllowed[_token], "RandomTrade: rejected pay token");
+        require(isPayTokenAllowed[_token], "RandomTrade: the pay token not allowed");
 
         // get the amount of pay token required to satisfy the NFT price
-        uint256 price = getPrice(_token);
+        uint256 price = _getPrice(_token);
         require(0 < price, "RandomTrade: the price must be non-zero");
-        require(price <= IERC20(_token).allowance(msg.sender, address(this)), "RandomTrade: allowance too low");
+        require(price <= IERC20(_token).allowance(msg.sender, address(this)), "RandomTrade: the pay token allowance too low");
 
         // make the purchase record ID and check it's unique
         _nonce += 1;
@@ -263,7 +263,7 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
     function cancelPurchase(bytes32 _id) external {
         // make sure the purchase exists and is made by the caller
         require(msg.sender == getPurchase[_id].buyer, "RandomTrade: not your purchase request");
-        require(block.timestamp > getTradeEnds, "RandomTrade: trade is still open");
+        require(block.timestamp > getTradeEnds, "RandomTrade: the trade is still open");
 
         _cancelPurchase(_id);
     }
@@ -328,7 +328,7 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
     // removeToken allows trade owner to remove un-booked token from the contract.
     function removeToken(uint256 _shift) external onlyOwner {
         // any available tokens?
-        require(0 < getNFTAvailable, "RandomTrade: no token left");
+        require(0 < getNFTAvailable, "RandomTrade: no available NFT left");
 
         // move the internal cursor using random number of steps
         require(bytes32(0) != getCurrentNFT, "RandomTrade: trade pool empty");
@@ -380,13 +380,19 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
 
     // getPrice provides the price of the pool NFT denominated in given token.
     function getPrice(address _token) public view returns (uint256) {
+        require(isPayTokenAllowed[_token], "RandomTrade: the pay token not allowed");
+        return _getPrice(_token);
+    }
+
+    // _getPrice provides the price of the pool NFT denominated in given token.
+    function _getPrice(address _token) internal view returns (uint256) {
         // get the token price from oracle
         (uint256 value, uint8 valDecimals) = IPriceOracleProxy(getPriceOracle).getPrice(_token);
-        require(0 < value, "RandomTrade: the token has unknown value");
+        require(0 < value, "RandomTrade: the pay token has unknown value");
 
         // how many decimals are used by the token
         uint8 tokDecimals = IERC20(_token).decimals();
-        require(0 < tokDecimals, "RandomTrade: the token has unknown decimals");
+        require(0 < tokDecimals, "RandomTrade: the pay token has unknown decimals");
 
         // calculate the expected price denominated in pay token
         return (getUnitPrice * (uint256(10) ** (valDecimals + tokDecimals))) / (value * (uint256(10) ** getUnitPriceDecimals));
@@ -421,7 +427,11 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
     // allowPayToken enables the given pay token.
     function allowPayToken(address _token) external onlyOwner {
         uint256 price = getPrice(_token);
-        require(0 < price, "RandomTrade: pay token not supported by price oracle");
+        require(0 < price, "RandomTrade: the pay token not supported by price oracle");
+
+        // how many decimals are used by the token
+        uint8 tokDecimals = IERC20(_token).decimals();
+        require(0 < tokDecimals, "RandomTrade: the pay token has unknown decimals");
 
         isPayTokenAllowed[_token] = true;
         emit PayTokenAdded(_token);
