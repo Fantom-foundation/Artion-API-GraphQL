@@ -1,0 +1,26 @@
+# RandomTrade represents an NFT trade with random tokens purchase.
+type RandomTrade {
+    # address of the trade contract
+    contract: Address!
+
+    # name of the trade
+    name: String!
+
+    # the time stamp of the start of the trade
+    tradeStarts: Time!
+
+    # the time stamp of the end of the trade
+    tradeEnds: Time!
+
+    # number of tokens available to be traded
+    tokensAvailable: BigInt!
+
+    # total number of tokens in the trading pool including already reserved
+    totalTokens: BigInt!
+
+    # list of pay tokens allowed by the trade
+    payTokens: [Address!]!
+
+    # price of a random token traded in the given pay token denomination
+    price(token:Address!): BigInt!
+}
