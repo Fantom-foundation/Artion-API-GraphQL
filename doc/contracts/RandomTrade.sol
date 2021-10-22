@@ -99,6 +99,10 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
     // getTradeEnds is the time stamp of the trade closing.
     uint256 public getTradeEnds;
 
+    // isPayTokenAllowed is a map of allowed ERC20 pay tokens.
+    // mapping: (ERC20 address -> allowed true/false)
+    mapping(address => bool) public isPayTokenAllowed;
+
     // getNFT is the mapping between internal token hash and NFT structure.
     // mapping: (token hash -> NFT structure)
     mapping(bytes32 => NFT) public getNFT;
@@ -128,6 +132,12 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
 
     // OwnerChanged is emitted on contract owner transfer.
     event OwnerChanged(address newOwner);
+
+    // PayTokenAdded event is emitted on a new pay token.
+    event PayTokenAdded(address token);
+
+    //  PayTokenRemoved event is emitted on a pay token being disabled.
+    event PayTokenRemoved(address token);
 
     // PriceChanged is emitted on a unit price update.
     event PriceChanged(uint256 newPrice, uint8 newDecimals);
@@ -217,6 +227,9 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
 
         // any available tokens?
         require(0 < getNFTAvailable, "RandomTrade: no tokens available");
+
+        // the pay token must be whitelisted
+        require(isPayTokenAllowed[_token], "RandomTrade: rejected pay token");
 
         // get the amount of pay token required to satisfy the NFT price
         uint256 price = getPrice(_token);
@@ -403,6 +416,21 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
         getUnitPriceDecimals = _priceDecimals;
 
         emit PriceChanged(_priceDecimals, _priceDecimals);
+    }
+
+    // allowPayToken enables the given pay token.
+    function allowPayToken(address _token) external onlyOwner {
+        uint256 price = getPrice(_token);
+        require(0 < price, "RandomTrade: pay token not supported by price oracle");
+
+        isPayTokenAllowed[_token] = true;
+        emit PayTokenAdded(_token);
+    }
+
+    // denyPayToken disables the given pay token.
+    function denyPayToken(address _token) external onlyOwner {
+        isPayTokenAllowed[_token] = false;
+        emit PayTokenRemoved(_token);
     }
 
     // isContract checks if the given account is a contract.
