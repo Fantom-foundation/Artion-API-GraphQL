@@ -179,8 +179,8 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
         // only owner can send tokens
         require(operator == getOwner, "RandomTrade: tokens accepted from the owner only");
 
-        // no new tokens after the trade starts
-        require(block.timestamp < getTradeStarts, "RandomTrade: the trade already started");
+        // no new tokens after the trade ends
+        require(block.timestamp < getTradeEnds, "RandomTrade: the trade already ended");
 
         // add the token to the pool and return expected selector
         _addToken(msg.sender, tokenId);
