@@ -195,7 +195,7 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
     }
 
     // _addToken adds the given token to the trading pool.
-    function _addToken(address _contract, uint256 _tokenID) private {
+    function _addToken(address _contract, uint256 _tokenID) internal {
         // gen the id of the token from ERC-721 contract and token ID
         bytes32 id = keccak256(abi.encodePacked(_contract, _tokenID));
 
