@@ -357,7 +357,6 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
 
         // how many decimals are used by the token
         uint8 tokDecimals = IERC20(_token).decimals();
-        require(0 < tokDecimals, "RandomTrade: the pay token has unknown decimals");
 
         // calculate the expected price denominated in pay token
         return (getUnitPrice.mul(uint256(10) ** (valDecimals + tokDecimals)).div(value.mul(uint256(10) ** getUnitPriceDecimals))).add(1);
@@ -397,10 +396,6 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
 
         uint256 price = _getPrice(_token);
         require(0 < price, "RandomTrade: the pay token not supported by price oracle");
-
-        // how many decimals are used by the token
-        uint8 tokDecimals = IERC20(_token).decimals();
-        require(0 < tokDecimals, "RandomTrade: the pay token has unknown decimals");
 
         isPayTokenAllowed[_token] = true;
         emit PayTokenAdded(_token);
