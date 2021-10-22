@@ -60,6 +60,8 @@ interface IERC20 {
 // The randomness of a sale is obtained from an external off-chain Oracle on request-callback basis.
 // Tokens are sold for a price obtained from an external price oracle contract.
 contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
+    using SafeMath for uint256;
+
     // Equals to `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
     bytes4 private constant _ERC721_RECEIVED = 0x150b7a02;
 
@@ -151,7 +153,7 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
 
     // onlyOwner reverts if called by any account other than the owner.
     modifier onlyOwner() {
-        require(msg.sender == getOwner, "RandomTrade: allowed to owner only");
+        require(msg.sender == getOwner, "RandomTrade: allowed for owner only");
         _;
     }
 
@@ -352,7 +354,7 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
         require(0 < tokDecimals, "RandomTrade: the pay token has unknown decimals");
 
         // calculate the expected price denominated in pay token
-        return (getUnitPrice * (uint256(10) ** (valDecimals + tokDecimals))) / (value * (uint256(10) ** getUnitPriceDecimals));
+        return (getUnitPrice.mul(uint256(10) ** (valDecimals + tokDecimals)).div(value.mul(uint256(10) ** getUnitPriceDecimals))).add(1);
     }
 
     // transferOwnership changes the contract owner.
@@ -375,6 +377,8 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
 
     // setPrice updates the unit price of the tokens in the pool.
     function setPrice(uint256 _price, uint8 _priceDecimals) external onlyOwner {
+        require(_price != getUnitPrice && _priceDecimals != getUnitPriceDecimals, "RandomTrade: same price");
+
         getUnitPrice = _price;
         getUnitPriceDecimals = _priceDecimals;
 
@@ -383,6 +387,8 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
 
     // allowPayToken enables the given pay token.
     function allowPayToken(address _token) external onlyOwner {
+        require(!isPayTokenAllowed[_token], "RandomTrade: already allowed");
+
         uint256 price = getPrice(_token);
         require(0 < price, "RandomTrade: the pay token not supported by price oracle");
 
@@ -396,12 +402,16 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
 
     // denyPayToken disables the given pay token.
     function denyPayToken(address _token) external onlyOwner {
+        require(isPayTokenAllowed[_token], "RandomTrade: already denied");
+
         isPayTokenAllowed[_token] = false;
         emit PayTokenRemoved(_token);
     }
 
     // allowNFTContract enables the given NFT contract.
     function allowNFTContract(address _collection) external onlyOwner {
+        require(!isNFTContractAllowed[_collection], "RandomTrade: already allowed");
+
         require(isContract(_collection), "RandomTrade: contract address expected");
         require(IERC165(_collection).supportsInterface(_INTERFACE_ID_ERC721), "RandomTrade: not ERC-721 collection");
 
@@ -410,6 +420,7 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
 
     // denyNFTContract disables the given NFT contract.
     function denyNFTContract(address _collection) external onlyOwner {
+        require(isNFTContractAllowed[_collection], "RandomTrade: already denied");
         isNFTContractAllowed[_collection] = false;
     }
 
@@ -446,5 +457,216 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
             // solhint-disable-next-line max-line-length
             require(abi.decode(res, (bool)), "RandomTrade: pay token transfer did not succeed");
         }
+    }
+}
+
+/**
+ * @dev Wrappers over Solidity's arithmetic operations with added overflow
+ * checks.
+ *
+ * Arithmetic operations in Solidity wrap on overflow. This can easily result
+ * in bugs, because programmers usually assume that an overflow raises an
+ * error, which is the standard behavior in high level programming languages.
+ * `SafeMath` restores this intuition by reverting the transaction when an
+ * operation overflows.
+ *
+ * Using this library instead of the unchecked operations eliminates an entire
+ * class of bugs, so it's recommended to use it always.
+ */
+library SafeMath {
+    /**
+     * @dev Returns the addition of two unsigned integers, with an overflow flag.
+     *
+     * _Available since v3.4._
+     */
+    function tryAdd(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+        uint256 c = a + b;
+        if (c < a) return (false, 0);
+        return (true, c);
+    }
+
+    /**
+     * @dev Returns the substraction of two unsigned integers, with an overflow flag.
+     *
+     * _Available since v3.4._
+     */
+    function trySub(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+        if (b > a) return (false, 0);
+        return (true, a - b);
+    }
+
+    /**
+     * @dev Returns the multiplication of two unsigned integers, with an overflow flag.
+     *
+     * _Available since v3.4._
+     */
+    function tryMul(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+        // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
+        // benefit is lost if 'b' is also tested.
+        // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522
+        if (a == 0) return (true, 0);
+        uint256 c = a * b;
+        if (c / a != b) return (false, 0);
+        return (true, c);
+    }
+
+    /**
+     * @dev Returns the division of two unsigned integers, with a division by zero flag.
+     *
+     * _Available since v3.4._
+     */
+    function tryDiv(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+        if (b == 0) return (false, 0);
+        return (true, a / b);
+    }
+
+    /**
+     * @dev Returns the remainder of dividing two unsigned integers, with a division by zero flag.
+     *
+     * _Available since v3.4._
+     */
+    function tryMod(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+        if (b == 0) return (false, 0);
+        return (true, a % b);
+    }
+
+    /**
+     * @dev Returns the addition of two unsigned integers, reverting on
+     * overflow.
+     *
+     * Counterpart to Solidity's `+` operator.
+     *
+     * Requirements:
+     *
+     * - Addition cannot overflow.
+     */
+    function add(uint256 a, uint256 b) internal pure returns (uint256) {
+        uint256 c = a + b;
+        require(c >= a, "SafeMath: addition overflow");
+        return c;
+    }
+
+    /**
+     * @dev Returns the subtraction of two unsigned integers, reverting on
+     * overflow (when the result is negative).
+     *
+     * Counterpart to Solidity's `-` operator.
+     *
+     * Requirements:
+     *
+     * - Subtraction cannot overflow.
+     */
+    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+        require(b <= a, "SafeMath: subtraction overflow");
+        return a - b;
+    }
+
+    /**
+     * @dev Returns the multiplication of two unsigned integers, reverting on
+     * overflow.
+     *
+     * Counterpart to Solidity's `*` operator.
+     *
+     * Requirements:
+     *
+     * - Multiplication cannot overflow.
+     */
+    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+        if (a == 0) return 0;
+        uint256 c = a * b;
+        require(c / a == b, "SafeMath: multiplication overflow");
+        return c;
+    }
+
+    /**
+     * @dev Returns the integer division of two unsigned integers, reverting on
+     * division by zero. The result is rounded towards zero.
+     *
+     * Counterpart to Solidity's `/` operator. Note: this function uses a
+     * `revert` opcode (which leaves remaining gas untouched) while Solidity
+     * uses an invalid opcode to revert (consuming all remaining gas).
+     *
+     * Requirements:
+     *
+     * - The divisor cannot be zero.
+     */
+    function div(uint256 a, uint256 b) internal pure returns (uint256) {
+        require(b > 0, "SafeMath: division by zero");
+        return a / b;
+    }
+
+    /**
+     * @dev Returns the remainder of dividing two unsigned integers. (unsigned integer modulo),
+     * reverting when dividing by zero.
+     *
+     * Counterpart to Solidity's `%` operator. This function uses a `revert`
+     * opcode (which leaves remaining gas untouched) while Solidity uses an
+     * invalid opcode to revert (consuming all remaining gas).
+     *
+     * Requirements:
+     *
+     * - The divisor cannot be zero.
+     */
+    function mod(uint256 a, uint256 b) internal pure returns (uint256) {
+        require(b > 0, "SafeMath: modulo by zero");
+        return a % b;
+    }
+
+    /**
+     * @dev Returns the subtraction of two unsigned integers, reverting with custom message on
+     * overflow (when the result is negative).
+     *
+     * CAUTION: This function is deprecated because it requires allocating memory for the error
+     * message unnecessarily. For custom revert reasons use {trySub}.
+     *
+     * Counterpart to Solidity's `-` operator.
+     *
+     * Requirements:
+     *
+     * - Subtraction cannot overflow.
+     */
+    function sub(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+        require(b <= a, errorMessage);
+        return a - b;
+    }
+
+    /**
+     * @dev Returns the integer division of two unsigned integers, reverting with custom message on
+     * division by zero. The result is rounded towards zero.
+     *
+     * CAUTION: This function is deprecated because it requires allocating memory for the error
+     * message unnecessarily. For custom revert reasons use {tryDiv}.
+     *
+     * Counterpart to Solidity's `/` operator. Note: this function uses a
+     * `revert` opcode (which leaves remaining gas untouched) while Solidity
+     * uses an invalid opcode to revert (consuming all remaining gas).
+     *
+     * Requirements:
+     *
+     * - The divisor cannot be zero.
+     */
+    function div(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+        require(b > 0, errorMessage);
+        return a / b;
+    }
+
+    /**
+     * @dev Returns the remainder of dividing two unsigned integers. (unsigned integer modulo),
+     * reverting with custom message when dividing by zero.
+     *
+     * CAUTION: This function is deprecated because it requires allocating memory for the error
+     * message unnecessarily. For custom revert reasons use {tryMod}.
+     *
+     * Counterpart to Solidity's `%` operator. This function uses a `revert`
+     * opcode (which leaves remaining gas untouched) while Solidity uses an
+     * invalid opcode to revert (consuming all remaining gas).
+     *
+     * Requirements:
+     *
+     * - The divisor cannot be zero.
+     */
+    function mod(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
+        require(b > 0, errorMessage);
+        return a % b;
     }
 }
