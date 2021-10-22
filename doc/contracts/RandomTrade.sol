@@ -68,6 +68,10 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
     // ID of the ERC721 interface for EIP-165 check.
     bytes4 private constant _INTERFACE_ID_ERC721 = 0x80ac58cd;
 
+    // WITHDRAWAL_DELAY represents the number of seconds buyers have to wait
+    // after the trade ends to be able to cancel their purchase.
+    uint256 public constant WITHDRAWAL_DELAY = 3600;
+
     // NFT represents a structure of NFT token offered on the trade.
     struct NFT {
         address nftContract;    // contract managing this NFT
@@ -248,7 +252,9 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
     function cancelPurchase(bytes32 _id) external {
         // make sure the purchase exists and is made by the caller
         require(msg.sender == getPurchase[_id].buyer, "RandomTrade: not your purchase request");
-        require(block.timestamp > getTradeEnds, "RandomTrade: the trade is still open");
+
+        // we don't allow withdrawals to start sooner than 1 hour after the trade ends
+        require(block.timestamp - WITHDRAWAL_DELAY > getTradeEnds, "RandomTrade: the withdrawal is still closed");
 
         _cancelPurchase(_id);
     }
