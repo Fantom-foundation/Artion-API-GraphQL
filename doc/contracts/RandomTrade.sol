@@ -68,13 +68,8 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
 
     // NFT represents a structure of NFT token offered on the trade.
     struct NFT {
-        // token reference
         address nftContract;    // contract managing this NFT
         uint256 tokenID;        // ID of the NFT within the contract
-
-        // pool linkage
-        bytes32 next;           // hash of the next NFT
-        bytes32 previous;       // hash of the previous NFT
     }
 
     // Purchase represents a structure of a purchase request.
@@ -106,22 +101,19 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
     // mapping: (ERC20 address -> allowed true/false)
     mapping(address => bool) public isPayTokenAllowed;
 
-    // getNFT is the mapping between internal token hash and NFT structure.
-    // mapping: (token hash -> NFT structure)
-    mapping(bytes32 => NFT) public getNFT;
+    // isNFTContractAllowed is a map of allowed ERC-721 contracts.
+    // mapping: (ERC721 address -> allowed true/false)
+    mapping(address => bool) public isNFTContractAllowed;
+
+    // getNFT is an array of NFT tokens available for trading.
+    NFT[] public getNFT;
 
     // getPurchase is the mapping between internal purchase ID hash and Purchase structure.
     // mapping: (purchase hash -> Purchase structure)
     mapping(bytes32 => Purchase) public getPurchase;
 
-    // getCurrent represents the pointer to current NFT in the pool.
-    bytes32 public getCurrentNFT;
-
-    // getNFTCount represents the total number of tokens traded by the contract.
-    uint256 public getNFTCount;
-
     // getNFTAvailable represents the number of tokens available for purchase.
-    uint256 public getNFTAvailable;
+    uint public getNFTAvailable;
 
     // getUnitPrice represents the unit price all the tokens in the pool are traded for.
     // The price denomination depends on the price oracle in use.
@@ -146,7 +138,7 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
     event PriceChanged(uint256 newPrice, uint8 newDecimals);
 
     // TokenAdded is emitted with a new token added to the trade pool.
-    event TokenAdded(address collection, uint256 tokenID, bytes32 tradeTokenID);
+    event TokenAdded(address collection, uint256 tokenID);
 
     // PurchaseCreated is emitted on a purchase request creation.
     event PurchaseCreated(address indexed buyer, bytes32 purchaseID, address payToken, uint256 price);
@@ -179,9 +171,8 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
     // onERC721Received is called upon ERC-721 token delivery.
     // Implements IERC721Receiver for safe token transfer.
     function onERC721Received(address operator, address /* from */, uint256 tokenId, bytes calldata /* data */) external override returns (bytes4) {
-        // we accept only ERC-721 tokens sent by the current trade owner
-        require(isContract(msg.sender), "RandomTrade: invalid caller");
-        require(IERC165(msg.sender).supportsInterface(_INTERFACE_ID_ERC721), "RandomTrade: invalid NFT received");
+        // we accept the call only from whitelisted ERC-721 contracts
+        require(isNFTContractAllowed[msg.sender], "RandomTrade: caller not allowed");
 
         // only owner can send tokens
         require(operator == getOwner, "RandomTrade: tokens accepted from the owner only");
@@ -196,31 +187,19 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
 
     // _addToken adds the given token to the trading pool.
     function _addToken(address _contract, uint256 _tokenID) internal {
-        // gen the id of the token from ERC-721 contract and token ID
-        bytes32 id = keccak256(abi.encodePacked(_contract, _tokenID));
+        // add the token to the pool
+        getNFT.push(NFT({
+        nftContract : _contract,
+        tokenID : _tokenID
+        }));
 
-        // store the token base
-        getNFT[id].nftContract = _contract;
-        getNFT[id].tokenID = _tokenID;
-
-        // adding the first token? loop the circle
-        if (getCurrentNFT == bytes32(0)) {
-            getNFT[id].next = id;
-            getNFT[id].previous = id;
-        } else {
-            // add the new one in front of the cursor
-            getNFT[id].previous = getCurrentNFT;
-            getNFT[id].next = getNFT[getCurrentNFT].next;
-            getNFT[getNFT[getCurrentNFT].next].previous = id;
-            getNFT[getCurrentNFT].next = id;
-        }
-
-        // move the cursor; advance counters
-        getCurrentNFT = id;
-        getNFTCount += 1;
         getNFTAvailable += 1;
+        emit TokenAdded(_contract, _tokenID);
+    }
 
-        emit TokenAdded(_contract, _tokenID, id);
+    // getNFTCount returns the number of tokens in the pool.
+    function getNFTCount() public view returns (uint) {
+        return getNFT.length;
     }
 
     // purchase random token from the pool using the given ERC20 token.
@@ -309,11 +288,10 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
     // _finishPurchase finishes the purchase with the given random number.
     function _finishPurchase(bytes32 _id, uint256 _rnd) internal {
         // move the internal cursor using random number of steps
-        require(bytes32(0) != getCurrentNFT, "RandomTrade: no NFT left to trade");
-        _moveCursor(_rnd);
+        require(0 != getNFT.length, "RandomTrade: no NFT left to trade");
 
         // get the current token from the pool; this deletes the NFT from pool
-        (address collection, uint256 tokenID) = _removeToken();
+        (address collection, uint256 tokenID) = _removeToken(_rnd % getNFT.length);
 
         // purchase details
         address buyer = getPurchase[_id].buyer;
@@ -330,55 +308,30 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
     }
 
     // removeToken allows trade owner to remove un-booked token from the contract.
-    function removeToken(uint256 _shift) external onlyOwner {
+    function removeToken(uint _shift) external onlyOwner {
         // any available tokens?
         require(0 < getNFTAvailable, "RandomTrade: no available NFT left");
 
-        // move the internal cursor using random number of steps
-        require(bytes32(0) != getCurrentNFT, "RandomTrade: trade pool empty");
-        _moveCursor(_shift);
-
         // get the current token from the pool; this deletes the NFT from pool
-        (address collection, uint256 tokenID) = _removeToken();
+        (address collection, uint256 tokenID) = _removeToken(_shift);
 
         // send the NFT to trade owner
         IERC721(collection).safeTransferFrom(address(this), getOwner, tokenID);
     }
 
-    // _moveCursor traverses the internal active token cursor
-    // by the given amount of steps normalized to the active loop elements.
-    function _moveCursor(uint256 _shift) internal {
-        // nothing to do?
-        if (_shift == 0) return;
-
-        require(0 < getNFTCount, "RandomTrade: trade pool empty");
-        uint256 steps = _shift % getNFTCount;
-        for (uint256 i = 0; i < steps; i++) {
-            getCurrentNFT = getNFT[getCurrentNFT].next;
-        }
-    }
-
     // _removeToken removes the current token from the pool and returns the token details.
-    function _removeToken() internal returns (address collection, uint256 tokenID) {
+    function _removeToken(uint _index) internal returns (address collection, uint256 tokenID) {
         // what is going to be removed
-        collection = getNFT[getCurrentNFT].nftContract;
-        tokenID = getNFT[getCurrentNFT].tokenID;
+        collection = getNFT[_index].nftContract;
+        tokenID = getNFT[_index].tokenID;
 
-        // remove the NFT from collection
-        bytes32 next = getNFT[getCurrentNFT].next;
-        bytes32 previous = getNFT[getCurrentNFT].previous;
-        delete (getNFT[getCurrentNFT]);
+        // replace the removed token with the last one
+        getNFT[_index].nftContract = getNFT[getNFT.length - 1].nftContract;
+        getNFT[_index].tokenID = getNFT[getNFT.length - 1].tokenID;
 
-        // rewire the loop if it's not the last NFT in the pool
-        if (next != previous) {
-            getNFT[next].previous = previous;
-            getNFT[previous].next = next;
-            getCurrentNFT = next;
-        } else {
-            getCurrentNFT = bytes32(0);
-        }
+        // this implicitly calls delete() on the last element
+        getNFT.pop();
 
-        getNFTCount -= 1;
         return (collection, tokenID);
     }
 
@@ -445,6 +398,19 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
     function denyPayToken(address _token) external onlyOwner {
         isPayTokenAllowed[_token] = false;
         emit PayTokenRemoved(_token);
+    }
+
+    // allowNFTContract enables the given NFT contract.
+    function allowNFTContract(address _collection) external onlyOwner {
+        require(isContract(_collection), "RandomTrade: contract address expected");
+        require(IERC165(_collection).supportsInterface(_INTERFACE_ID_ERC721), "RandomTrade: not ERC-721 collection");
+
+        isNFTContractAllowed[_collection] = true;
+    }
+
+    // denyNFTContract disables the given NFT contract.
+    function denyNFTContract(address _collection) external onlyOwner {
+        isNFTContractAllowed[_collection] = false;
     }
 
     // isContract checks if the given account is a contract.
