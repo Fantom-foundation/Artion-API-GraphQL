@@ -37,9 +37,9 @@ func (o *Opera) RandomTrade(adr *common.Address) (*types.RandomTrade, error) {
 }
 
 // RandomTradeNFTCount provides the number of tokens left in the random trading pool.
-func (o *Opera) RandomTradeNFTCount(adr *common.Address) (hexutil.Big, error) {
+func (o *Opera) RandomTradeNFTCount(trade *common.Address) (hexutil.Big, error) {
 	// load the contract
-	con, err := contracts.NewRandomTrade(*adr, o.ftm)
+	con, err := contracts.NewRandomTrade(*trade, o.ftm)
 	if err != nil {
 		return hexutil.Big{}, err
 	}
@@ -47,9 +47,9 @@ func (o *Opera) RandomTradeNFTCount(adr *common.Address) (hexutil.Big, error) {
 }
 
 // RandomTradeNFTAvailable provides the number of tokens available for purchase in the random trading pool.
-func (o *Opera) RandomTradeNFTAvailable(adr *common.Address) (hexutil.Big, error) {
+func (o *Opera) RandomTradeNFTAvailable(trade *common.Address) (hexutil.Big, error) {
 	// load the contract
-	con, err := contracts.NewRandomTrade(*adr, o.ftm)
+	con, err := contracts.NewRandomTrade(*trade, o.ftm)
 	if err != nil {
 		return hexutil.Big{}, err
 	}
@@ -69,6 +69,37 @@ func (o *Opera) RandomTradePrice(trade *common.Address, pay *common.Address) (he
 	}
 
 	return hexutil.Big(*val), nil
+}
+
+// RandomTradePayTokens provides a list of ERC20 tokens allowed to be used for trading.
+func (o *Opera) RandomTradePayTokens(trade *common.Address) ([]common.Address, error) {
+	con, err := contracts.NewRandomTrade(*trade, o.ftm)
+	if err != nil {
+		return nil, err
+	}
+
+	// filter added pay tokens
+	ite, err := con.FilterPayTokenAdded(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func(ite *contracts.RandomTradePayTokenAddedIterator) {
+		if err := ite.Close(); err != nil {
+			log.Errorf("could not close filter iterator")
+		}
+	}(ite)
+
+	list := make([]common.Address, 0)
+	for ite.Next() {
+		if ite.Error() != nil {
+			return nil, ite.Error()
+		}
+
+		list = append(list, ite.Event.Token)
+	}
+
+	return list, nil
 }
 
 // getTimeStamp uses callback to extract time stamp from a contract.
