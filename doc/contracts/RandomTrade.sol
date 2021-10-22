@@ -341,7 +341,7 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
         // get the current token from the pool; this deletes the NFT from pool
         (address collection, uint256 tokenID) = _removeToken();
 
-        // send the NFT to buyer
+        // send the NFT to trade owner
         IERC721(collection).safeTransferFrom(address(this), getOwner, tokenID);
     }
 
