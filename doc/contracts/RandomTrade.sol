@@ -154,7 +154,7 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
     // PurchaseFinished is emitted on a purchase finalization.
     event PurchaseFinished(address indexed buyer, bytes32 purchaseID, address collection, uint256 tokenID);
 
-    // PurchaseFinished is emitted on a purchase finalization.
+    // PurchaseCanceled is emitted on a purchase being canceled.
     event PurchaseCanceled(address indexed buyer, bytes32 purchaseID);
 
     // onlyOwner reverts if called by any account other than the owner.
