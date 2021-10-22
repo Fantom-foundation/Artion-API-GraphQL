@@ -99,6 +99,9 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
     // getTradeEnds is the time stamp of the trade closing.
     uint256 public getTradeEnds;
 
+    // getName provides the name of the random trade.
+    string public getName;
+
     // isPayTokenAllowed is a map of allowed ERC20 pay tokens.
     // mapping: (ERC20 address -> allowed true/false)
     mapping(address => bool) public isPayTokenAllowed;
@@ -161,9 +164,10 @@ contract RandomTrade is IRandomNumberConsumer, IERC721Receiver {
     }
 
     // constructor initializes the contract on deployment.
-    constructor (address _priceOracle, address _rngOracle, uint256 _price, uint8 _priceDecimals, uint256 _start, uint256 _end) public {
+    constructor (string memory _name, address _priceOracle, address _rngOracle, uint256 _price, uint8 _priceDecimals, uint256 _start, uint256 _end) public {
         getOwner = msg.sender;
 
+        getName = _name;
         getPriceOracle = _priceOracle;
         getRNGOracle = _rngOracle;
         getUnitPrice = _price;
