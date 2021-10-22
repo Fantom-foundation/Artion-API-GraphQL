@@ -27,6 +27,9 @@ type Query {
     # Get user by address
     user(address: Address!): User!
 
+    # randomTrade resolves a Random ERC-721 NFT Trade by address.
+    randomTrade(contract: Address!): RandomTrade
+
     # Get user authenticated using bearer token
     loggedUser: User
 
