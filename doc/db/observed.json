@@ -71,10 +71,10 @@
   "trx": "0xe9282e7b69487af0c21b5a9bc1d0867d7644e77a66a0fd34cf342f3b6e62e51c"
 }
 {
-  _id: "0x6fe4d7f4edb88f933b46d4984aa36fde7b4b0e07",
-  name: "RandomNumberOracle",
-  type: "rng",
-  created: new ISODate("2021-10-22T11:51:41.000Z"),
-  block: new NumberLong("19756764"),
-  trx: "0x09e291be0e373692a72f3edc050f0cbae946d764d002ee5b656a334cda3d5b87",
+  "_id": "0x6fe4d7f4edb88f933b46d4984aa36fde7b4b0e07",
+  "name": "RandomNumberOracle",
+  "type": "rng",
+  "created": {"$date": {"$numberLong": "1634903501000"}},
+  "block": {"$numberLong":  "19756764"},
+  "trx": "0x09e291be0e373692a72f3edc050f0cbae946d764d002ee5b656a334cda3d5b87"
 }
