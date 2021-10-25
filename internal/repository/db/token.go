@@ -37,6 +37,9 @@ const (
 	// fiTokenImageURI is the column storing the image URI of the NFT token.
 	fiTokenImageURI = "image"
 
+	// fiTokenImageType is the column storing type of the image of the NFT token.
+	fiTokenImageType = "image_type"
+
 	// fiTokenMetadataUpdate is the column storing the time
 	// of the metadata update schedule of the NFT token.
 	fiTokenMetadataUpdate = "meta_update"
@@ -175,6 +178,7 @@ func (db *MongoDbBridge) UpdateTokenMetadata(nft *types.Token) error {
 		{Key: fiTokenName, Value: nft.Name},
 		{Key: fiTokenDescription, Value: nft.Description},
 		{Key: fiTokenImageURI, Value: nft.ImageURI},
+		{Key: fiTokenImageType, Value: nft.ImageType},
 		{Key: fiTokenCategories, Value: nft.Categories},
 		{Key: fiTokenMetadataUpdate, Value: nft.MetaUpdate},
 		{Key: fiTokenMetadataUpdateFailures, Value: nft.MetaFailures},

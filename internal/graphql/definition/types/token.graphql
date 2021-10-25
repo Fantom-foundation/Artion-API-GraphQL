@@ -18,6 +18,9 @@ type Token {
     # URL of the token image on the resizing proxy
     imageThumb: String
 
+    # MIME type of the token image
+    imageMimetype: String
+
     # Time when was the token created on chain.
     created: Time!
 

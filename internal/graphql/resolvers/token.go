@@ -75,12 +75,21 @@ func NewTokenConnection(list *types.TokenList, sorting sorting.TokenSorting) (co
 	return con, err
 }
 
-// Image resolves UIR of the token image.
+// Image resolves URI of the token image.
 func (t *Token) Image() *string {
 	if t.ImageURI == "" {
 		return nil
 	}
 	return &t.ImageURI
+}
+
+// ImageMimetype resolves mimetype of the token image.
+func (t *Token) ImageMimetype() *string {
+	if t.ImageURI == "" || t.ImageType == types.ImageTypeUnknown {
+		return nil
+	}
+	mimetype := t.ImageType.Mimetype()
+	return &mimetype
 }
 
 // HasListing checks if the given token has any active listing right now.

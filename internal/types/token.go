@@ -32,6 +32,7 @@ type Token struct {
 	Name            string         `bson:"name"`
 	Description     string         `bson:"desc"`
 	ImageURI        string         `bson:"image"`
+	ImageType       ImageType      `bson:"image_type"`
 	OrdinalIndex    int64          `bson:"index"`
 	Created         Time           `bson:"created"`
 	CreatedBy       common.Address `bson:"created_by"`
