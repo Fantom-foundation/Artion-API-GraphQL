@@ -89,15 +89,15 @@ func (mw *nftMetadataWorker) update(tok *types.Token) error {
 		return err
 	}
 
-	// get image type
-	if md.Image != nil {
+	// get image type (skip if the image URI has not changed)
+	if md.Image != nil && *md.Image != tok.ImageURI {
 		img, err := repo.GetImage(*md.Image)
 		if err != nil {
 			log.Errorf("NFT image [%s] failed on %s/%s; %s", md.Image, tok.Contract.String(), tok.TokenId.String(), err.Error())
 			handleTokenMetaUpdateFailure(tok)
 			return err
 		}
-		log.Warningf("NFT image [%s] has type %d", *md.Image, img.Type)
+		log.Debugf("NFT image [%s] has type %d", *md.Image, img.Type)
 		tok.ImageType = img.Type
 	}
 
