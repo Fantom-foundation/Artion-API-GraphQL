@@ -6,7 +6,6 @@ import (
 	"artion-api-graphql/internal/config"
 	"artion-api-graphql/internal/types"
 	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"fmt"
 	ipfsapi "github.com/ipfs/go-ipfs-api"
@@ -44,7 +43,7 @@ func (d *Downloader) GetJsonMetadata(uri string) (*types.JsonMetadata, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to download json; %s", err)
 	}
-	jsonMeta, err := d.decodeJson(data)
+	jsonMeta, err := types.DecodeJsonMetadata(data)
 	if err != nil {
 		return nil, fmt.Errorf("unable to decode json; %s", err)
 	}
@@ -185,14 +184,4 @@ func (d *Downloader) getFromDataUri(uri string) (data []byte, mimetype string, e
 		return nil, "", err
 	}
 	return out, mimetype, nil
-}
-
-// decodeJson parses the NFT token Metadata JSON.
-func (d *Downloader) decodeJson(data []byte) (*types.JsonMetadata, error) {
-	var out types.JsonMetadata
-	err := json.Unmarshal(data, &out)
-	if err != nil {
-		return nil, err
-	}
-	return &out, nil
 }

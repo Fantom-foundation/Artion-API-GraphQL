@@ -10,18 +10,19 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"io"
 	"net/http"
+	"time"
 )
 
-type uploadProcessor func(identity common.Address, image types.Image) (string, error)
+type uploadProcessor func(identity common.Address, image types.Image, req *http.Request) (string, error)
 
 // UploadImageHandler builds a HTTP handler function for images (tokens, user avatars) upload.
 func UploadImageHandler(log logger.Logger, process uploadProcessor) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		defer func() {
 			if r := recover(); r != nil {
-				log.Errorf("Panic in UploadImageHandler handler; %s", r)
+				log.Errorf("Panic in UploadImageHandler handler; %v", r)
 				w.WriteHeader(500)
-				w.Write([]byte("Request handling failed"))
+				fmt.Fprintf(w, "Request handling failed; %v", r)
 			}
 		}()
 
@@ -37,7 +38,7 @@ func processImageUpload(req *http.Request, process uploadProcessor, log logger.L
 		return 401, "Unauthorized"
 	}
 
-	err = req.ParseMultipartForm(10 * 1024 * 1024)
+	err = req.ParseMultipartForm(10 * 1024 * 1024) // max 10MB
 	if err != nil {
 		return 500, "Unable to parse multipart/form-data"
 	}
@@ -66,7 +67,7 @@ func processImageUpload(req *http.Request, process uploadProcessor, log logger.L
 		Type: imgType,
 	}
 
-	response, err = process(*identity, image)
+	response, err = process(*identity, image, req)
 	if err != nil {
 		log.Errorf("upload failed; %s", err)
 		return 500, err.Error()
@@ -75,7 +76,7 @@ func processImageUpload(req *http.Request, process uploadProcessor, log logger.L
 	return 200, response
 }
 
-func StoreUserAvatar(identity common.Address, image types.Image) (string, error) {
+func StoreUserAvatar(identity common.Address, image types.Image, req *http.Request) (string, error) {
 	err := repository.R().UploadUserAvatar(identity, image)
 	if err != nil {
 		return "", fmt.Errorf("user avatar upload failed; %s", err)
@@ -83,10 +84,36 @@ func StoreUserAvatar(identity common.Address, image types.Image) (string, error)
 	return "OK", nil
 }
 
-func StoreUserBanner(identity common.Address, image types.Image) (string, error) {
+func StoreUserBanner(identity common.Address, image types.Image, req *http.Request) (string, error) {
 	err := repository.R().UploadUserBanner(identity, image)
 	if err != nil {
 		return "", fmt.Errorf("user banner upload failed; %s", err)
 	}
 	return "OK", nil
+}
+
+func StoreToken(identity common.Address, image types.Image, req *http.Request) (string, error) {
+	metadataJson := req.FormValue("metadata")
+	if metadataJson == "" {
+		return "", fmt.Errorf("no token metadata sent")
+	}
+	metadata, err := types.DecodeJsonMetadata([]byte(metadataJson))
+	if err != nil {
+		return "", fmt.Errorf("failed to parse json metadata; %s", err)
+	}
+	if metadata.Name == "" || metadata.Description == "" || metadata.Properties.Symbol == "" {
+		return "", fmt.Errorf("required token metadata not defined in json metadata")
+	}
+
+	// override author address
+	metadata.Properties.Address = identity.String()
+	metadata.Properties.Recipient = identity.String()
+	// override createdAt
+	metadata.Properties.CreatedAt = time.Now().UTC().Format(time.RFC3339)
+
+	uri, err := repository.R().UploadTokenData(*metadata, image)
+	if err != nil {
+		return "", fmt.Errorf("token data upload failed; %s", err)
+	}
+	return uri, nil
 }

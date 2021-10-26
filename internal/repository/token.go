@@ -149,3 +149,7 @@ func (p *Proxy) GetImageThumbnail(uri string) (image *types.Image, err error) {
 	})
 	return data.(*types.Image), err
 }
+
+func (p *Proxy) UploadTokenData(metadata types.JsonMetadata, image types.Image) (uri string, err error) {
+	return p.pinner.PinTokenData(metadata, image)
+}

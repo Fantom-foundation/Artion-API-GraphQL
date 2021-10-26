@@ -3,8 +3,10 @@ package pinner
 import (
 	"artion-api-graphql/internal/config"
 	"artion-api-graphql/internal/logger"
+	"artion-api-graphql/internal/types"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -30,6 +32,27 @@ func New(cfg *config.Config) *Pinner {
 // SetLogger sets the repository logger to be used to collect logging info.
 func SetLogger(l logger.Logger) {
 	log = l.ModuleLogger("pinner")
+}
+
+// PinTokenData uploads token image and JSON metadata to Pinata and returns public JSON URI
+func (p Pinner) PinTokenData(metadata types.JsonMetadata, image types.Image) (uri string, err error) {
+	cid, err := p.PinFile("token-image", image.Data)
+	if err != nil {
+		return "", fmt.Errorf("uploading token image failed; %s", err)
+	}
+	imageUri := "https://artion.mypinata.cloud/ipfs/" + cid
+	metadata.Image = &imageUri
+
+	data, err := json.Marshal(metadata)
+	if err != nil {
+		return "", fmt.Errorf("marshaling json meta failed; %s", err)
+	}
+
+	cid, err = p.PinFile("token-meta", data)
+	if err != nil {
+		return "", fmt.Errorf("uploading token image failed; %s", err)
+	}
+	return "https://artion.mypinata.cloud/ipfs/" + cid, nil
 }
 
 // PinFile uploads the file to Pinata
