@@ -102,7 +102,7 @@ func erc721TokenTransfer(evt *eth.Log, _ *logObserver) {
 		if err := repo.StoreBurn(&types.NFTBurn{
 			Contract: evt.Address,
 			TokenId:  tokenID,
-			Owner:    to,
+			Owner:    from,
 			Qty:      hexutil.Big(*new(big.Int).SetUint64(1)),
 			Burned:   types.Time(time.Unix(int64(blk.Time), 0)),
 		}); err != nil {
