@@ -77,6 +77,13 @@ func erc721TokenTransfer(evt *eth.Log, _ *logObserver) {
 	to := common.BytesToAddress(evt.Topics[2].Bytes())
 	tokenID := hexutil.Big(*new(big.Int).SetBytes(evt.Topics[3].Bytes()))
 
+	// get the block header
+	blk, err := repo.GetHeader(evt.BlockNumber)
+	if err != nil {
+		log.Errorf("can not load event header #%d; %s", evt.BlockNumber, err.Error())
+		return
+	}
+
 	// ERC-721 tokens don't have quantity; the amount is always 1
 	// we can just clear previous owner here by setting qty to zero
 	if err := repo.StoreOwnership(&types.Ownership{
@@ -89,13 +96,30 @@ func erc721TokenTransfer(evt *eth.Log, _ *logObserver) {
 		return
 	}
 
+	// is this a token burn event?
+	if 0 == bytes.Compare(to.Bytes(), zeroAddress.Bytes()) {
+		// now we can add the new owner
+		if err := repo.StoreBurn(&types.NFTBurn{
+			Contract: evt.Address,
+			TokenId:  tokenID,
+			Owner:    to,
+			Qty:      hexutil.Big(*new(big.Int).SetUint64(1)),
+			Burned:   types.Time(time.Unix(int64(blk.Time), 0)),
+		}); err != nil {
+			log.Errorf("could not add ERC-721 NFT ownership; %s", err.Error())
+			return
+		}
+
+		return
+	}
+
 	// now we can add the new owner
 	if err := repo.StoreOwnership(&types.Ownership{
 		Contract: evt.Address,
 		TokenId:  tokenID,
 		Owner:    to,
 		Qty:      hexutil.Big(*new(big.Int).SetUint64(1)),
-		Updated:  types.Time(time.Now()),
+		Updated:  types.Time(time.Unix(int64(blk.Time), 0)),
 	}); err != nil {
 		log.Errorf("could not add ERC-721 NFT ownership; %s", err.Error())
 		return

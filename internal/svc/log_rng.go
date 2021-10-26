@@ -11,7 +11,7 @@ import (
 
 // requestedRandomNumber handles log event for Random Number Oracle request.
 // RandomNumberOracle::RandomNumberRequested(bytes32 requestID, bytes32 seed)
-func requestedRandomNumber(evt *eth.Log, lo *logObserver) {
+func requestedRandomNumber(evt *eth.Log, _ *logObserver) {
 	// sanity check: 1 + 0 topics; 2 x bytes32 = 2 x 32 bytes of data = 64 bytes
 	if len(evt.Data) != 64 || len(evt.Topics) != 1 {
 		log.Errorf("not RandomNumberOracle::RandomNumberRequested() event #%d/#%d; expected 64 bytes of data, %d given; expected 1 topic, %d given",
