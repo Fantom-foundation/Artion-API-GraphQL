@@ -86,41 +86,21 @@ func erc721TokenTransfer(evt *eth.Log, _ *logObserver) {
 
 	// ERC-721 tokens don't have quantity; the amount is always 1
 	// we can just clear previous owner here by setting qty to zero
-	if err := repo.StoreOwnership(&types.Ownership{
-		Contract: evt.Address,
-		TokenId:  tokenID,
-		Owner:    from,
-		Qty:      hexutil.Big{},
-	}); err != nil {
+	if err := updateERC721Owner(evt.Address, tokenID, from, 0, blk.Time); err != nil {
 		log.Errorf("could not clear ERC-721 NFT ownership; %s", err.Error())
 		return
 	}
 
 	// is this a token burn event?
 	if 0 == bytes.Compare(to.Bytes(), zeroAddress.Bytes()) {
-		// now we can add the new owner
-		if err := repo.StoreBurn(&types.NFTBurn{
-			Contract: evt.Address,
-			TokenId:  tokenID,
-			Owner:    from,
-			Qty:      hexutil.Big(*new(big.Int).SetUint64(1)),
-			Burned:   types.Time(time.Unix(int64(blk.Time), 0)),
-		}); err != nil {
-			log.Errorf("could not add ERC-721 NFT ownership; %s", err.Error())
-			return
+		if err := registerERC721TokenBurn(evt.Address, tokenID, from, blk.Time); err != nil {
+			log.Errorf("could not add ERC-721 NFT burn; %s", err.Error())
 		}
-
 		return
 	}
 
 	// now we can add the new owner
-	if err := repo.StoreOwnership(&types.Ownership{
-		Contract: evt.Address,
-		TokenId:  tokenID,
-		Owner:    to,
-		Qty:      hexutil.Big(*new(big.Int).SetUint64(1)),
-		Updated:  types.Time(time.Unix(int64(blk.Time), 0)),
-	}); err != nil {
+	if err := updateERC721Owner(evt.Address, tokenID, to, 1, blk.Time); err != nil {
 		log.Errorf("could not add ERC-721 NFT ownership; %s", err.Error())
 		return
 	}
@@ -135,4 +115,35 @@ func queueMetadataUpdate(nft *types.Token, lo *logObserver) {
 	case <-time.After(10 * time.Second):
 		log.Errorf("NFT token updater queue full, postponing token %s at %s metadata update", nft.TokenId.String(), nft.Contract.String())
 	}
+}
+
+// updateERC721Owner pushes the ownership of ERC-721 token into persistent storage.
+func updateERC721Owner(contract common.Address, tokenID hexutil.Big, owner common.Address, qty uint64, ts uint64) error {
+	// now we can add the new owner
+	if err := repo.StoreOwnership(&types.Ownership{
+		Contract: contract,
+		TokenId:  tokenID,
+		Owner:    owner,
+		Qty:      hexutil.Big(*new(big.Int).SetUint64(qty)),
+		Updated:  types.Time(time.Unix(int64(ts), 0)),
+	}); err != nil {
+		return err
+	}
+	return nil
+}
+
+// registerTokenBurn registers
+func registerERC721TokenBurn(contract common.Address, tokenID hexutil.Big, owner common.Address, ts uint64) error {
+	// now we can add the new owner
+	if err := repo.StoreBurn(&types.NFTBurn{
+		Contract: contract,
+		TokenId:  tokenID,
+		Owner:    owner,
+		Qty:      hexutil.Big(*new(big.Int).SetUint64(1)),
+		Burned:   types.Time(time.Unix(int64(ts), 0)),
+	}); err != nil {
+		return err
+	}
+
+	return nil
 }
