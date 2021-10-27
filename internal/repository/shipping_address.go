@@ -5,10 +5,12 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
+// GetShippingAddress provides a shipping address stored for the given user address.
 func (p *Proxy) GetShippingAddress(user common.Address) (*types.ShippingAddress, error) {
 	return p.shared.GetShippingAddress(user)
 }
 
-func (p *Proxy) UpsertShippingAddress(address *types.ShippingAddress) error {
+// StoreShippingAddress stores the given shipping address into the persistent storage.
+func (p *Proxy) StoreShippingAddress(address *types.ShippingAddress) error {
 	return p.shared.UpsertShippingAddress(address)
 }

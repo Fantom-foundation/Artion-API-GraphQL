@@ -31,6 +31,8 @@ require (
 	github.com/rjeczalik/notify v0.9.2 // indirect
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/rs/cors v1.8.0
+	github.com/sendgrid/rest v2.6.5+incompatible // indirect
+	github.com/sendgrid/sendgrid-go v3.10.3+incompatible
 	github.com/shirou/gopsutil v3.21.8+incompatible // indirect
 	github.com/spf13/viper v1.9.0
 	github.com/status-im/keycard-go v0.0.0-20210911161356-c8058144cee8

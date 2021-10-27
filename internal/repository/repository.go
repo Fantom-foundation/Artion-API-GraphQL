@@ -6,9 +6,11 @@ import (
 	"artion-api-graphql/internal/logger"
 	"artion-api-graphql/internal/repository/cache"
 	"artion-api-graphql/internal/repository/db"
+	"artion-api-graphql/internal/repository/email"
 	"artion-api-graphql/internal/repository/pinner"
 	"artion-api-graphql/internal/repository/rpc"
 	"artion-api-graphql/internal/repository/uri"
+	"artion-api-graphql/internal/types"
 	"fmt"
 	"golang.org/x/sync/singleflight"
 	"sync"
@@ -41,6 +43,9 @@ type Proxy struct {
 	cache     *cache.MemCache
 	log       logger.Logger
 	callGroup *singleflight.Group
+
+	// notifications processing channel
+	notifications chan types.Notification
 }
 
 // R provides access to the singleton instance of the Repository.
@@ -97,6 +102,10 @@ func passEnvironment() {
 	cache.SetLogger(log)
 	cache.SetConfig(cfg)
 
+	// emailing service
+	email.SetLogger(log)
+	email.SetConfig(cfg)
+
 	// pinner
 	pinner.SetLogger(log)
 }
@@ -116,6 +125,8 @@ func newProxy() *Proxy {
 		cache:     cache.New(),
 		log:       log,
 		callGroup: new(singleflight.Group),
+
+		notifications: make(chan types.Notification, notificationQueueCapacity),
 	}
 
 	if p.db == nil || p.rpc == nil || p.cache == nil {
@@ -132,9 +143,12 @@ func newProxy() *Proxy {
 
 // Close terminates repository connections.
 func (p *Proxy) Close() {
+	close(p.notifications)
+
 	if p.rpc != nil {
 		p.rpc.Close()
 	}
+
 	if p.db != nil {
 		p.db.Close()
 	}
@@ -142,9 +156,9 @@ func (p *Proxy) Close() {
 
 // registerContracts will pass contract addresses to the RPC provider.
 func (p *Proxy) registerContracts() {
-	var types = []string{"auction", "market", "rng"}
+	var contractTypes = []string{"auction", "market", "rng"}
 
-	for _, ct := range types {
+	for _, ct := range contractTypes {
 		err := p.rpc.RegisterContract(ct, p.ObservedContractAddressByType(ct))
 		if err != nil {
 			log.Panicf("mandatory contract %s not available", ct)
