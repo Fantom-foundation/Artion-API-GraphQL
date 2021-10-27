@@ -1,5 +1,5 @@
 {
-  "_id": {"$objectId":  "1"},
+  "_id": {"$oid":  "000000000000000000000001"},
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x1",
@@ -12,7 +12,7 @@
   "params": "{\"prize\":\"Azerbaijan 2021 race-worn helmet AND meet and greet with Pierre over the next 12 months\"}"
 }
 {
-  "_id": {"$objectId":  "2"},
+  "_id": {"$oid":  "000000000000000000000002"},
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x2",
@@ -25,7 +25,7 @@
   "params": "{\"prize\":\"signed promotion helmet from Brazil 2019 race weekend AND meet and greet with Pierre over the next 12 months\"}"
 }
 {
-  "_id": {"$objectId":  "3"},
+  "_id": {"$oid":  "000000000000000000000003"},
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x3",
@@ -38,7 +38,7 @@
   "params": "{\"prize\":\"VIP experience for two people at a race weekend AND meet and greet with Pierre over the next 12 months AND signed 2021 mini-helmet and merchandising\"}"
 }
 {
-  "_id": {"$objectId":  "104"},
+  "_id": {"$oid":  "000000000000000000000104"},
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": null,
@@ -51,7 +51,7 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop\"}"
 }
 {
-  "_id": {"$objectId":  "201"},
+  "_id": {"$oid":  "000000000000000000000201"},
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x103",
@@ -64,7 +64,7 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$objectId":  "202"},
+  "_id": {"$oid":  "000000000000000000000202"},
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x10e",
@@ -77,7 +77,7 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$objectId":  "203"},
+  "_id": {"$oid":  "000000000000000000000203"},
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x57",
@@ -90,7 +90,7 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$objectId":  "204"},
+  "_id": {"$oid":  "000000000000000000000204"},
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x9",
@@ -103,7 +103,7 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$objectId":  "205"},
+  "_id": {"$oid":  "000000000000000000000205"},
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x94",
@@ -116,7 +116,7 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$objectId":  "206"},
+  "_id": {"$oid":  "000000000000000000000206"},
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0xc0",
@@ -129,7 +129,7 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$objectId":  "207"},
+  "_id": {"$oid":  "000000000000000000000207"},
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0xc9",
@@ -142,7 +142,7 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$objectId":  "208"},
+  "_id": {"$oid":  "000000000000000000000208"},
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0xf",
@@ -155,7 +155,7 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$objectId":  "209"},
+  "_id": {"$oid":  "000000000000000000000209"},
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0xf6",
@@ -168,7 +168,7 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$objectId":  "1001"},
+  "_id": {"$oid":  "000000000000000000001001"},
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x1",
@@ -181,7 +181,7 @@
   "params": "{\"prize\":\"Azerbaijan 2021 race-worn helmet AND meet and greet with Pierre over the next 12 months\"}"
 }
 {
-  "_id": {"$objectId":  "1002"},
+  "_id": {"$oid":  "000000000000000000001002"},
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x2",
@@ -194,7 +194,7 @@
   "params": "{\"prize\":\"signed promotion helmet from Brazil 2019 race weekend AND meet and greet with Pierre over the next 12 months\"}"
 }
 {
-  "_id": {"$objectId":  "1003"},
+  "_id": {"$oid":  "000000000000000000001003"},
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x3",
@@ -207,7 +207,7 @@
   "params": "{\"prize\":\"VIP experience for two people at a race weekend AND meet and greet with Pierre over the next 12 months AND signed 2021 mini-helmet and merchandising\"}"
 }
 {
-  "_id": {"$objectId":  "1104"},
+  "_id": {"$oid":  "000000000000000000001104"},
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": null,
@@ -220,7 +220,7 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop\"}"
 }
 {
-  "_id": {"$objectId":  "1201"},
+  "_id": {"$oid":  "000000000000000000001201"},
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x103",
@@ -233,7 +233,7 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$objectId":  "1202"},
+  "_id": {"$oid":  "000000000000000000001202"},
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x10e",
@@ -246,7 +246,7 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$objectId":  "1203"},
+  "_id": {"$oid":  "000000000000000000001203"},
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x57",
@@ -259,7 +259,7 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$objectId":  "1204"},
+  "_id": {"$oid":  "000000000000000000001204"},
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x9",
@@ -272,7 +272,7 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$objectId":  "1205"},
+  "_id": {"$oid":  "000000000000000000001205"},
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x94",
@@ -285,7 +285,7 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$objectId":  "1206"},
+  "_id": {"$oid":  "000000000000000000001206"},
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0xc0",
@@ -298,7 +298,7 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$objectId":  "1207"},
+  "_id": {"$oid":  "000000000000000000001207"},
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0xc9",
@@ -311,7 +311,7 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$objectId":  "1208"},
+  "_id": {"$oid":  "000000000000000000001208"},
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0xf",
@@ -324,7 +324,7 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$objectId":  "1209"},
+  "_id": {"$oid":  "000000000000000000001209"},
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0xf6",
@@ -337,7 +337,7 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$objectId":  "2001"},
+  "_id": {"$oid":  "000000000000000000002001"},
   "type": 0,
   "contract": "0x61aF4D29f672E27a097291F72fc571304BC93521",
   "token": null,
@@ -346,6 +346,6 @@
   "sender": "Artion",
   "sender_id": "api@artion.io",
   "subject": "Pierre Gasly Test Ticket Burned",
-  "recipient": "jakub.stepanik@fantom.foundation",
+  "recipient": null,
   "params": "{\"prize\":\"test prize text\"}"
 }
