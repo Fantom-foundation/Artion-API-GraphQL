@@ -145,5 +145,14 @@ func registerERC721TokenBurn(contract common.Address, tokenID hexutil.Big, owner
 		return err
 	}
 
+	// notify burn via notifications
+	repo.QueueNotificationForProcessing(&types.Notification{
+		Type:       types.NotifyBurnedNFTToken,
+		Contract:   contract,
+		TokenId:    tokenID,
+		TimeStamp:  types.Time(time.Unix(int64(ts), 0)),
+		Recipient:  owner,
+		Originator: nil,
+	})
 	return nil
 }

@@ -157,7 +157,7 @@ func (lo *logObserver) close() {
 }
 
 // run collects incoming event logs from the channel and processes them using
-//
+// pre-configured callbacks.
 func (lo *logObserver) run() {
 	// start the notification ticker
 	tick := time.NewTicker(obsBlocksNotificationTickInterval)

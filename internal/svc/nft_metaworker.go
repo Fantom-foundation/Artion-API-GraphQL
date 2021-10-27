@@ -141,7 +141,7 @@ func updateTokenCategoriesFromCollection(tok *types.Token) {
 	}
 
 	if lc != nil {
-		tok.Categories, err = lc.CategoriesAsInts()
+		tok.Categories, err = lc.CategoriesAsInt()
 		if err != nil {
 			log.Errorf("failed to decode categories for token contract %s; %s", tok.Contract.String(), err.Error())
 		}
