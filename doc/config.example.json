@@ -28,5 +28,11 @@
   "auth": {
     "bearer_secret": "0x0123456789",
     "nonce_secret": "0xABCDEF"
+  },
+  "notification": {
+    "sendgrid": {
+      "domain": "https://api.sendgrid.com",
+      "key": "SendGrid-API-authentication-key"
+    }
   }
 }
