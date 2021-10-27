@@ -30,6 +30,6 @@ func (rs *RootResolver) UpdateShippingAddress(ctx context.Context, args struct{
 		return false, err
 	}
 	args.Address.User = *user
-	err = repository.R().UpsertShippingAddress(&args.Address)
+	err = repository.R().StoreShippingAddress(&args.Address)
 	return err == nil, err
 }

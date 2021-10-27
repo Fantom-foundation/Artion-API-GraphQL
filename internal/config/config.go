@@ -37,6 +37,9 @@ type Config struct {
 
 	// RngOracle provides configuration for random feed oracle handling
 	RngOracle RandomFeedOracle `mapstructure:"rng"`
+
+	// Notifications provides configuration for notification providers
+	Notifications NotificationProviders `mapstructure:"notification"`
 }
 
 // Server represents the GraphQL server configuration
@@ -98,4 +101,15 @@ type Auth struct {
 type RandomFeedOracle struct {
 	PrivateKey ecdsa.PrivateKey `mapstructure:"pk"`
 	ChainID    string           `mapstructure:"chain"`
+}
+
+// NotificationProviders configures notification providers APIs.
+type NotificationProviders struct {
+	SendGrid *SendGridEmailProvider `mapstructure:"sendgrid,omitempty"`
+}
+
+// SendGridEmailProvider configures notification provider of SendGrid email.
+type SendGridEmailProvider struct {
+	ApiAddress string `mapstructure:"domain"`
+	ApiKey     string `mapstructure:"key"`
 }

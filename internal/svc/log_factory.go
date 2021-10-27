@@ -83,7 +83,7 @@ func extendNFTCollectionDetails(nft *types.Collection, evt *eth.Log, lo *logObse
 	}
 
 	if nil != legacyCollection {
-		nft.Categories, err = legacyCollection.CategoriesAsInts()
+		nft.Categories, err = legacyCollection.CategoriesAsInt()
 		if err != nil {
 			log.Errorf("%s %s unable to decode categories; %s", nft.Type, nft.Address.String(), err.Error())
 			return err
