@@ -9,6 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
+	"strings"
 )
 
 // notificationQueueCapacity represents the maximal capacity of notifications queued to be sent.
@@ -50,6 +51,12 @@ func (p *Proxy) SendEmailNotificationBySendGrid(no *types.Notification, nt *type
 		return fmt.Errorf("user not found at %s", no.Recipient.String())
 	}
 
+	// any email set on User
+	if strings.TrimSpace(user.Email) == "" {
+		log.Warningf("no email set on user %s", no.Recipient.String())
+		return nil
+	}
+
 	// collect address
 	addr, err := p.GetShippingAddress(no.Recipient)
 	if err != nil {
@@ -89,6 +96,8 @@ func dynamicTemplateData(no *types.Notification, usr *types.User, ship *types.Sh
 		list["collection"] = no.Contract.String()
 		list["contract"] = no.Contract.String()
 		list["token_id"] = no.TokenId.String()
+
+		log.Infof("NFT collection %s, token ID %s", no.Contract.String(), no.TokenId.String())
 	}
 
 	// add user
@@ -97,18 +106,22 @@ func dynamicTemplateData(no *types.Notification, usr *types.User, ship *types.Sh
 		list["address"] = usr.Address.String()
 		list["alias"] = usr.Username
 		list["email"] = usr.Email
+
+		log.Infof("user %s, email address %s", usr.Username, usr.Email)
 	}
 
 	// add shipping address
 	if ship != nil {
-		list["ship_name"] = ship.FullName
-		list["ship_phone"] = ship.Phone
-		list["ship_street"] = ship.Street
-		list["ship_apartment"] = ship.Apartment
-		list["ship_city"] = ship.City
-		list["ship_state"] = ship.State
-		list["ship_country"] = ship.Country
-		list["ship_zip"] = ship.Zip
+		list["shipping_name"] = ship.FullName
+		list["shipping_phone"] = ship.Phone
+		list["shipping_street"] = ship.Street
+		list["shipping_apartment"] = ship.Apartment
+		list["shipping_city"] = ship.City
+		list["shipping_state"] = ship.State
+		list["shipping_country"] = ship.Country
+		list["shipping_zip"] = ship.Zip
+
+		log.Infof("shipping address set as %s, %s", ship.City, ship.Country)
 	}
 	return list
 }
