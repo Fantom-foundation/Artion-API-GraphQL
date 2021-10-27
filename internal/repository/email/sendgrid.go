@@ -2,6 +2,9 @@
 package email
 
 import (
+	"encoding/json"
+	"fmt"
+	"github.com/sendgrid/rest"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
@@ -43,6 +46,36 @@ func SendGridDeliverDynamicTemplate(
 		return err
 	}
 
-	log.Noticef("sent email notification to %s, response code #%d", recipient.Address, resp.StatusCode)
+	err = detectSendGridAPIError(resp)
+	if err != nil {
+		log.Errorf("failed email notification to %s; %s", recipient.Address, err.Error())
+		return err
+	}
+
+	log.Noticef("sent email notification to %s", recipient.Address)
+	return nil
+}
+
+// detectSendGridAPIError checks if the API call response contains error code.
+func detectSendGridAPIError(resp *rest.Response) error {
+	// issue with the delivery?
+	if resp.StatusCode >= 300 {
+		// try to decode errors
+		// {"errors":[{"message":"Mail cannot be sent until this error is resolved.","field":"from","help":null}]}
+		var content struct {
+			Errors []struct {
+				Message string `json:"message"`
+			} `json:"errors"`
+		}
+
+		err := json.Unmarshal([]byte(resp.Body), &content)
+		if err != nil {
+			for _, m := range content.Errors {
+				log.Errorf(m.Message)
+			}
+		}
+
+		return fmt.Errorf("error code #%d", resp.StatusCode)
+	}
 	return nil
 }

@@ -6,7 +6,7 @@
   "provider": "sendgrid",
   "template": "d-188e4f275c514fbaa28122102b03c472",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
+  "sender_id": "dev@fantom.foundation",
   "subject": "Baku 2021 Podium Token Burned",
   "recipient": null,
   "params": "{\"prize\":\"Azerbaijan 2021 race-worn helmet AND meet and greet with Pierre over the next 12 months\"}"
@@ -19,7 +19,7 @@
   "provider": "sendgrid",
   "template": "d-188e4f275c514fbaa28122102b03c472",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
+  "sender_id": "dev@fantom.foundation",
   "subject": "Brazil 2019 Comeback Token Burned",
   "recipient": null,
   "params": "{\"prize\":\"signed promotion helmet from Brazil 2019 race weekend AND meet and greet with Pierre over the next 12 months\"}"
@@ -32,7 +32,7 @@
   "provider": "sendgrid",
   "template": "d-188e4f275c514fbaa28122102b03c472",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
+  "sender_id": "dev@fantom.foundation",
   "subject": "Monza 2020 First Victory Token Burned",
   "recipient": null,
   "params": "{\"prize\":\"VIP experience for two people at a race weekend AND meet and greet with Pierre over the next 12 months AND signed 2021 mini-helmet and merchandising\"}"
@@ -45,7 +45,7 @@
   "provider": "sendgrid",
   "template": "d-188e4f275c514fbaa28122102b03c472",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
+  "sender_id": "dev@fantom.foundation",
   "subject": "Pierre Gasly In The Making Token Burned",
   "recipient": null,
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop\"}"
@@ -58,7 +58,7 @@
   "provider": "sendgrid",
   "template": "d-188e4f275c514fbaa28122102b03c472",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
+  "sender_id": "dev@fantom.foundation",
   "subject": "Pierre Gasly In The Making Golden Ticket Burned",
   "recipient": null,
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
@@ -71,7 +71,7 @@
   "provider": "sendgrid",
   "template": "d-188e4f275c514fbaa28122102b03c472",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
+  "sender_id": "dev@fantom.foundation",
   "subject": "Pierre Gasly In The Making Golden Ticket Burned",
   "recipient": null,
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
@@ -84,7 +84,7 @@
   "provider": "sendgrid",
   "template": "d-188e4f275c514fbaa28122102b03c472",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
+  "sender_id": "dev@fantom.foundation",
   "subject": "Pierre Gasly In The Making Golden Ticket Burned",
   "recipient": null,
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
@@ -97,7 +97,7 @@
   "provider": "sendgrid",
   "template": "d-188e4f275c514fbaa28122102b03c472",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
+  "sender_id": "dev@fantom.foundation",
   "subject": "Pierre Gasly In The Making Golden Ticket Burned",
   "recipient": null,
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
@@ -110,7 +110,7 @@
   "provider": "sendgrid",
   "template": "d-188e4f275c514fbaa28122102b03c472",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
+  "sender_id": "dev@fantom.foundation",
   "subject": "Pierre Gasly In The Making Golden Ticket Burned",
   "recipient": null,
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
@@ -123,7 +123,7 @@
   "provider": "sendgrid",
   "template": "d-188e4f275c514fbaa28122102b03c472",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
+  "sender_id": "dev@fantom.foundation",
   "subject": "Pierre Gasly In The Making Golden Ticket Burned",
   "recipient": null,
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
@@ -136,7 +136,7 @@
   "provider": "sendgrid",
   "template": "d-188e4f275c514fbaa28122102b03c472",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
+  "sender_id": "dev@fantom.foundation",
   "subject": "Pierre Gasly In The Making Golden Ticket Burned",
   "recipient": null,
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
@@ -149,7 +149,7 @@
   "provider": "sendgrid",
   "template": "d-188e4f275c514fbaa28122102b03c472",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
+  "sender_id": "dev@fantom.foundation",
   "subject": "Pierre Gasly In The Making Golden Ticket Burned",
   "recipient": null,
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
@@ -162,7 +162,7 @@
   "provider": "sendgrid",
   "template": "d-188e4f275c514fbaa28122102b03c472",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
+  "sender_id": "dev@fantom.foundation",
   "subject": "Pierre Gasly In The Making Golden Ticket Burned",
   "recipient": null,
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
@@ -175,7 +175,7 @@
   "provider": "sendgrid",
   "template": "d-9b1e52b0ea1742968f8f8999e4b2b212",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
+  "sender_id": "dev@fantom.foundation",
   "subject": "Baku 2021 Podium Token Burned",
   "recipient": "jakub.stepanik@fantom.foundation",
   "params": "{\"prize\":\"Azerbaijan 2021 race-worn helmet AND meet and greet with Pierre over the next 12 months\"}"
@@ -188,7 +188,7 @@
   "provider": "sendgrid",
   "template": "d-9b1e52b0ea1742968f8f8999e4b2b212",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
+  "sender_id": "dev@fantom.foundation",
   "subject": "Brazil 2019 Comeback Token Burned",
   "recipient": "jakub.stepanik@fantom.foundation",
   "params": "{\"prize\":\"signed promotion helmet from Brazil 2019 race weekend AND meet and greet with Pierre over the next 12 months\"}"
@@ -201,7 +201,7 @@
   "provider": "sendgrid",
   "template": "d-9b1e52b0ea1742968f8f8999e4b2b212",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
+  "sender_id": "dev@fantom.foundation",
   "subject": "Monza 2020 First Victory Token Burned",
   "recipient": "jakub.stepanik@fantom.foundation",
   "params": "{\"prize\":\"VIP experience for two people at a race weekend AND meet and greet with Pierre over the next 12 months AND signed 2021 mini-helmet and merchandising\"}"
@@ -214,7 +214,7 @@
   "provider": "sendgrid",
   "template": "d-9b1e52b0ea1742968f8f8999e4b2b212",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
+  "sender_id": "dev@fantom.foundation",
   "subject": "Pierre Gasly In The Making Token Burned",
   "recipient": "jakub.stepanik@fantom.foundation",
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop\"}"
@@ -227,7 +227,7 @@
   "provider": "sendgrid",
   "template": "d-9b1e52b0ea1742968f8f8999e4b2b212",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
+  "sender_id": "dev@fantom.foundation",
   "subject": "Pierre Gasly In The Making Golden Ticket Burned",
   "recipient": "jakub.stepanik@fantom.foundation",
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
@@ -240,7 +240,7 @@
   "provider": "sendgrid",
   "template": "d-9b1e52b0ea1742968f8f8999e4b2b212",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
+  "sender_id": "dev@fantom.foundation",
   "subject": "Pierre Gasly In The Making Golden Ticket Burned",
   "recipient": "jakub.stepanik@fantom.foundation",
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
@@ -253,7 +253,7 @@
   "provider": "sendgrid",
   "template": "d-9b1e52b0ea1742968f8f8999e4b2b212",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
+  "sender_id": "dev@fantom.foundation",
   "subject": "Pierre Gasly In The Making Golden Ticket Burned",
   "recipient": "jakub.stepanik@fantom.foundation",
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
@@ -266,7 +266,7 @@
   "provider": "sendgrid",
   "template": "d-9b1e52b0ea1742968f8f8999e4b2b212",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
+  "sender_id": "dev@fantom.foundation",
   "subject": "Pierre Gasly In The Making Golden Ticket Burned",
   "recipient": "jakub.stepanik@fantom.foundation",
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
@@ -279,7 +279,7 @@
   "provider": "sendgrid",
   "template": "d-9b1e52b0ea1742968f8f8999e4b2b212",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
+  "sender_id": "dev@fantom.foundation",
   "subject": "Pierre Gasly In The Making Golden Ticket Burned",
   "recipient": "jakub.stepanik@fantom.foundation",
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
@@ -292,7 +292,7 @@
   "provider": "sendgrid",
   "template": "d-9b1e52b0ea1742968f8f8999e4b2b212",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
+  "sender_id": "dev@fantom.foundation",
   "subject": "Pierre Gasly In The Making Golden Ticket Burned",
   "recipient": "jakub.stepanik@fantom.foundation",
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
@@ -305,7 +305,7 @@
   "provider": "sendgrid",
   "template": "d-9b1e52b0ea1742968f8f8999e4b2b212",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
+  "sender_id": "dev@fantom.foundation",
   "subject": "Pierre Gasly In The Making Golden Ticket Burned",
   "recipient": "jakub.stepanik@fantom.foundation",
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
@@ -318,7 +318,7 @@
   "provider": "sendgrid",
   "template": "d-9b1e52b0ea1742968f8f8999e4b2b212",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
+  "sender_id": "dev@fantom.foundation",
   "subject": "Pierre Gasly In The Making Golden Ticket Burned",
   "recipient": "jakub.stepanik@fantom.foundation",
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
@@ -331,7 +331,7 @@
   "provider": "sendgrid",
   "template": "d-9b1e52b0ea1742968f8f8999e4b2b212",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
+  "sender_id": "dev@fantom.foundation",
   "subject": "Pierre Gasly In The Making Golden Ticket Burned",
   "recipient": "jakub.stepanik@fantom.foundation",
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
@@ -342,10 +342,10 @@
   "contract": "0x61aF4D29f672E27a097291F72fc571304BC93521",
   "token": null,
   "provider": "sendgrid",
-  "template": "d-9b1e52b0ea1742968f8f8999e4b2b212",
+  "template": "d-d3ae992f6ec64c17b16966b5f74982cc",
   "sender": "Artion",
-  "sender_id": "api@artion.io",
-  "subject": "Pierre Gasly Test Ticket Burned",
+  "sender_id": "dev@fantom.foundation",
+  "subject": "Artion Ticket Burned",
   "recipient": null,
-  "params": "{\"prize\":\"test prize text\"}"
+  "params": "{\"prize\":\"no prize\"}"
 }

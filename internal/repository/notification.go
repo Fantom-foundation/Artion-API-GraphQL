@@ -41,8 +41,6 @@ func (p *Proxy) SendEmailNotificationBySendGrid(no *types.Notification, nt *type
 		return fmt.Errorf("missing notification and/or template")
 	}
 
-	// identify recipient
-
 	// collect recipient user involved
 	user, err := p.GetUser(no.Recipient)
 	if err != nil {
