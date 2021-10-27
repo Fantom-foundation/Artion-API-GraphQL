@@ -17,7 +17,7 @@ const (
 	coNotifications = "notifications"
 
 	// coNotificationTemplates is the name of the collection keeping event notification templates.
-	coNotificationTemplates = "templates"
+	coNotificationTemplates = "notification_tpl"
 )
 
 // StoreNotification stores the given notification in persistent storage.
