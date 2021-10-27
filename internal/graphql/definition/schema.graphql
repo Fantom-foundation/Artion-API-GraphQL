@@ -36,6 +36,9 @@ type Query {
 
     # Get currently set shipping address for tokens redeem.
     loggedUserShippingAddress: ShippingAddress
+
+    # Get unlockable content attached to a NFT token (only token owner)
+    unlockableContent(contract: Address!, tokenId: BigInt!): String
 }
 
 # Mutation endpoints for modifying the data
@@ -63,6 +66,9 @@ type Mutation {
 
     # Update shipping address for tokens redeem.
     updateShippingAddress(address: InputShippingAddress!): Boolean!
+
+    # Set unlockable content attached to a NFT token (only token owner)
+    setUnlockableContent(contract: Address!, tokenId: BigInt!, content: String!): Boolean!
 }
 
 type Subscription {

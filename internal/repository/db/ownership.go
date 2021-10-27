@@ -22,7 +22,7 @@ const (
 	fiOwnershipContract = "contract"
 
 	// fiOwnershipTokenId is the name of the DB column of the token ID.
-	fiOwnershipTokenId = "tokenId"
+	fiOwnershipTokenId = "token"
 
 	// fiOwnershipOwner is the name of the DB column of the token owner address.
 	fiOwnershipOwner = "owner"
@@ -98,6 +98,17 @@ func (db *MongoDbBridge) DeleteOwnership(to *types.Ownership) error {
 		log.Infof("token %s / #%s ownership by %s deleted", to.Contract.String(), to.TokenId.String(), to.Owner.String())
 	}
 	return nil
+}
+
+func (db *MongoDbBridge) IsOwnerOf(contract common.Address, tokenId hexutil.Big, owner common.Address) (bool, error) {
+	filter := bson.D{
+		{Key: fiOwnershipContract, Value: contract.String()},
+		{Key: fiOwnershipTokenId, Value: tokenId.String()},
+		{Key: fiOwnershipOwner, Value: owner.String()},
+	}
+	col := db.client.Database(db.dbName).Collection(coTokenOwnerships)
+	count, err := db.getTotalCount(col, filter)
+	return count > 0, err
 }
 
 func (db *MongoDbBridge) ListOwnerships(contract *common.Address, tokenId *hexutil.Big, owner *common.Address, cursor types.Cursor, count int, backward bool) (out *types.OwnershipList, err error) {

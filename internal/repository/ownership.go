@@ -21,3 +21,7 @@ func (p *Proxy) StoreBurn(bu *types.NFTBurn) error {
 func (p *Proxy) ListOwnerships(contract *common.Address, tokenId *hexutil.Big, owner *common.Address, cursor types.Cursor, count int, backward bool) (out *types.OwnershipList, err error) {
 	return p.db.ListOwnerships(contract, tokenId, owner, cursor, count, backward)
 }
+
+func (p *Proxy) IsOwnerOf(contract common.Address, tokenId hexutil.Big, owner common.Address) (bool, error) {
+	return p.db.IsOwnerOf(contract, tokenId, owner)
+}
