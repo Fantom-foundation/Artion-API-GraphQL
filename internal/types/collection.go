@@ -9,13 +9,14 @@ import (
 // Collection represents an Artion token collection, represented by an NFT contract.
 // Artion basically recognizes NFT contracts deployed form a designated factory.
 type Collection struct {
-	Address    common.Address `bson:"_id"`
-	Type       string         `bson:"type"`
-	Name       string         `bson:"name"`
-	Symbol     string         `bson:"symbol"`
-	Created    Time           `bson:"created"`
-	Categories []int32        `bson:"categories"`
-	IsActive   bool           `bson:"is_active"`
+	Address            common.Address  `bson:"_id"`
+	Type               string          `bson:"type"`
+	Name               string          `bson:"name"`
+	Symbol             string          `bson:"symbol"`
+	Created            Time            `bson:"created"`
+	Categories         []int32         `bson:"categories"`
+	IsActive           bool            `bson:"is_active"`
+	VerifiedBy         *common.Address `bson:"verified_by"`
 }
 
 // LegacyCollection represents token collection from old Artion.
@@ -36,12 +37,14 @@ type LegacyCollection struct {
 	TwitterHandle string         `bson:"twitterHandle"`
 	IsAppropriate bool           `bson:"isAppropriate"`
 	IsInternal    bool           `bson:"isInternal"`
-	IsOwnerble    bool           `bson:"isOwnerble"`
+	IsOwnable     bool           `bson:"isOwnerble"`
 	IsVerified    bool           `bson:"isVerified"`
 	IsActive      bool           `bson:"status"`
 }
 
-func (lc LegacyCollection) CategoriesAsInts() ([]int32, error) {
+// CategoriesAsInt provides a list of category ID-s
+// converted to a slice of integers instead of strings.
+func (lc LegacyCollection) CategoriesAsInt() ([]int32, error) {
 	var out []int32
 	for _, value := range lc.Categories {
 		if value == "" {
