@@ -52,7 +52,7 @@ func (p *Proxy) SendEmailNotificationBySendGrid(no *types.Notification, nt *type
 	}
 
 	// any email set on User
-	if strings.TrimSpace(user.Email) == "" {
+	if nil == user.Email || strings.TrimSpace(*user.Email) == "" {
 		log.Warningf("no email set on user %s", no.Recipient.String())
 		return nil
 	}
@@ -66,7 +66,7 @@ func (p *Proxy) SendEmailNotificationBySendGrid(no *types.Notification, nt *type
 	// send the email
 	err = email.SendGridDeliverDynamicTemplate(
 		mail.NewEmail(nt.SenderName, nt.SenderID),
-		mail.NewEmail("", user.Email),
+		mail.NewEmail("", *user.Email),
 		nt.TemplateID,
 		nt.Subject,
 		dynamicTemplateData(no, user, addr, nt.ExtendedParams),
@@ -104,10 +104,13 @@ func dynamicTemplateData(no *types.Notification, usr *types.User, ship *types.Sh
 	if usr != nil {
 		list["account"] = usr.Address.String()
 		list["address"] = usr.Address.String()
-		list["alias"] = usr.Username
-		list["email"] = usr.Email
+		list["email"] = *usr.Email
+		list["alias"] = ""
 
-		log.Infof("user %s, email address %s", usr.Username, usr.Email)
+		if nil != usr.Username {
+			list["alias"] = *usr.Username
+		}
+		log.Infof("user %s, email address %s", list["alias"], list["email"])
 	}
 
 	// add shipping address

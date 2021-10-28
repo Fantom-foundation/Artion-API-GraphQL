@@ -18,7 +18,10 @@ func ImageHandler(log logger.Logger, resolver func(path string) (string, error))
 			if r := recover(); r != nil {
 				log.Errorf("Panic in ImageHandler handler; %s", r)
 				w.WriteHeader(500)
-				w.Write([]byte("Request handling failed"))
+				_, err := w.Write([]byte("Request handling failed"))
+				if err != nil {
+					log.Errorf("could not write response; %s", err.Error())
+				}
 			}
 		}()
 
@@ -94,8 +97,8 @@ func UserAvatarResolver(path string) (imageUri string, err error) {
 	if err != nil {
 		return "", fmt.Errorf("unable to find user in db; %s", err)
 	}
-	if user == nil || user.Avatar == "" {
+	if user == nil || user.Avatar == nil || *user.Avatar == "" {
 		return "", fmt.Errorf("user has no avatar; %s", err)
 	}
-	return "/ipfs/" + user.Avatar, nil
+	return "/ipfs/" + *user.Avatar, nil
 }

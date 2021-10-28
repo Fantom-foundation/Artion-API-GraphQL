@@ -13,51 +13,51 @@ import (
 
 type User struct {
 	Address common.Address
-	dbUser *types.User // data for user loaded from Mongo
+	dbUser  *types.User // data for user loaded from Mongo
 }
 
 func (user User) Username() (*string, error) {
 	if user.dbUser == nil {
 		return nil, nil
 	}
-	return &user.dbUser.Username, nil
+	return user.dbUser.Username, nil
 }
 
 func (user User) Bio() (*string, error) {
 	if user.dbUser == nil {
 		return nil, nil
 	}
-	return &user.dbUser.Bio, nil
+	return user.dbUser.Bio, nil
 }
 
 func (user User) Email(ctx context.Context) (*string, error) {
 	logged, _ := auth.GetIdentityOrNil(ctx) // email available only for the user itself
-	if logged == nil || ! bytes.Equal(logged.Bytes(), user.Address.Bytes()) || user.dbUser == nil {
+	if logged == nil || !bytes.Equal(logged.Bytes(), user.Address.Bytes()) || user.dbUser == nil {
 		return nil, nil
 	}
-	return &user.dbUser.Email, nil
+	return user.dbUser.Email, nil
 }
 
 func (user User) Avatar() (*string, error) {
-	if user.dbUser == nil || user.dbUser.Avatar == "" {
+	if user.dbUser == nil || user.dbUser.Avatar == nil || *user.dbUser.Avatar == "" {
 		return nil, nil
 	}
-	return &user.dbUser.Avatar, nil
+	return user.dbUser.Avatar, nil
 }
 
 func (user User) AvatarThumb() (*string, error) {
-	if user.dbUser == nil || user.dbUser.Avatar == "" {
+	if user.dbUser == nil || user.dbUser.Avatar == nil || *user.dbUser.Avatar == "" {
 		return nil, nil
 	}
-	url := fmt.Sprintf("/images/avatar/%s/%s", user.Address.String(), user.dbUser.Avatar)
+	url := fmt.Sprintf("/images/avatar/%s/%s", user.Address.String(), *user.dbUser.Avatar)
 	return &url, nil
 }
 
 func (user User) Banner() (*string, error) {
-	if user.dbUser == nil || user.dbUser.Banner == "" {
+	if user.dbUser == nil || user.dbUser.Banner == nil || *user.dbUser.Banner == "" {
 		return nil, nil
 	}
-	return &user.dbUser.Banner, nil
+	return user.dbUser.Banner, nil
 }
 
 func (user User) Ownerships(args struct{ PaginationInput }) (con *OwnershipConnection, err error) {
@@ -130,7 +130,7 @@ func getUserByAddress(address common.Address) (user User, err error) {
 	if err != nil {
 		return User{}, err
 	} else {
-		return User{ Address: address, dbUser: dbUser }, nil
+		return User{Address: address, dbUser: dbUser}, nil
 	}
 }
 
@@ -147,11 +147,11 @@ func (rs *RootResolver) LoggedUser(ctx context.Context) (user *User, err error) 
 	if err != nil {
 		return nil, err
 	} else {
-		return &User{ Address: *address, dbUser: dbUser }, nil
+		return &User{Address: *address, dbUser: dbUser}, nil
 	}
 }
 
-func (rs *RootResolver) UpdateUser(ctx context.Context, args struct{
+func (rs *RootResolver) UpdateUser(ctx context.Context, args struct {
 	Username string
 	Bio      string
 	Email    string
@@ -161,10 +161,10 @@ func (rs *RootResolver) UpdateUser(ctx context.Context, args struct{
 		return false, err
 	}
 	user := types.User{
-		Address: *address,
-		Username: args.Username,
-		Bio: args.Bio,
-		Email: args.Email,
+		Address:  *address,
+		Username: &args.Username,
+		Bio:      &args.Bio,
+		Email:    &args.Email,
 	}
 	err = repository.R().UpsertUser(&user)
 	return err == nil, err
@@ -174,7 +174,7 @@ func (rs *RootResolver) InitiateLogin() (string, error) {
 	return auth.GetAuthenticator().GenerateChallenge()
 }
 
-func (rs *RootResolver) Login(args struct{
+func (rs *RootResolver) Login(args struct {
 	User      common.Address
 	Challenge string
 	Signature string
