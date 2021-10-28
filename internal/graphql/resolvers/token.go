@@ -202,6 +202,35 @@ func (edge TokenEdge) Cursor() (types.Cursor, error) {
 	return edge.sorting.GetCursor((*types.Token)(edge.Node))
 }
 
+func (rs *RootResolver) Token(args struct {
+	Contract common.Address
+	TokenId  hexutil.Big
+}) (*Token, error) {
+	return NewToken(&args.Contract, &args.TokenId)
+}
+
+func (rs *RootResolver) Tokens(args struct {
+	Filter  *types.TokenFilter
+	SortBy  *string
+	SortDir *string
+	PaginationInput
+}) (con *TokenConnection, err error) {
+	cursor, count, backward, err := args.ToRepositoryInput()
+	if err != nil {
+		return nil, err
+	}
+	sorting, err := tokenSortingFromString(args.SortBy)
+	if err != nil {
+		return nil, err
+	}
+
+	list, err := repository.R().ListTokens(args.Filter, sorting, isSortingDirectionDesc(args.SortDir), cursor, count, backward)
+	if err != nil {
+		return nil, err
+	}
+	return NewTokenConnection(list, sorting)
+}
+
 // IncrementTokenViews increments amount of views of the token.
 func (rs *RootResolver) IncrementTokenViews(args struct {
 	Contract common.Address

@@ -5,11 +5,7 @@ import (
 	"artion-api-graphql/cmd/artionapi/build"
 	"artion-api-graphql/internal/config"
 	"artion-api-graphql/internal/logger"
-	"artion-api-graphql/internal/repository"
-	"artion-api-graphql/internal/types"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"sync"
 )
 
@@ -109,52 +105,4 @@ func (rs *RootResolver) run() {
 // Version resolves the current version of the API server.
 func (rs *RootResolver) Version() string {
 	return build.Short(cfg)
-}
-
-func (rs *RootResolver) Collection(args struct {
-	Contract common.Address
-}) (*Collection, error) {
-	Collection := Collection{Contract: args.Contract}
-	return &Collection, nil
-}
-
-func (rs *RootResolver) Collections(args struct{ PaginationInput }) (con *CollectionConnection, err error) {
-	cursor, count, backward, err := args.ToRepositoryInput()
-	if err != nil {
-		return nil, err
-	}
-	list, err := repository.R().ListCollections(cursor, count, backward)
-	if err != nil {
-		return nil, err
-	}
-	return NewCollectionConnection(list)
-}
-
-func (rs *RootResolver) Token(args struct {
-	Contract common.Address
-	TokenId  hexutil.Big
-}) (*Token, error) {
-	return NewToken(&args.Contract, &args.TokenId)
-}
-
-func (rs *RootResolver) Tokens(args struct {
-	Filter  *types.TokenFilter
-	SortBy  *string
-	SortDir *string
-	PaginationInput
-}) (con *TokenConnection, err error) {
-	cursor, count, backward, err := args.ToRepositoryInput()
-	if err != nil {
-		return nil, err
-	}
-	sorting, err := tokenSortingFromString(args.SortBy)
-	if err != nil {
-		return nil, err
-	}
-
-	list, err := repository.R().ListTokens(args.Filter, sorting, isSortingDirectionDesc(args.SortDir), cursor, count, backward)
-	if err != nil {
-		return nil, err
-	}
-	return NewTokenConnection(list, sorting)
 }
