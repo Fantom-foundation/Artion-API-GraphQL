@@ -60,6 +60,9 @@ type Token {
     # List owners of the token and their token balances
     ownerships(first: Int, after: Cursor, last: Int, before: Cursor): OwnershipConnection!
 
+    # Past activities on the token (listing created, auction bid, etc.)
+    activities(first: Int, after: Cursor, last: Int, before: Cursor): ActivityConnection!
+
     # Current listings of the token
     listings(first: Int, after: Cursor, last: Int, before: Cursor): ListingConnection!
 

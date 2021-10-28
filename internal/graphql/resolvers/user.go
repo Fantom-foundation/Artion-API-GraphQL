@@ -125,6 +125,18 @@ func (user User) Following(args struct{ PaginationInput }) (con *FollowConnectio
 	return NewFollowConnection(list)
 }
 
+func (user User) Activities(args struct{ PaginationInput }) (con *ActivityConnection, err error) {
+	cursor, count, backward, err := args.ToRepositoryInput()
+	if err != nil {
+		return nil, err
+	}
+	list, err := repository.R().ListActivities(nil, nil, &user.Address, cursor, count, backward)
+	if err != nil {
+		return nil, err
+	}
+	return NewActivityConnection(list)
+}
+
 func getUserByAddress(address common.Address) (user User, err error) {
 	dbUser, err := repository.R().GetUser(address)
 	if err != nil {

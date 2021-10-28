@@ -55,6 +55,24 @@ func marketOfferCreated(evt *eth.Log, lo *logObserver) {
 		log.Errorf("could not mark token as having offer; %s", err.Error())
 	}
 
+	// log activity
+	activity := types.Activity{
+		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
+		Time:         offer.Created,
+		ActType:      types.EvtOfferCreated,
+		Contract:     offer.Contract,
+		TokenId:      offer.TokenId,
+		Quantity:     &offer.Quantity,
+		From:         offer.ProposedBy,
+		PayToken:     &offer.PayToken,
+		UnitPrice:    &offer.UnitPrice,
+		EndTime:      &offer.Deadline,
+	}
+	if err := repo.StoreActivity(&activity); err != nil {
+		log.Errorf("could not store offer activity; %s", err.Error())
+		return
+	}
+
 	log.Infof("added new offer of %s/%s proposed by %s", offer.Contract.String(), offer.TokenId.String(), offer.ProposedBy.String())
 
 	// notify subscribers (will be skipped for tokens owned by 100 or more owners)
@@ -109,11 +127,26 @@ func marketOfferCanceled(evt *eth.Log, _ *logObserver) {
 		log.Errorf("could not mark token as not having offer; %s", err.Error())
 	}
 
+	// log activity
+	activity := types.Activity{
+		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
+		Time:         *offer.Closed,
+		ActType:      types.EvtOfferCancelled,
+		Contract:     offer.Contract,
+		TokenId:      offer.TokenId,
+		Quantity:     &offer.Quantity,
+		From:         offer.ProposedBy,
+	}
+	if err := repo.StoreActivity(&activity); err != nil {
+		log.Errorf("could not store offer activity; %s", err.Error())
+		return
+	}
+
 	log.Infof("canceled offer on %s/%s proposed by %s", offer.Contract.String(), offer.TokenId.String(), offer.ProposedBy.String())
 }
 
 // marketCloseOfferWithSale processes a listing wrap up by a sale.
-func marketCloseOfferWithSale(evt *eth.Log, offer *types.Offer, blk *eth.Header, lo *logObserver) {
+func marketCloseOfferWithSale(evt *eth.Log, offer *types.Offer, blk *eth.Header, lo *logObserver, seller *common.Address) {
 	up := time.Unix(int64(blk.Time), 0)
 	offer.Closed = (*types.Time)(&up)
 	offer.PayToken = common.BytesToAddress(evt.Data[64:96])
@@ -132,6 +165,21 @@ func marketCloseOfferWithSale(evt *eth.Log, offer *types.Offer, blk *eth.Header,
 		&up,
 	); err != nil {
 		log.Errorf("could not mark token as sold; %s", err.Error())
+	}
+
+	// log activity
+	activity := types.Activity{
+		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
+		Time:         *offer.Closed,
+		ActType:      types.EvtOfferSold,
+		Contract:     offer.Contract,
+		TokenId:      offer.TokenId,
+		From:         *seller,
+		To:           &offer.ProposedBy,
+	}
+	if err := repo.StoreActivity(&activity); err != nil {
+		log.Errorf("could not store offer activity; %s", err.Error())
+		return
 	}
 
 	log.Infof("closed buy offer of %s/%s proposed by %s", offer.Contract.String(), offer.TokenId.String(), offer.ProposedBy.String())

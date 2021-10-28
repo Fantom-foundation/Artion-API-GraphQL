@@ -55,7 +55,7 @@ func auctionBidPlaced(evt *eth.Log, lo *logObserver) {
 	auction.LastBidder = &bid.Bidder
 	auction.LastBidPlaced = &bid.Placed
 
-	// store the listing into database
+	// store the auction changes into database
 	if err := repo.StoreAuction(auction); err != nil {
 		log.Errorf("could not store auction; %s", err.Error())
 	}
@@ -70,6 +70,23 @@ func auctionBidPlaced(evt *eth.Log, lo *logObserver) {
 		log.Errorf("could not mark token as having bid; %s", err.Error())
 	}
 
+	// log activity
+	activity := types.Activity{
+		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
+		Time:         bid.Placed,
+		ActType:      types.EvtAuctionBid,
+		Contract:     bid.Contract,
+		TokenId:      bid.TokenId,
+		From:         bid.Bidder,
+		To:           &auction.Owner,
+		PayToken:     &auction.PayToken,
+		UnitPrice:    &bid.Amount,
+	}
+	if err := repo.StoreActivity(&activity); err != nil {
+		log.Errorf("can not store bid activity %s on %s/%s; %s", bid.Bidder.String(), bid.Contract.String(), bid.TokenId.String(), err.Error())
+		return
+	}
+
 	log.Infof("added new bid on auction %s/%s by %s", bid.Contract.String(), bid.TokenId.String(), bid.Bidder.String())
 
 	// notify subscribers
@@ -82,7 +99,7 @@ func auctionBidPlaced(evt *eth.Log, lo *logObserver) {
 	}
 }
 
-// auctionBidPlaced processes an event for removed auction bid.
+// auctionBidWithdrawn processes an event for removed auction bid.
 // Auction::BidWithdrawn(address indexed nftAddress, uint256 indexed tokenId, address indexed bidder, uint256 bid)
 func auctionBidWithdrawn(evt *eth.Log, _ *logObserver) {
 	// sanity check: 1 + 3 topics; 1 x uint256 = 32 bytes
@@ -120,6 +137,26 @@ func auctionBidWithdrawn(evt *eth.Log, _ *logObserver) {
 	// store the listing into database
 	if err := repo.StoreAuction(auction); err != nil {
 		log.Errorf("could not store auction; %s", err.Error())
+	}
+
+	// log activity
+	blk, err := repo.GetHeader(evt.BlockNumber)
+	if err != nil {
+		log.Errorf("could not get header #%d, %s", evt.BlockNumber, err.Error())
+		return
+	}
+	activity := types.Activity{
+		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
+		Time:         types.Time(time.Unix(int64(blk.Time), 0)),
+		ActType:      types.EvtAuctionBidWithdrawn,
+		Contract:     contract,
+		TokenId:      hexutil.Big(*tokenID),
+		From:         bidder,
+		To:           &auction.Owner,
+	}
+	if err := repo.StoreActivity(&activity); err != nil {
+		log.Errorf("can not store unbid activity of %s on %s/%s; %s", bidder, activity.Contract, activity.TokenId, err.Error())
+		return
 	}
 
 	// notify subscribers

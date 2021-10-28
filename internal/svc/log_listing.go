@@ -56,6 +56,24 @@ func marketNFTListed(evt *eth.Log, lo *logObserver) {
 		log.Errorf("could not mark token as listed; %s", err.Error())
 	}
 
+	// log activity
+	activity := types.Activity{
+		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
+		Time:         lst.Created,
+		ActType:      types.EvtListingCreated,
+		Contract:     lst.Contract,
+		TokenId:      lst.TokenId,
+		Quantity:     &lst.Quantity,
+		From:         lst.Owner,
+		PayToken:     &lst.PayToken,
+		UnitPrice:    &lst.UnitPrice,
+		StartTime:    &lst.StartTime,
+	}
+	if err := repo.StoreActivity(&activity); err != nil {
+		log.Errorf("could not store listing activity; %s", err.Error())
+		return
+	}
+
 	log.Infof("added new listing of %s/%s owner %s", lst.Contract.String(), lst.TokenId.String(), lst.Owner.String())
 }
 
@@ -107,6 +125,22 @@ func marketNFTUpdated(evt *eth.Log, lo *logObserver) {
 		log.Errorf("could not mark token as listed; %s", err.Error())
 	}
 
+	// log activity
+	activity := types.Activity{
+		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
+		Time:         *lst.LastUpdate,
+		ActType:      types.EvtListingUpdated,
+		Contract:     lst.Contract,
+		TokenId:      lst.TokenId,
+		From:         lst.Owner,
+		PayToken:     &lst.PayToken,
+		UnitPrice:    &lst.UnitPrice,
+	}
+	if err := repo.StoreActivity(&activity); err != nil {
+		log.Errorf("could not store listing activity; %s", err.Error())
+		return
+	}
+
 	log.Infof("updated listing of %s/%s owner %s", lst.Contract.String(), lst.TokenId.String(), lst.Owner.String())
 }
 
@@ -149,6 +183,20 @@ func marketNFTUnlisted(evt *eth.Log, _ *logObserver) {
 		log.Errorf("could not mark token as unlisted; %s", err.Error())
 	}
 
+	// log activity
+	activity := types.Activity{
+		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
+		Time:         *lst.Closed,
+		ActType:      types.EvtListingCancelled,
+		Contract:     lst.Contract,
+		TokenId:      lst.TokenId,
+		From:         lst.Owner,
+	}
+	if err := repo.StoreActivity(&activity); err != nil {
+		log.Errorf("could not store listing activity; %s", err.Error())
+		return
+	}
+
 	log.Infof("canceled and closed listing of %s/%s owner %s", lst.Contract.String(), lst.TokenId.String(), lst.Owner.String())
 }
 
@@ -176,14 +224,14 @@ func marketItemSold(evt *eth.Log, lo *logObserver) {
 	// try to get a listing
 	lst, err := repo.GetListing(&contract, tokenID, &owner)
 	if err == nil {
-		marketCloseListingWithSale(evt, lst, blk, lo)
+		marketCloseListingWithSale(evt, lst, blk, lo, &buyer)
 		return
 	}
 
 	// try to get an offer
 	offer, err := repo.GetOffer(&contract, tokenID, &buyer)
 	if err == nil {
-		marketCloseOfferWithSale(evt, offer, blk, lo)
+		marketCloseOfferWithSale(evt, offer, blk, lo, &owner)
 		return
 	}
 
@@ -191,7 +239,7 @@ func marketItemSold(evt *eth.Log, lo *logObserver) {
 }
 
 // marketCloseListingWithSale processes a listing wrap up by a sale.
-func marketCloseListingWithSale(evt *eth.Log, lst *types.Listing, blk *eth.Header, lo *logObserver) {
+func marketCloseListingWithSale(evt *eth.Log, lst *types.Listing, blk *eth.Header, lo *logObserver, buyer *common.Address) {
 	up := time.Unix(int64(blk.Time), 0)
 	lst.Closed = (*types.Time)(&up)
 	lst.PayToken = common.BytesToAddress(evt.Data[64:96])
@@ -210,6 +258,23 @@ func marketCloseListingWithSale(evt *eth.Log, lst *types.Listing, blk *eth.Heade
 		&up,
 	); err != nil {
 		log.Errorf("could not mark token as sold; %s", err.Error())
+	}
+
+	// log activity
+	activity := types.Activity{
+		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
+		Time:         *lst.Closed,
+		ActType:      types.EvtListingSold,
+		Contract:     lst.Contract,
+		TokenId:      lst.TokenId,
+		From:         lst.Owner,
+		To:           buyer,
+		UnitPrice:    &lst.UnitPrice,
+		PayToken:     &lst.PayToken,
+	}
+	if err := repo.StoreActivity(&activity); err != nil {
+		log.Errorf("could not store listing activity; %s", err.Error())
+		return
 	}
 
 	log.Infof("closed sold listing of %s/%s owner %s", lst.Contract.String(), lst.TokenId.String(), lst.Owner.String())

@@ -72,6 +72,25 @@ func auctionCreated(evt *eth.Log, lo *logObserver) {
 		log.Errorf("could not mark token as having auction; %s", err.Error())
 	}
 
+	// log activity
+	activity := types.Activity{
+		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
+		Time:         auction.Created,
+		ActType:      types.EvtAuctionCreated,
+		Contract:     auction.Contract,
+		TokenId:      auction.TokenId,
+		Quantity:     &auction.Quantity,
+		From:         auction.Owner,
+		PayToken:     &auction.PayToken,
+		UnitPrice:    &auction.ReservePrice,
+		StartTime:    &auction.StartTime,
+		EndTime:      &auction.EndTime,
+	}
+	if err := repo.StoreActivity(&activity); err != nil {
+		log.Errorf("could not store auction activity; %s", err.Error())
+		return
+	}
+
 	log.Infof("added new auction of %s/%s started by %s", auction.Contract.String(), auction.TokenId.String(), auction.Owner.String())
 }
 
@@ -129,6 +148,28 @@ func auctionTimeBoundaryUpdated(evt *eth.Log, lo *logObserver, update func(*type
 	); err != nil {
 		log.Errorf("could not mark token as having auction; %s", err.Error())
 	}
+
+	// log activity
+	blk, err := repo.GetHeader(evt.BlockNumber)
+	if err != nil {
+		log.Errorf("could not get header #%d, %s", evt.BlockNumber, err.Error())
+		return
+	}
+	activity := types.Activity{
+		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
+		Time:         types.Time(time.Unix(int64(blk.Time), 0)),
+		ActType:      types.EvtAuctionUpdated,
+		Contract:     auction.Contract,
+		TokenId:      auction.TokenId,
+		Quantity:     &auction.Quantity,
+		From:         auction.Owner,
+		StartTime:    &auction.StartTime,
+		EndTime:      &auction.EndTime,
+	}
+	if err := repo.StoreActivity(&activity); err != nil {
+		log.Errorf("could not store auction activity; %s", err.Error())
+		return
+	}
 }
 
 // auctionReserveUpdated processes auction reserve price updated.
@@ -167,6 +208,28 @@ func auctionReserveUpdated(evt *eth.Log, lo *logObserver) {
 		(*time.Time)(&auction.Created),
 	); err != nil {
 		log.Errorf("could not mark token as having auction; %s", err.Error())
+	}
+
+	// log activity
+	blk, err := repo.GetHeader(evt.BlockNumber)
+	if err != nil {
+		log.Errorf("could not get header #%d, %s", evt.BlockNumber, err.Error())
+		return
+	}
+	activity := types.Activity{
+		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
+		Time:         types.Time(time.Unix(int64(blk.Time), 0)),
+		ActType:      types.EvtAuctionUpdated,
+		Contract:     auction.Contract,
+		TokenId:      auction.TokenId,
+		Quantity:     &auction.Quantity,
+		From:         auction.Owner,
+		UnitPrice:    &auction.ReservePrice,
+		PayToken:     &auction.PayToken,
+	}
+	if err := repo.StoreActivity(&activity); err != nil {
+		log.Errorf("could not store auction activity; %s", err.Error())
+		return
 	}
 
 	// notify subscribers
@@ -216,6 +279,21 @@ func auctionCanceled(evt *eth.Log, _ *logObserver) {
 	// mark the token as being re-auctioned
 	if err := repo.TokenMarkUnAuctioned(&auction.Contract, (*big.Int)(&auction.TokenId)); err != nil {
 		log.Errorf("could not mark token as not having auction; %s", err.Error())
+	}
+
+	// log activity
+	activity := types.Activity{
+		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
+		Time:         ts,
+		ActType:      types.EvtAuctionCancelled,
+		Contract:     auction.Contract,
+		TokenId:      auction.TokenId,
+		Quantity:     &auction.Quantity,
+		From:         auction.Owner,
+	}
+	if err := repo.StoreActivity(&activity); err != nil {
+		log.Errorf("could not store auction activity; %s", err.Error())
+		return
 	}
 
 	// notify subscribers
@@ -276,6 +354,24 @@ func auctionResolved(evt *eth.Log, lo *logObserver) {
 		(*time.Time)(&ts),
 	); err != nil {
 		log.Errorf("could not mark token as sold; %s", err.Error())
+	}
+
+	// log activity
+	activity := types.Activity{
+		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
+		Time:         ts,
+		ActType:      types.EvtAuctionResolved,
+		Contract:     auction.Contract,
+		TokenId:      auction.TokenId,
+		Quantity:     &auction.Quantity,
+		From:         auction.Owner,
+		To:           &winner,
+		UnitPrice:    auction.WinningBid,
+		PayToken:     &payToken,
+	}
+	if err := repo.StoreActivity(&activity); err != nil {
+		log.Errorf("could not store auction activity; %s", err.Error())
+		return
 	}
 
 	// notify subscribers

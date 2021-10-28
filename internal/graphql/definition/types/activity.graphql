@@ -1,0 +1,49 @@
+# TokenEventType represents type of TokenEvent.
+enum ActivityType {
+    UNKNOWN
+    LISTING_CREATED
+    LISTING_UPDATED
+    LISTING_CANCELLED
+    LISTING_SOLD
+    OFFER_CREATED
+    OFFER_CANCELLED
+    OFFER_SOLD
+    AUCTION_CREATED
+    AUCTION_BID
+    AUCTION_BID_WITHDRAW
+    AUCTION_CANCELLED
+    AUCTION_RESOLVED
+    AUCTION_UPDATED
+}
+
+# Activity represents an event that happened on a market-sellable NFT token.
+type Activity {
+    time: Time!
+    type: ActivityType!
+    contract: Address!
+    tokenId: BigInt!
+    quantity: BigInt
+    from: Address!
+    to: Address
+    payToken: Address
+    unitPrice: BigInt
+    startTime: Time
+    endTime: Time
+    token: Token
+}
+
+type ActivityEdge {
+    cursor: Cursor!
+    node: Activity!
+}
+
+type ActivityConnection {
+    # Edges contains provided edges of the sequential list.
+    edges: [ActivityEdge!]!
+
+    # TotalCount is the total amount of items in the list.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of the list.
+    pageInfo: PageInfo!
+}

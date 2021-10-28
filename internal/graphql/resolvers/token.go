@@ -188,6 +188,18 @@ func (t *Token) Offers(args struct{ PaginationInput }) (con *OfferConnection, er
 	return NewOfferConnection(list)
 }
 
+func (t Token) Activities(args struct{ PaginationInput }) (con *ActivityConnection, err error) {
+	cursor, count, backward, err := args.ToRepositoryInput()
+	if err != nil {
+		return nil, err
+	}
+	list, err := repository.R().ListActivities(&t.Contract, &t.TokenId, nil, cursor, count, backward)
+	if err != nil {
+		return nil, err
+	}
+	return NewActivityConnection(list)
+}
+
 func (t *Token) Auction() (auction *Auction, err error) {
 	a, err := repository.R().GetAuction(&t.Contract, (*big.Int)(&t.TokenId))
 	if err != nil {
