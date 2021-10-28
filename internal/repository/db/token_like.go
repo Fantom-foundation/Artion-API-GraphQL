@@ -77,6 +77,17 @@ func (sdb *SharedMongoDbBridge) GetTokenLikesCount(contract *common.Address, tok
 	})
 }
 
+// IsTokenLiked get like status of the token for given user
+func (sdb *SharedMongoDbBridge) IsTokenLiked(user *common.Address, contract *common.Address, tokenId *big.Int) (bool, error) {
+	col := sdb.client.Database(sdb.dbName).Collection(coTokenLikes)
+	count, err := col.CountDocuments(context.Background(), bson.D{
+		{Key: fiTokenLikeUser, Value: strings.ToLower(user.String())},
+		{Key: fiTokenLikeContract, Value: strings.ToLower(contract.String()) },
+		{Key: fiTokenLikeToken, Value: int32(tokenId.Int64()) },
+	})
+	return count != 0, err
+}
+
 func (sdb *SharedMongoDbBridge) ListUserTokenLikes(user *common.Address, cursor types.Cursor, count int, backward bool) (out *types.TokenLikeList, err error) {
 	filter := bson.D{ {Key: fiTokenLikeUser, Value: strings.ToLower(user.String())} }
 	return sdb.listTokenLikes(filter, cursor, count, backward)

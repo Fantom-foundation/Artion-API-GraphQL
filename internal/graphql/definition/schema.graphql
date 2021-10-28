@@ -67,8 +67,11 @@ type Mutation {
     # Update shipping address for tokens redeem.
     updateShippingAddress(address: InputShippingAddress!): Boolean!
 
-    # Set unlockable content attached to a NFT token (only token owner)
+    # Set unlockable content attached to a NFT token (only token owner and only once)
     setUnlockableContent(contract: Address!, tokenId: BigInt!, content: String!): Boolean!
+
+    # Increment amount of views of the token.
+    incrementTokenViews(contract: Address!, tokenId: BigInt!): Boolean!
 }
 
 type Subscription {
