@@ -19,6 +19,11 @@ func (p *Proxy) GetTokenLikesCount(contract *common.Address, token *big.Int) (co
 	return p.shared.GetTokenLikesCount(contract, token)
 }
 
+// IsTokenLiked get like status of the token for given user
+func (p *Proxy) IsTokenLiked(user *common.Address, contract *common.Address, tokenId *big.Int) (bool, error) {
+	return p.shared.IsTokenLiked(user, contract, tokenId)
+}
+
 func (p *Proxy) ListUserTokenLikes(user *common.Address, cursor types.Cursor, count int, backward bool) (out *types.TokenLikeList, err error) {
 	return p.shared.ListUserTokenLikes(user, cursor, count, backward)
 }

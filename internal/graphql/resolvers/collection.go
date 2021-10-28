@@ -115,3 +115,22 @@ func (t Collection) IsActive() (bool, error) {
 	}
 	return t.dbCollection.IsActive, nil
 }
+
+func (rs *RootResolver) Collection(args struct {
+	Contract common.Address
+}) (*Collection, error) {
+	Collection := Collection{Contract: args.Contract}
+	return &Collection, nil
+}
+
+func (rs *RootResolver) Collections(args struct{ PaginationInput }) (con *CollectionConnection, err error) {
+	cursor, count, backward, err := args.ToRepositoryInput()
+	if err != nil {
+		return nil, err
+	}
+	list, err := repository.R().ListCollections(cursor, count, backward)
+	if err != nil {
+		return nil, err
+	}
+	return NewCollectionConnection(list)
+}

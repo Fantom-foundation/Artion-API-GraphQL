@@ -1,9 +1,11 @@
 package resolvers
 
 import (
+	"artion-api-graphql/internal/auth"
 	"artion-api-graphql/internal/repository"
 	"artion-api-graphql/internal/types"
 	"artion-api-graphql/internal/types/sorting"
+	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -134,6 +136,22 @@ func (t *Token) Likes() (hexutil.Big, error) {
 	return hexutil.Big(*big.NewInt(count)), nil
 }
 
+func (t *Token) IsLiked(ctx context.Context) (bool, error) {
+	identity, err := auth.GetIdentityOrNil(ctx)
+	if identity == nil || err != nil {
+		return false, err
+	}
+	return repository.R().IsTokenLiked(identity, &t.Contract, (*big.Int)(&t.TokenId))
+}
+
+func (t *Token) Views() (hexutil.Big, error) {
+	count, err := repository.R().GetTokenViews(t.Contract, big.Int(t.TokenId))
+	if err != nil {
+		return hexutil.Big{}, err
+	}
+	return hexutil.Big(*count), nil
+}
+
 func (t *Token) Ownerships(args struct{ PaginationInput }) (con *OwnershipConnection, err error) {
 	cursor, count, backward, err := args.ToRepositoryInput()
 	if err != nil {
@@ -182,4 +200,42 @@ func (t *Token) Auction() (auction *Auction, err error) {
 func (edge TokenEdge) Cursor() (types.Cursor, error) {
 	// dbToken is always already loaded when in Edge
 	return edge.sorting.GetCursor((*types.Token)(edge.Node))
+}
+
+func (rs *RootResolver) Token(args struct {
+	Contract common.Address
+	TokenId  hexutil.Big
+}) (*Token, error) {
+	return NewToken(&args.Contract, &args.TokenId)
+}
+
+func (rs *RootResolver) Tokens(args struct {
+	Filter  *types.TokenFilter
+	SortBy  *string
+	SortDir *string
+	PaginationInput
+}) (con *TokenConnection, err error) {
+	cursor, count, backward, err := args.ToRepositoryInput()
+	if err != nil {
+		return nil, err
+	}
+	sorting, err := tokenSortingFromString(args.SortBy)
+	if err != nil {
+		return nil, err
+	}
+
+	list, err := repository.R().ListTokens(args.Filter, sorting, isSortingDirectionDesc(args.SortDir), cursor, count, backward)
+	if err != nil {
+		return nil, err
+	}
+	return NewTokenConnection(list, sorting)
+}
+
+// IncrementTokenViews increments amount of views of the token.
+func (rs *RootResolver) IncrementTokenViews(args struct {
+	Contract common.Address
+	TokenId  hexutil.Big
+}) (bool, error) {
+	err := repository.R().IncrementTokenViews(args.Contract, big.Int(args.TokenId))
+	return err == nil, err
 }
