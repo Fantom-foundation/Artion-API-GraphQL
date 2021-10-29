@@ -51,9 +51,15 @@ func (p *Proxy) SendEmailNotificationBySendGrid(no *types.Notification, nt *type
 		return fmt.Errorf("user not found at %s", no.Recipient.String())
 	}
 
+	// assign recipient
+	recipient := nt.Recipient
+	if recipient == nil && nil != user.Email && strings.TrimSpace(*user.Email) != "" {
+		recipient = user.Email
+	}
+
 	// any email set on User
-	if nil == user.Email || strings.TrimSpace(*user.Email) == "" {
-		log.Warningf("no email set on user %s", no.Recipient.String())
+	if nil == recipient {
+		log.Warningf("no recipient on user %s", no.Recipient.String())
 		return nil
 	}
 
@@ -66,7 +72,7 @@ func (p *Proxy) SendEmailNotificationBySendGrid(no *types.Notification, nt *type
 	// send the email
 	err = email.SendGridDeliverDynamicTemplate(
 		mail.NewEmail(nt.SenderName, nt.SenderID),
-		mail.NewEmail("", *user.Email),
+		mail.NewEmail("", *recipient),
 		nt.TemplateID,
 		nt.Subject,
 		dynamicTemplateData(no, user, addr, nt.ExtendedParams),
