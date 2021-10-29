@@ -11,7 +11,7 @@ const (
 	maxNotificationAgeDelivery = -24 * time.Hour
 
 	// notificationQueueTerminateDelay is the delay we let the queue clear out before forced termination.
-	notificationQueueTerminateDelay = 5 * time.Second
+	notificationQueueTerminateDelay = 2 * time.Second
 )
 
 // represents a function callback for notification delivery
