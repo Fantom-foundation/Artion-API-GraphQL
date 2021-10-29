@@ -59,16 +59,7 @@ func (db *MongoDbBridge) NotificationTemplates(nt int32, contract *common.Addres
 	// get the collection
 	col := db.client.Database(db.dbName).Collection(coNotificationTemplates)
 
-	// base filter for notification type
-	filter := bson.D{{Key: "type", Value: nt}}
-	if contract != nil {
-		filter = append(filter, bson.E{Key: "contract", Value: *contract})
-	}
-	if tokenID != nil {
-		filter = append(filter, bson.E{Key: "token", Value: *tokenID})
-	}
-
-	list := loadNotificationTemplates(col, filter)
+	list := loadNotificationTemplates(col, notificationTemplateFilter(nt, contract, tokenID))
 	if list != nil && len(list) > 0 {
 		return list
 	}
@@ -83,6 +74,29 @@ func (db *MongoDbBridge) NotificationTemplates(nt int32, contract *common.Addres
 		return db.NotificationTemplates(nt, nil, nil)
 	}
 	return make([]types.NotificationTemplate, 0)
+}
+
+// notificationTemplateFilter generates BSON filter for the given set of params.
+func notificationTemplateFilter(nt int32, contract *common.Address, tokenID *hexutil.Big) bson.D {
+	// base filter for notification type
+	filter := bson.D{{Key: "type", Value: nt}}
+
+	// filter contract address set or nil
+	if contract != nil {
+		filter = append(filter, bson.E{Key: "contract", Value: *contract})
+	} else {
+		filter = append(filter, bson.E{Key: "contract", Value: bson.D{{Key: "$type", Value: 10}}})
+	}
+
+	// filter token ID set or nil
+	if tokenID != nil {
+		filter = append(filter, bson.E{Key: "token", Value: *tokenID})
+	} else {
+		filter = append(filter, bson.E{Key: "token", Value: bson.D{{Key: "$type", Value: 10}}})
+	}
+
+	log.Infof("loading notification templates for filter %#v", filter)
+	return filter
 }
 
 // loadNotificationTemplates loads a list of notification templates
