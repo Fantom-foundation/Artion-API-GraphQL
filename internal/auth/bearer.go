@@ -7,11 +7,14 @@ import (
 	"time"
 )
 
+// bearerTokenDefaultExpiration represents the default expiration of the bearer token
+const bearerTokenDefaultExpiration = 365 * 24 * time.Hour
+
 // generateBearer creates long-term login session token.
 func generateBearer(user *common.Address, secret []byte) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": user.String(),
-		"exp": time.Now().Add(12 * time.Hour).Unix(),
+		"exp": time.Now().Add(bearerTokenDefaultExpiration).Unix(),
 	})
 	return token.SignedString(secret)
 }
