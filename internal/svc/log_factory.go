@@ -35,7 +35,7 @@ func newNFTContract(evt *eth.Log, lo *logObserver) {
 	}
 
 	// add the collection to persistent storage
-	if err := repository.R().AddCollection(&nft); err != nil {
+	if err := repository.R().StoreCollection(&nft); err != nil {
 		log.Criticalf("can not store NFT collection %s; %s", nft.Address.String(), err.Error())
 		return
 	}

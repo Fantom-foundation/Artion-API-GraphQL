@@ -18,8 +18,8 @@ const (
 	fiCollectionAddress = "_id"
 )
 
-// AddCollection adds the specified NFT collection contract record if it does not exist yet.
-func (db *MongoDbBridge) AddCollection(nft *types.Collection) error {
+// StoreCollection adds the specified NFT collection contract record if it does not exist yet.
+func (db *MongoDbBridge) StoreCollection(nft *types.Collection) error {
 	col := db.client.Database(db.dbName).Collection(coCollection)
 	if db.isCollectionKnown(col, nft) {
 		return nil
