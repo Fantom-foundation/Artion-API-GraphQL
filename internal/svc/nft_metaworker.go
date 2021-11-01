@@ -104,7 +104,9 @@ func (mw *nftMetadataWorker) update(tok *types.Token) error {
 	// update the data
 	tok.ScheduleMetaUpdateOnSuccess()
 	tok.Name = strings.TrimSpace(md.Name)
-	tok.Description = strings.TrimSpace(md.Description)
+	if md.Description != nil {
+		tok.Description = strings.TrimSpace(*md.Description)
+	}
 	if md.Image != nil {
 		tok.ImageURI = strings.TrimSpace(*md.Image)
 	}

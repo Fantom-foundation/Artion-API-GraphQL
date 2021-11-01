@@ -101,8 +101,8 @@ func StoreToken(identity common.Address, image types.Image, req *http.Request) (
 	if err != nil {
 		return "", fmt.Errorf("failed to parse json metadata; %s", err)
 	}
-	if metadata.Name == "" || metadata.Description == "" || metadata.Properties.Symbol == "" {
-		return "", fmt.Errorf("required token metadata not defined in json metadata")
+	if metadata.Name == "" {
+		return "", fmt.Errorf("token name not defined in json metadata")
 	}
 
 	// override author address
