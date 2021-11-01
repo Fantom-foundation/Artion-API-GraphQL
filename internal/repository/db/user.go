@@ -37,7 +37,7 @@ const (
 func (sdb *SharedMongoDbBridge) GetUser(address common.Address) (user *types.User, err error) {
 	col := sdb.client.Database(sdb.dbName).Collection(coUsers)
 
-	filter := bson.D{{ Key: fiUserAddress, Value: strings.ToLower(address.String()) }}
+	filter := bson.D{{Key: fiUserAddress, Value: strings.ToLower(address.String())}}
 	result := col.FindOne(context.Background(), filter)
 
 	if result.Err() != nil {
@@ -56,7 +56,8 @@ func (sdb *SharedMongoDbBridge) GetUser(address common.Address) (user *types.Use
 	return &row, err
 }
 
-func (sdb *SharedMongoDbBridge) UpsertUser(User *types.User) error {
+// StoreUser inserts or updates existing user record based on the unique address.
+func (sdb *SharedMongoDbBridge) StoreUser(User *types.User) error {
 	if User == nil {
 		return fmt.Errorf("no value to store")
 	}
@@ -64,14 +65,14 @@ func (sdb *SharedMongoDbBridge) UpsertUser(User *types.User) error {
 
 	if _, err := col.UpdateOne(
 		context.Background(),
-		bson.D{{ Key: fiUserAddress, Value: strings.ToLower(User.Address.String()) }},
+		bson.D{{Key: fiUserAddress, Value: strings.ToLower(User.Address.String())}},
 		bson.D{
-			{ Key: "$set", Value: bson.D{
+			{Key: "$set", Value: bson.D{
 				{Key: fiUserUsername, Value: User.Username},
 				{Key: fiUserEmail, Value: User.Email},
 				{Key: fiUserBio, Value: User.Bio},
 				{Key: fiUserUpdated, Value: types.Time(time.Now())},
-			} },
+			}},
 			{Key: "$setOnInsert", Value: bson.D{
 				{Key: fiUserAddress, Value: strings.ToLower(User.Address.String())},
 				{Key: fiUserCreated, Value: types.Time(time.Now())},
@@ -90,12 +91,12 @@ func (sdb *SharedMongoDbBridge) SetUserAvatar(user common.Address, imageCid stri
 
 	if _, err := col.UpdateOne(
 		context.Background(),
-		bson.D{{ Key: fiUserAddress, Value: strings.ToLower(user.String()) }},
+		bson.D{{Key: fiUserAddress, Value: strings.ToLower(user.String())}},
 		bson.D{
-			{ Key: "$set", Value: bson.D{
+			{Key: "$set", Value: bson.D{
 				{Key: fiUserAvatar, Value: imageCid},
 				{Key: fiUserUpdated, Value: types.Time(time.Now())},
-			} },
+			}},
 			{Key: "$setOnInsert", Value: bson.D{
 				{Key: fiUserAddress, Value: strings.ToLower(user.String())},
 				{Key: fiUserCreated, Value: types.Time(time.Now())},
@@ -114,12 +115,12 @@ func (sdb *SharedMongoDbBridge) SetUserBanner(user common.Address, imageCid stri
 
 	if _, err := col.UpdateOne(
 		context.Background(),
-		bson.D{{ Key: fiUserAddress, Value: strings.ToLower(user.String()) }},
+		bson.D{{Key: fiUserAddress, Value: strings.ToLower(user.String())}},
 		bson.D{
-			{ Key: "$set", Value: bson.D{
+			{Key: "$set", Value: bson.D{
 				{Key: fiUserBanner, Value: imageCid},
 				{Key: fiUserUpdated, Value: types.Time(time.Now())},
-			} },
+			}},
 			{Key: "$setOnInsert", Value: bson.D{
 				{Key: fiUserAddress, Value: strings.ToLower(user.String())},
 				{Key: fiUserCreated, Value: types.Time(time.Now())},

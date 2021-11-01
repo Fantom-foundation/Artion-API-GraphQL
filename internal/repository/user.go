@@ -13,8 +13,8 @@ func (p *Proxy) GetUser(address common.Address) (*types.User, error) {
 	return user.(*types.User), err
 }
 
-func (p *Proxy) UpsertUser(User *types.User) error {
-	return p.shared.UpsertUser(User)
+func (p *Proxy) StoreUser(User *types.User) error {
+	return p.shared.StoreUser(User)
 }
 
 func (p *Proxy) UploadUserAvatar(address common.Address, image types.Image) error {

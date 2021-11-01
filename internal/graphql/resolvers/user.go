@@ -164,8 +164,8 @@ func (rs *RootResolver) LoggedUser(ctx context.Context) (user *User, err error) 
 }
 
 func (rs *RootResolver) UpdateUser(ctx context.Context, args struct {
-	Username string
-	Bio      string
+	Username *string
+	Bio      *string
 	Email    string
 }) (bool, error) {
 	address, err := auth.GetIdentityOrErr(ctx)
@@ -174,11 +174,11 @@ func (rs *RootResolver) UpdateUser(ctx context.Context, args struct {
 	}
 	user := types.User{
 		Address:  *address,
-		Username: &args.Username,
-		Bio:      &args.Bio,
+		Username: args.Username,
+		Bio:      args.Bio,
 		Email:    &args.Email,
 	}
-	err = repository.R().UpsertUser(&user)
+	err = repository.R().StoreUser(&user)
 	return err == nil, err
 }
 

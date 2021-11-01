@@ -50,7 +50,7 @@ type Mutation {
     login(user: Address!, challenge: String!, signature: String!): String!
 
     # Update user profile
-    updateUser(username: String!, bio: String!, email: String!): Boolean!
+    updateUser(username: String, bio: String, email: String!): Boolean!
 
     # Add token into favourite tokens of logged user.
     likeToken(contract: Address!, tokenId: BigInt!): Boolean!
