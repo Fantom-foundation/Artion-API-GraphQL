@@ -47,3 +47,7 @@ type ActivityConnection {
     # PageInfo is an information about the current page of the list.
     pageInfo: PageInfo!
 }
+
+input ActivityFilter {
+    types: [ActivityType!]
+}

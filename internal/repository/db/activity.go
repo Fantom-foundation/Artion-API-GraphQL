@@ -20,6 +20,7 @@ const (
 	fiActivityTokenId = "token"
 	fiActivityFrom = "from"
 	fiActivityTo   = "to"
+	fiActivityType = "type"
 )
 
 func (db *MongoDbBridge) StoreActivity(activity *types.Activity) error {
@@ -38,7 +39,7 @@ func (db *MongoDbBridge) StoreActivity(activity *types.Activity) error {
 	return nil
 }
 
-func (db *MongoDbBridge) ListActivities(contract *common.Address, tokenId *hexutil.Big, user *common.Address, cursor types.Cursor, count int, backward bool) (out *types.ActivityList, err error) {
+func (db *MongoDbBridge) ListActivities(contract *common.Address, tokenId *hexutil.Big, user *common.Address, actTypes []types.ActivityType, cursor types.Cursor, count int, backward bool) (out *types.ActivityList, err error) {
 	filter := bson.D{}
 	if contract != nil {
 		filter = append(filter, primitive.E{Key: fiActivityContract, Value: contract.String() })
@@ -57,6 +58,9 @@ func (db *MongoDbBridge) ListActivities(contract *common.Address, tokenId *hexut
 				Value: user.String(),
 			}}},
 		})
+	}
+	if actTypes != nil {
+		filter = append(filter, bson.E{Key: fiActivityType, Value: bson.D{{Key: "$in", Value: actTypes}}})
 	}
 	return db.listActivities(filter, cursor, count, backward)
 }

@@ -188,12 +188,21 @@ func (t *Token) Offers(args struct{ PaginationInput }) (con *OfferConnection, er
 	return NewOfferConnection(list)
 }
 
-func (t Token) Activities(args struct{ PaginationInput }) (con *ActivityConnection, err error) {
+func (t Token) Activities(args struct{
+	Filter *ActivityFilter
+	PaginationInput
+}) (con *ActivityConnection, err error) {
 	cursor, count, backward, err := args.ToRepositoryInput()
 	if err != nil {
 		return nil, err
 	}
-	list, err := repository.R().ListActivities(&t.Contract, &t.TokenId, nil, cursor, count, backward)
+	var actTypes []types.ActivityType
+	if args.Filter != nil && args.Filter.Types != nil {
+		for _, strType := range *args.Filter.Types {
+			actTypes = append(actTypes, ActivityTypeFromString(strType))
+		}
+	}
+	list, err := repository.R().ListActivities(&t.Contract, &t.TokenId, nil, actTypes, cursor, count, backward)
 	if err != nil {
 		return nil, err
 	}

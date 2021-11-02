@@ -180,12 +180,21 @@ func (user User) Following(args struct{ PaginationInput }) (con *FollowConnectio
 	return NewFollowConnection(list)
 }
 
-func (user User) Activities(args struct{ PaginationInput }) (con *ActivityConnection, err error) {
+func (user User) Activities(args struct{
+	Filter *ActivityFilter
+	PaginationInput
+}) (con *ActivityConnection, err error) {
 	cursor, count, backward, err := args.ToRepositoryInput()
 	if err != nil {
 		return nil, err
 	}
-	list, err := repository.R().ListActivities(nil, nil, &user.Address, cursor, count, backward)
+	var actTypes []types.ActivityType
+	if args.Filter != nil && args.Filter.Types != nil {
+		for _, strType := range *args.Filter.Types {
+			actTypes = append(actTypes, ActivityTypeFromString(strType))
+		}
+	}
+	list, err := repository.R().ListActivities(nil, nil, &user.Address, actTypes, cursor, count, backward)
 	if err != nil {
 		return nil, err
 	}

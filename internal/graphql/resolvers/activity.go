@@ -23,6 +23,10 @@ type ActivityConnection struct {
 	PageInfo   PageInfo
 }
 
+type ActivityFilter struct {
+	Types *[]string
+}
+
 func NewActivityConnection(list *types.ActivityList) (con *ActivityConnection, err error) {
 	con = new(ActivityConnection)
 	con.TotalCount = (hexutil.Big)(*big.NewInt(list.TotalCount))
@@ -85,4 +89,36 @@ func ActivityTypeToString(t types.ActivityType) string {
 		return "AUCTION_UPDATED"
 	}
 	return "UNKNOWN"
+}
+
+func ActivityTypeFromString(t string) types.ActivityType {
+	switch t {
+	case "LISTING_CREATED":
+		return types.EvtListingCreated
+	case "LISTING_UPDATED":
+		return types.EvtListingUpdated
+	case "LISTING_CANCELLED":
+		return types.EvtListingCancelled
+	case "LISTING_SOLD":
+		return types.EvtListingSold
+	case "OFFER_CREATED":
+		return types.EvtOfferCreated
+	case "OFFER_CANCELLED":
+		return types.EvtOfferCancelled
+	case "OFFER_SOLD":
+		return types.EvtOfferSold
+	case "AUCTION_CREATED":
+		return types.EvtAuctionCreated
+	case "AUCTION_BID":
+		return types.EvtAuctionBid
+	case "AUCTION_BID_WITHDRAW":
+		return types.EvtAuctionBidWithdrawn
+	case "AUCTION_CANCELLED":
+		return types.EvtAuctionCancelled
+	case "AUCTION_RESOLVED":
+		return types.EvtAuctionResolved
+	case "AUCTION_UPDATED":
+		return types.EvtAuctionUpdated
+	}
+	return types.EvtUnknown
 }
