@@ -9,11 +9,66 @@ import (
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"math/big"
 )
 
 type User struct {
 	Address common.Address
 	dbUser  *types.User // data for user loaded from Mongo
+}
+
+type UserEdge struct {
+	Node    *User
+}
+
+// Cursor generates unique row identifier of the scrollable Tokens list.
+func (edge UserEdge) Cursor() (types.Cursor, error) {
+	// dbUser is always already loaded when in Edge
+	return sorting.UserSortingNone.GetCursor(edge.Node.dbUser)
+}
+
+type UserConnection struct {
+	Edges      []UserEdge
+	TotalCount hexutil.Big
+	PageInfo   PageInfo
+}
+
+// NewUserConnection creates new resolver of scrollable User list connector.
+func NewUserConnection(list *types.UserList) (con *UserConnection, err error) {
+	con = new(UserConnection)
+
+	con.TotalCount = (hexutil.Big)(*big.NewInt(list.TotalCount))
+	con.Edges = make([]UserEdge, len(list.Collection))
+
+	for i := 0; i < len(list.Collection); i++ {
+		user := User{
+			Address: list.Collection[i].Address,
+			dbUser: list.Collection[i],
+		}
+		con.Edges[i] = UserEdge{
+			Node:    &user,
+		}
+	}
+
+	con.PageInfo.HasNextPage = list.HasNext
+	con.PageInfo.HasPreviousPage = list.HasPrev
+
+	if len(list.Collection) > 0 {
+		startCur, err := con.Edges[0].Cursor()
+		if err != nil {
+			return nil, err
+		}
+
+		endCur, err := con.Edges[len(con.Edges)-1].Cursor()
+		if err != nil {
+			return nil, err
+		}
+
+		con.PageInfo.StartCursor = &startCur
+		con.PageInfo.EndCursor = &endCur
+	}
+	return con, err
 }
 
 func (user User) Username() (*string, error) {
@@ -192,4 +247,23 @@ func (rs *RootResolver) Login(args struct {
 	Signature string
 }) (string, error) {
 	return auth.GetAuthenticator().GenerateBearer(args.Challenge, args.User, args.Signature)
+}
+
+func (rs *RootResolver) Users(args struct {
+	Search  *string
+	PaginationInput
+}) (con *UserConnection, err error) {
+	cursor, count, backward, err := args.ToRepositoryInput()
+	if err != nil {
+		return nil, err
+	}
+	search := ""
+	if args.Search != nil {
+		search = *args.Search
+	}
+	list, err := repository.R().ListUserUsers(search, cursor, count, backward)
+	if err != nil {
+		return nil, err
+	}
+	return NewUserConnection(list)
 }

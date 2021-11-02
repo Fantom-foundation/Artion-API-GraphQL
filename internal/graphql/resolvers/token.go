@@ -210,7 +210,6 @@ func (t *Token) Auction() (auction *Auction, err error) {
 
 // Cursor generates unique row identifier of the scrollable Tokens list.
 func (edge TokenEdge) Cursor() (types.Cursor, error) {
-	// dbToken is always already loaded when in Edge
 	return edge.sorting.GetCursor((*types.Token)(edge.Node))
 }
 

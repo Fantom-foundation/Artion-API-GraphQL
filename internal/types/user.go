@@ -3,10 +3,12 @@ package types
 
 import (
 	"github.com/ethereum/go-ethereum/common"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // User represents user account/profile.
 type User struct {
+	Id       primitive.ObjectID `bson:"_id"`
 	Address  common.Address `bson:"address"`
 	Username *string        `bson:"alias"`
 	Email    *string        `bson:"email"`

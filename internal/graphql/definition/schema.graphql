@@ -28,6 +28,9 @@ type Query {
     # Get user by address
     user(address: Address!): User!
 
+    # List or search users
+    users(search: String, first: Int, after: Cursor, last: Int, before: Cursor): UserConnection!
+
     # randomTrade resolves a Random ERC-721 NFT Trade by address.
     randomTrade(contract: Address!): RandomTrade
 

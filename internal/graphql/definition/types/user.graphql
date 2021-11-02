@@ -39,3 +39,19 @@ type User {
     # Past activities on tokens (trades, listing created, auction bid, etc.)
     activities(first: Int, after: Cursor, last: Int, before: Cursor): ActivityConnection!
 }
+
+type UserEdge {
+    cursor: Cursor!
+    node: User!
+}
+
+type UserConnection {
+    # Edges contains provided edges of the sequential list.
+    edges: [UserEdge!]!
+
+    # TotalCount is the total amount of items in the list.
+    totalCount: BigInt!
+
+    # PageInfo is an information about the current page of the list.
+    pageInfo: PageInfo!
+}

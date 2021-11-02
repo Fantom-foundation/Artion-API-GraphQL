@@ -13,6 +13,10 @@ func (p *Proxy) GetUser(address common.Address) (*types.User, error) {
 	return user.(*types.User), err
 }
 
+func (p *Proxy) ListUserUsers(search string, cursor types.Cursor, count int, backward bool) (out *types.UserList, err error) {
+	return p.shared.ListUserUsers(search, cursor, count, backward)
+}
+
 func (p *Proxy) StoreUser(User *types.User) error {
 	return p.shared.StoreUser(User)
 }

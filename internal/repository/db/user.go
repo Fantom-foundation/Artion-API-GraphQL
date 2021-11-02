@@ -2,10 +2,12 @@ package db
 
 import (
 	"artion-api-graphql/internal/types"
+	"artion-api-graphql/internal/types/sorting"
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"strings"
@@ -132,4 +134,62 @@ func (sdb *SharedMongoDbBridge) SetUserBanner(user common.Address, imageCid stri
 		return err
 	}
 	return nil
+}
+
+func (sdb *SharedMongoDbBridge) ListUserUsers(search string, cursor types.Cursor, count int, backward bool) (out *types.UserList, err error) {
+	filter := bson.D{}
+	if search != "" {
+		filter = append(filter, bson.E{Key: fiUserUsername, Value: primitive.Regex{
+			Pattern: search,
+			Options: "i",
+		}})
+	}
+	return sdb.listUsers(filter, cursor, count, backward)
+}
+
+func (sdb *SharedMongoDbBridge) listUsers(filter bson.D, cursor types.Cursor, count int, backward bool) (out *types.UserList, err error) {
+	db := (*MongoDbBridge)(sdb)
+	var list types.UserList
+	col := db.client.Database(db.dbName).Collection(coUsers)
+	ctx := context.Background()
+
+	list.TotalCount, err = db.getTotalCount(col, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	ld, err := db.findPaginated(col, filter, cursor, count, sorting.UserSortingNone, backward)
+	if err != nil {
+		log.Errorf("error loading users list; %s", err.Error())
+		return nil, err
+	}
+
+	// close the cursor as we leave
+	defer func() {
+		err = ld.Close(ctx)
+		if err != nil {
+			log.Errorf("error closing user list cursor; %s", err.Error())
+		}
+	}()
+
+	for ld.Next(ctx) {
+		if len(list.Collection) < count {
+			var row types.User
+			if err = ld.Decode(&row); err != nil {
+				log.Errorf("can not decode the user in list; %s", err.Error())
+				return nil, err
+			}
+			list.Collection = append(list.Collection, &row)
+		} else {
+			list.HasNext = true
+		}
+	}
+
+	if cursor != "" {
+		list.HasPrev = true
+	}
+	if backward {
+		list.Reverse()
+	}
+	return &list, nil
 }
