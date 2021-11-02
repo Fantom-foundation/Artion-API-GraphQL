@@ -1,4 +1,4 @@
-# TokenEventType represents type of TokenEvent.
+# ActivityType represents type of Activity.
 enum ActivityType {
     UNKNOWN
     LISTING_CREATED

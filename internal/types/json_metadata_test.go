@@ -29,5 +29,5 @@ func TestJsonDecode(t *testing.T) {
 	meta, err = DecodeJsonMetadata([]byte(data))
 	g.Expect(err).To(gomega.BeNil())
 	g.Expect(meta.Name).To(gomega.Equal("tst"))
-	g.Expect(meta.Properties.Collection).To(gomega.Equal("Collection"))
+	g.Expect(*meta.Properties.Collection).To(gomega.Equal("Collection"))
 }
