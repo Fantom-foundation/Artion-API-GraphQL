@@ -1,0 +1,97 @@
+# NotificationSettings represents notification settings for a user.
+type NotificationSettings {
+    # Your Activity Notifications
+    sNotification: Boolean!
+    # You have purchased a bundle.
+    sBundleBuy: Boolean!
+    # Your bundle is sold.
+    sBundleSell: Boolean!
+    # You get an offer for your bundle.
+    sBundleOffer: Boolean!
+    # An offer to your bundle is canceled.
+    sBundleOfferCancel: Boolean!
+    # The bid price to your auction is updated.
+    sNftAuctionPrice: Boolean!
+    # You get a bid to your auction.
+    sNftBidToAuction: Boolean!
+    # A bid to your auction is canceled.
+    sNftBidToAuctionCancel: Boolean!
+    # You purchased a nft in auction.
+    sAuctionWin: Boolean!
+    # An auction you made a bid is canceled.
+    sAuctionOfBidCancel: Boolean!
+    # Your nft item is sold.
+    sNftSell: Boolean!
+    # You purchased a new nft item.
+    sNftBuy: Boolean!
+    # You get an offer to your nft item.
+    sNftOffer: Boolean!
+    # An offer to your nft item is canceled.
+    sNftOfferCancel: Boolean!
+
+    # Follower Activity Notifications
+    fNotification: Boolean!
+    # New bundle creation by follower
+    fBundleCreation: Boolean!
+    # Bundle Listing by follower
+    fBundleList: Boolean!
+    # Bundle Price Update by follower
+    fBundlePrice: Boolean!
+    # NFT Auction Price update by follower
+    fNftAuctionPrice: Boolean!
+    # NFT Listing by follower
+    fNftList: Boolean!
+    # New NFT Auction
+    fNftAuction: Boolean!
+    # NFT Price Update by follower
+    fNftPrice: Boolean!
+}
+
+# InputNotificationSettings represents notification settings for a user.
+input InputNotificationSettings {
+    # Your Activity Notifications
+    sNotification: Boolean!
+    # You have purchased a bundle.
+    sBundleBuy: Boolean!
+    # Your bundle is sold.
+    sBundleSell: Boolean!
+    # You get an offer for your bundle.
+    sBundleOffer: Boolean!
+    # An offer to your bundle is canceled.
+    sBundleOfferCancel: Boolean!
+    # The bid price to your auction is updated.
+    sNftAuctionPrice: Boolean!
+    # You get a bid to your auction.
+    sNftBidToAuction: Boolean!
+    # A bid to your auction is canceled.
+    sNftBidToAuctionCancel: Boolean!
+    # You purchased a nft in auction.
+    sAuctionWin: Boolean!
+    # An auction you made a bid is canceled.
+    sAuctionOfBidCancel: Boolean!
+    # Your nft item is sold.
+    sNftSell: Boolean!
+    # You purchased a new nft item.
+    sNftBuy: Boolean!
+    # You get an offer to your nft item.
+    sNftOffer: Boolean!
+    # An offer to your nft item is canceled.
+    sNftOfferCancel: Boolean!
+
+    # Follower Activity Notifications
+    fNotification: Boolean!
+    # New bundle creation by follower
+    fBundleCreation: Boolean!
+    # Bundle Listing by follower
+    fBundleList: Boolean!
+    # Bundle Price Update by follower
+    fBundlePrice: Boolean!
+    # NFT Auction Price update by follower
+    fNftAuctionPrice: Boolean!
+    # NFT Listing by follower
+    fNftList: Boolean!
+    # New NFT Auction
+    fNftAuction: Boolean!
+    # NFT Price Update by follower
+    fNftPrice: Boolean!
+}

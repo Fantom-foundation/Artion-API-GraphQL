@@ -9,7 +9,7 @@ type User {
     # User bio (description)
     bio: String
 
-    # User email (null when not set or visible)
+    # User email (null when not set or not visible)
     email: String
 
     # IPFS hash of the user avatar image

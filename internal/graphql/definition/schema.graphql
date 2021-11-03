@@ -40,6 +40,9 @@ type Query {
     # Get currently set shipping address for tokens redeem.
     loggedUserShippingAddress: ShippingAddress
 
+    # Get notification settings of logged user
+    notificationSettings: NotificationSettings
+
     # Get unlockable content attached to a NFT token (only token owner)
     unlockableContent(contract: Address!, tokenId: BigInt!): String
 }
@@ -52,8 +55,11 @@ type Mutation {
     # Use private key signed login challenge to get bearer token.
     login(user: Address!, challenge: String!, signature: String!): String!
 
-    # Update user profile
+    # Update user profile of logged user
     updateUser(username: String, bio: String, email: String!): Boolean!
+
+    # Update notification settings of logged user
+    updateNotificationSettings(settings: InputNotificationSettings!): Boolean!
 
     # Add token into favourite tokens of logged user.
     likeToken(contract: Address!, tokenId: BigInt!): Boolean!

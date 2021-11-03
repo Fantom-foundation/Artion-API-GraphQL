@@ -11,7 +11,7 @@ type ShippingAddress types.ShippingAddress
 
 func (rs *RootResolver) LoggedUserShippingAddress(ctx context.Context) (address *ShippingAddress, err error) {
 	user, err := auth.GetIdentityOrErr(ctx)
-	if user == nil || err != nil {
+	if err != nil {
 		return nil, err
 	}
 	addr, err := repository.R().GetShippingAddress(*user)
