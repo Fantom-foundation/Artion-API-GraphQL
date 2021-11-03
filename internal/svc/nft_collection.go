@@ -61,6 +61,17 @@ func (cv *nftCollectionValidator) run() {
 			if !ok {
 				return
 			}
+
+			if cv.isValid(&adr) {
+				// push the address as a new observed contract
+			}
 		}
 	}
+}
+
+// isValid checks if the address is a valid ERC-721 or ERC-1155 contract.
+func (cv *nftCollectionValidator) isValid(adr *common.Address) bool {
+	log.Infof("validating contract at %s", adr.String())
+
+	return true
 }
