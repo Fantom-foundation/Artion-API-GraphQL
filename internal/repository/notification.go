@@ -69,10 +69,18 @@ func (p *Proxy) SendEmailNotificationBySendGrid(no *types.Notification, nt *type
 		return err
 	}
 
+	// split recipient to CC fields
+	fields := strings.Fields(*recipient)
+	cc := make([]*mail.Email, len(fields))
+	for i, eml := range fields {
+		cc[i] = mail.NewEmail("", eml)
+	}
+
 	// send the email
 	err = email.SendGridDeliverDynamicTemplate(
 		mail.NewEmail(nt.SenderName, nt.SenderID),
-		mail.NewEmail("", *recipient),
+		cc[0],
+		cc[1:],
 		nt.TemplateID,
 		nt.Subject,
 		dynamicTemplateData(no, user, addr, nt.ExtendedParams),

@@ -17,6 +17,7 @@ type DynamicTemplateData map[string]interface{}
 func SendGridDeliverDynamicTemplate(
 	sender *mail.Email,
 	recipient *mail.Email,
+	cc []*mail.Email,
 	templateID string,
 	subject string,
 	data DynamicTemplateData,
@@ -33,6 +34,9 @@ func SendGridDeliverDynamicTemplate(
 	// push dynamic data and the template ID
 	m.TemplateID = templateID
 	m.Personalizations[0].DynamicTemplateData = data
+	if 0 < len(cc) {
+		m.Personalizations[0].AddCCs(cc...)
+	}
 
 	// make the request
 	req := sendgrid.GetRequest(cfg.Notifications.SendGrid.ApiKey, "/v3/mail/send", cfg.Notifications.SendGrid.ApiAddress)
