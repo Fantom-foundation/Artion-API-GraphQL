@@ -115,6 +115,9 @@ func newLogObserver(mgr *Manager) *logObserver {
 			/* Auction::event AuctionResulted(address indexed nftAddress, uint256 indexed tokenId, address indexed winner, address payToken, int256 unitPrice, uint256 winningBid) */
 			common.HexToHash("0x0427247b7170429ed72451c5779575834ddc75e9788eb907e40025c62ed7a258"): auctionResolved,
 
+			/* Auction::event AuctionResulted(address oldOwner, address indexed nftAddress, uint256 indexed tokenId, address indexed winner, address payToken, int256 unitPrice, uint256 winningBid) */
+			common.HexToHash("0xa717395bf4be1915f0bc8e6cf9b0f526c5ad40a0c3750b709a29a834daf0fd9b"): auctionResolvedV2,
+
 			/* Auction::event BidPlaced(address indexed nftAddress, uint256 indexed tokenId, address indexed bidder, uint256 bid) */
 			common.HexToHash("0x0158f5674dc243762459b88cfc91b10d2d1ef9d40821cca978c2b680aa444682"): auctionBidPlaced,
 

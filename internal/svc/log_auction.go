@@ -233,7 +233,7 @@ func auctionReserveUpdated(evt *eth.Log, lo *logObserver) {
 	}
 
 	// notify subscribers
-	event := types.Event{ Type: "AUCTION_RESERVE_UPDATED", Auction: auction }
+	event := types.Event{Type: "AUCTION_RESERVE_UPDATED", Auction: auction}
 	subscriptionManager := GetSubscriptionsManager()
 	subscriptionManager.PublishAuctionEvent(event)
 	subscriptionManager.PublishUserEvent(auction.Owner, event)
@@ -297,7 +297,7 @@ func auctionCanceled(evt *eth.Log, _ *logObserver) {
 	}
 
 	// notify subscribers
-	event := types.Event{ Type: "AUCTION_CANCELLED", Auction: auction }
+	event := types.Event{Type: "AUCTION_CANCELLED", Auction: auction}
 	subscriptionManager := GetSubscriptionsManager()
 	subscriptionManager.PublishAuctionEvent(event)
 	subscriptionManager.PublishUserEvent(auction.Owner, event)
@@ -316,30 +316,72 @@ func auctionResolved(evt *eth.Log, lo *logObserver) {
 		return
 	}
 
-	blk, err := repo.GetHeader(evt.BlockNumber)
-	if err != nil {
-		log.Errorf("could not get header #%d, %s", evt.BlockNumber, err.Error())
-		return
-	}
-
 	contract := common.BytesToAddress(evt.Topics[1].Bytes())
 	tokenID := new(big.Int).SetBytes(evt.Topics[2].Bytes())
 	winner := common.BytesToAddress(evt.Topics[3].Bytes())
 	winAmount := new(big.Int).SetBytes(evt.Data[32:64])
 	payToken := common.BytesToAddress(evt.Data[:32])
 
+	// finish the auction
+	finishAuction(
+		&contract,
+		tokenID,
+		&winner,
+		winAmount,
+		&payToken,
+		evt,
+		lo,
+	)
+}
+
+// auctionResolved processes the auction resolved event log.
+// Auction::AuctionResulted(address oldOwner, address indexed nftAddress, uint256 indexed tokenId, address indexed winner, address payToken, int256 unitPrice, uint256 winningBid)
+func auctionResolvedV2(evt *eth.Log, lo *logObserver) {
+	// sanity check: 1 + 3 topics; 2 x uint256 + 2 address = 128 bytes data
+	if len(evt.Data) != 128 || len(evt.Topics) != 4 {
+		log.Errorf("not Auction::AuctionResultedV2() event #%d/#%d; expected 128 bytes of data, %d given; expected 4 topics, %d given",
+			evt.BlockNumber, evt.Index, len(evt.Data), len(evt.Topics))
+		return
+	}
+
+	contract := common.BytesToAddress(evt.Topics[1].Bytes())
+	tokenID := new(big.Int).SetBytes(evt.Topics[2].Bytes())
+	winner := common.BytesToAddress(evt.Topics[3].Bytes())
+	winAmount := new(big.Int).SetBytes(evt.Data[64:96])
+	payToken := common.BytesToAddress(evt.Data[32:64])
+
+	// finish the auction
+	finishAuction(
+		&contract,
+		tokenID,
+		&winner,
+		winAmount,
+		&payToken,
+		evt,
+		lo,
+	)
+}
+
+// finishAuction finalises auction on the given NFT token.
+func finishAuction(contract *common.Address, tokenID *big.Int, winner *common.Address, amount *big.Int, payToken *common.Address, evt *eth.Log, lo *logObserver) {
+	blk, err := repo.GetHeader(evt.BlockNumber)
+	if err != nil {
+		log.Errorf("could not get header #%d, %s", evt.BlockNumber, err.Error())
+		return
+	}
+
 	// pull the auction involved
-	auction, err := repo.GetAuction(&contract, tokenID)
+	auction, err := repo.GetAuction(contract, tokenID)
 	if err != nil {
 		log.Errorf("resolved auction %s/%s not found; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err.Error())
 		return
 	}
 
-	ts := types.Time(time.Unix(int64(blk.Time), 0))
-	auction.Resolved = &ts
-	auction.Closed = &ts
-	auction.Winner = &winner
-	auction.WinningBid = (*hexutil.Big)(winAmount)
+	when := types.Time(time.Unix(int64(blk.Time), 0))
+	auction.Resolved = &when
+	auction.Closed = &when
+	auction.Winner = winner
+	auction.WinningBid = (*hexutil.Big)(amount)
 
 	// store the listing into database
 	if err := repo.StoreAuction(auction); err != nil {
@@ -350,8 +392,8 @@ func auctionResolved(evt *eth.Log, lo *logObserver) {
 	if err := repo.TokenMarkSold(
 		&auction.Contract,
 		(*big.Int)(&auction.TokenId),
-		repo.GetUnitPriceAt(lo.marketplace, &payToken, new(big.Int).SetUint64(evt.BlockNumber), new(big.Int).SetBytes(evt.Data[64:])),
-		(*time.Time)(&ts),
+		repo.GetUnitPriceAt(lo.marketplace, payToken, new(big.Int).SetUint64(evt.BlockNumber), new(big.Int).SetBytes(evt.Data[64:])),
+		(*time.Time)(&when),
 	); err != nil {
 		log.Errorf("could not mark token as sold; %s", err.Error())
 	}
@@ -359,15 +401,15 @@ func auctionResolved(evt *eth.Log, lo *logObserver) {
 	// log activity
 	activity := types.Activity{
 		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
-		Time:         ts,
+		Time:         when,
 		ActType:      types.EvtAuctionResolved,
 		Contract:     auction.Contract,
 		TokenId:      auction.TokenId,
 		Quantity:     &auction.Quantity,
 		From:         auction.Owner,
-		To:           &winner,
+		To:           winner,
 		UnitPrice:    auction.WinningBid,
-		PayToken:     &payToken,
+		PayToken:     payToken,
 	}
 	if err := repo.StoreActivity(&activity); err != nil {
 		log.Errorf("could not store auction activity; %s", err.Error())
@@ -375,7 +417,7 @@ func auctionResolved(evt *eth.Log, lo *logObserver) {
 	}
 
 	// notify subscribers
-	event := types.Event{ Type: "AUCTION_RESOLVED", Auction: auction }
+	event := types.Event{Type: "AUCTION_RESOLVED", Auction: auction}
 	subscriptionManager := GetSubscriptionsManager()
 	subscriptionManager.PublishAuctionEvent(event)
 	subscriptionManager.PublishUserEvent(auction.Owner, event)
