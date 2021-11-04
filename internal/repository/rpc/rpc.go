@@ -59,6 +59,7 @@ type Opera struct {
 	marketplace       *contracts.FantomMarketplace
 	auctionContract   *contracts.FantomAuction
 	auctionV1Contract *contracts.FantomAuctionV1
+	tokenRegistryContract *contracts.FantomTokenRegistry
 	rngFeedContract *contracts.RandomNumberOracle
 }
 
@@ -71,6 +72,7 @@ func (o *Opera) RegisterContract(ct string, addr *common.Address) (err error) {
 
 	// load the contract instance
 	switch ct {
+
 	case "auction":
 		o.auctionContract, err = contracts.NewFantomAuction(*addr, o.ftm)
 		if err == nil {
@@ -90,6 +92,12 @@ func (o *Opera) RegisterContract(ct string, addr *common.Address) (err error) {
 
 	case "rng":
 		o.rngFeedContract, err = contracts.NewRandomNumberOracle(*addr, o.ftm)
+		if err == nil {
+			log.Noticef("loaded %s contract at %s", ct, addr.String())
+		}
+
+	case "token_registry":
+		o.tokenRegistryContract, err = contracts.NewFantomTokenRegistry(*addr, o.ftm)
 		if err == nil {
 			log.Noticef("loaded %s contract at %s", ct, addr.String())
 		}

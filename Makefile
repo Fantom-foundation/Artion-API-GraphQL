@@ -50,6 +50,12 @@ internal/repository/rpc/contracts/FantomAuction.go: internal/repository/rpc/cont
 internal/repository/rpc/contracts/FantomAuctionV1.go: internal/repository/rpc/contracts/abi/FantomAuctionV1.json
 	abigen --type FantomAuctionV1 --pkg contracts --abi $< --out $@
 
+internal/repository/rpc/contracts/FantomTokenRegistry.go: internal/repository/rpc/contracts/abi/FantomTokenRegistry.json
+	abigen --type FantomTokenRegistry --pkg contracts --abi $< --out $@
+
+internal/repository/rpc/contracts/Erc20.go: internal/repository/rpc/contracts/abi/Erc20.json
+	abigen --type Erc20 --pkg contracts --abi $< --out $@
+
 internal/repository/rpc/contracts/RandomNumberOracle.go: internal/repository/rpc/contracts/abi/RandomNumberOracle.json
 	abigen --type RandomNumberOracle --pkg contracts --abi $< --out $@
 

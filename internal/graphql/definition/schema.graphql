@@ -25,6 +25,9 @@ type Query {
     # List all tokens (with defined filter and sorting)
     tokens(filter: TokenFilter, sortBy: TokenSorting, sortDir: SortingDirection, first: Int, after: Cursor, last: Int, before: Cursor): TokenConnection!
 
+    # List of tokens supported for payments on the marketplace
+    payTokens: [PayToken!]!
+
     # Get user by address
     user(address: Address!): User!
 

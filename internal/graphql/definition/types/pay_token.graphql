@@ -1,0 +1,14 @@
+# PayToken represents token supported for payments on the marketplace
+type PayToken {
+    # Address of the token contract
+    contract: Address!
+
+    # Name of the token - e.g. "Wrapped Fantom"
+    name: String!
+
+    # Symbol of the token - e.g. "WFTM"
+    symbol: String!
+
+    # Number of decimals the token uses - e.g. 2 if 12.34 is stored as 1234
+    decimals: Int!
+}
