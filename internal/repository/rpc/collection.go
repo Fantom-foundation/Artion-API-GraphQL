@@ -49,3 +49,27 @@ func (o *Opera) CollectionSymbol(adr *common.Address) (string, error) {
 	}
 	return *abi.ConvertType(res[0], new(string)).(*string), nil
 }
+
+// SupportsInterface checks if the given address is a contract
+// implementing a specified interface using ERC-165 contract call.
+// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
+func (o *Opera) SupportsInterface(adr *common.Address, in string) bool {
+	// we need 4 bytes for function hash (0x01ffc9a7) + 32 bytes for the interface hex input (only 4 are used)
+	call := make([]byte, 32+4)
+	copy(call[:4], []byte{0x01, 0xff, 0xc9, 0xa7})
+	copy(call[4:], hexutils.HexToBytes(in)[:4])
+
+	data, err := o.ftm.CallContract(context.Background(), ethereum.CallMsg{
+		From: common.Address{},
+		To:   adr,
+		Data: call,
+	}, nil)
+	if err != nil {
+		log.Warningf("erc-721 check failed; %s", err.Error())
+		return false
+	}
+
+	// we expect 32 bytes 0x0000000000000000000000000000000000000000000000000000000000000001 for TRUE
+	log.Infof("%s (%s) responded with %s", adr.String(), in, hexutils.BytesToHex(data))
+	return len(data) == 32 && data[0] == 0 && data[31] > 0
+}

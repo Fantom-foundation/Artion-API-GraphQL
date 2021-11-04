@@ -12,7 +12,6 @@ type Manager struct {
 	svc []service
 
 	// managed services
-	blkRouter           *blkRouter
 	blkScanner          *blkScanner
 	blkObserver         *blkObserver
 	logObserver         *logObserver
@@ -34,7 +33,6 @@ func newManager() *Manager {
 	repo = repository.R()
 
 	// make services
-	mgr.blkRouter = newBlkRouter(&mgr)
 	mgr.blkScanner = newBlkScanner(&mgr)
 	mgr.blkObserver = newBlkObserver(&mgr)
 	mgr.logObserver = newLogObserver(&mgr)
@@ -51,7 +49,6 @@ func newManager() *Manager {
 
 // init initializes the services in the correct order.
 func (mgr *Manager) init() {
-	mgr.blkRouter.init()
 	mgr.blkScanner.init()
 	mgr.blkObserver.init()
 	mgr.logObserver.init()

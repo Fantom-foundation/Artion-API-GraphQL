@@ -27,6 +27,9 @@ type blkObserver struct {
 	// inBlock represents an input channel receiving block headers to be observed
 	inBlocks chan *eth.Header
 
+	// inNewBlock represents an input channel receiving new headers from the blockchain
+	inNewBlocks chan *eth.Header
+
 	// outEvent represents an output channel being fed
 	// with recognized block events for processing
 	outEvents chan eth.Log
@@ -56,7 +59,8 @@ func (bo *blkObserver) name() string {
 
 // init prepares the block observer to capture blocks.
 func (bo *blkObserver) init() {
-	bo.inBlocks = bo.mgr.blkRouter.outBlocks
+	bo.inBlocks = bo.mgr.blkScanner.outBlocks
+	bo.inNewBlocks = repo.NewHeaders()
 	bo.topics = bo.mgr.logObserver.topicsList()
 	bo.mgr.add(bo)
 }
@@ -82,6 +86,11 @@ func (bo *blkObserver) run() {
 				return
 			}
 			bo.process(hdr)
+		case hdr, ok := <-bo.inNewBlocks:
+			if !ok {
+				return
+			}
+			bo.process(hdr)
 		}
 	}
 }
@@ -100,14 +109,12 @@ func (bo *blkObserver) process(hdr *eth.Header) {
 		return
 	}
 
-	// log.Infof("#%d has %d logs", hdr.Number.Uint64(), len(logs))
 	// push interesting events into the output queue, if any
 	for _, evt := range logs {
 		select {
 		case <-bo.sigStop:
 			bo.sigStop <- true
 			return
-		// case <-time.After(50 * time.Millisecond):
 		case bo.outEvents <- evt:
 			log.Debugf("observing #%d/#%d: %s", evt.BlockNumber, evt.Index, evt.Topics[0].String())
 		}

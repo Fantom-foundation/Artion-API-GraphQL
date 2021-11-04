@@ -3,6 +3,7 @@
 package rpc
 
 import (
+	"artion-api-graphql/internal/repository/rpc/contracts"
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum"
@@ -62,4 +63,70 @@ func (o *Opera) Erc1155TokenUri(contract *common.Address, tokenId *big.Int) (str
 		*abi.ConvertType(res[0], new(string)).(*string),
 		"{id}",
 		fmt.Sprintf("%064x", tokenId), -1), nil
+}
+
+// Erc1155StartingBlockNumber provides the first important block number for the ERC-1155 contract.
+func (o *Opera) Erc1155StartingBlockNumber(adr *common.Address) (uint64, error) {
+	// instantiate contract
+	erc, err := contracts.NewErc1155(*adr, o.ftm)
+	if err != nil {
+		return 0, err
+	}
+
+	bSingle, err := o.Erc1155FirstMintBlock(erc)
+	if err != nil {
+		return 0, err
+	}
+
+	bBatch, err := o.Erc1155FirstMintBatchBlock(erc)
+	if err != nil {
+		return 0, err
+	}
+
+	if bSingle > bBatch {
+		return bSingle, nil
+	}
+	return bBatch, nil
+}
+
+// Erc1155FirstMintBlock tries to find the first block the ERC-1155 contract
+// was used to mint a single token.
+func (o *Opera) Erc1155FirstMintBlock(erc *contracts.Erc1155) (uint64, error) {
+	iter, err := erc.FilterTransferSingle(nil, nil, []common.Address{{}}, nil)
+	if err != nil {
+		return 0, err
+	}
+
+	var blk uint64
+	for iter.Next() {
+		if blk < iter.Event.Raw.BlockNumber {
+			blk = iter.Event.Raw.BlockNumber
+		}
+	}
+
+	if err := iter.Close(); err != nil {
+		log.Errorf("could not close filter iterator; %s", err.Error())
+	}
+	return blk, nil
+}
+
+// Erc1155FirstMintBatchBlock tries to find the first block the ERC-1155 contract
+// was used to mint a batch of tokens.
+func (o *Opera) Erc1155FirstMintBatchBlock(erc *contracts.Erc1155) (uint64, error) {
+	iter, err := erc.FilterTransferBatch(nil, nil, []common.Address{{}}, nil)
+	if err != nil {
+		return 0, err
+	}
+
+	var blk uint64
+	for iter.Next() {
+		if blk < iter.Event.Raw.BlockNumber {
+			blk = iter.Event.Raw.BlockNumber
+		}
+	}
+
+	if err := iter.Close(); err != nil {
+		log.Errorf("could not close filter iterator; %s", err.Error())
+	}
+	return blk, nil
 }

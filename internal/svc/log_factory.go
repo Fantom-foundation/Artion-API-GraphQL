@@ -2,7 +2,6 @@
 package svc
 
 import (
-	"artion-api-graphql/internal/repository"
 	"artion-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	eth "github.com/ethereum/go-ethereum/core/types"
@@ -35,7 +34,7 @@ func newNFTContract(evt *eth.Log, lo *logObserver) {
 	}
 
 	// add the collection to persistent storage
-	if err := repository.R().StoreCollection(&nft); err != nil {
+	if err := repo.StoreCollection(&nft); err != nil {
 		log.Criticalf("can not store NFT collection %s; %s", nft.Address.String(), err.Error())
 		return
 	}
@@ -55,6 +54,18 @@ func extendNFTCollectionDetails(nft *types.Collection, evt *eth.Log, lo *logObse
 	}
 	log.Debugf("NFT contract %s is %s", nft.Address.String(), nft.Type)
 
+	blk, err := repo.GetHeader(evt.BlockNumber)
+	if err != nil {
+		log.Errorf("header #%d not available; %s", evt.BlockNumber, err.Error())
+		return err
+	}
+	nft.Created = types.Time(time.Unix(int64(blk.Time), 0))
+
+	return extendCollectionMetadata(nft)
+}
+
+// extendCollectionMetadata adds metadata to the provided collection structure.
+func extendCollectionMetadata(nft *types.Collection) (err error) {
 	nft.Name, err = repo.CollectionName(&nft.Address)
 	if err != nil {
 		log.Errorf("%s %s name not known; %s", nft.Type, nft.Address.String(), err.Error())
@@ -69,13 +80,6 @@ func extendNFTCollectionDetails(nft *types.Collection, evt *eth.Log, lo *logObse
 	}
 	log.Debugf("NFT contract %s symbol: %s", nft.Address.String(), nft.Symbol)
 
-	blk, err := repo.GetHeader(evt.BlockNumber)
-	if err != nil {
-		log.Errorf("header #%d not available; %s", evt.BlockNumber, err.Error())
-		return err
-	}
-	nft.Created = types.Time(time.Unix(int64(blk.Time), 0))
-
 	legacyCollection, err := repo.GetLegacyCollection(nft.Address)
 	if err != nil {
 		log.Errorf("%s %s unable to load off-chain data; %s", nft.Type, nft.Address.String(), err.Error())
@@ -89,13 +93,16 @@ func extendNFTCollectionDetails(nft *types.Collection, evt *eth.Log, lo *logObse
 			return err
 		}
 	}
+
 	return nil
 }
 
 // addObservedContract adds new observed contract into repository and log observer.
 func addObservedContract(nft *types.Collection, evt *eth.Log) {
 	ca := common.Address{}
-	ca.SetBytes(evt.Data[:32])
+	if nil != evt.Data && 32 <= len(evt.Data) {
+		ca.SetBytes(evt.Data[:32])
+	}
 
 	oc := types.ObservedContract{
 		Address:     nft.Address,
