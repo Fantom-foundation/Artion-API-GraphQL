@@ -9,3 +9,6 @@ scalar BigInt
 
 # Address is a 20 byte Opera address, represented as 0x prefixed hexadecimal number.
 scalar Address
+
+# Long is 64bits unsigned integer.
+scalar Long

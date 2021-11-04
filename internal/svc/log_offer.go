@@ -49,7 +49,7 @@ func marketOfferCreated(evt *eth.Log, lo *logObserver) {
 	if err := repo.TokenMarkOffered(
 		&offer.Contract,
 		(*big.Int)(&offer.TokenId),
-		repo.GetUnitPriceAt(lo.marketplace, &offer.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&offer.UnitPrice)),
+		repo.GetUnifiedPriceAt(lo.marketplace, &offer.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&offer.UnitPrice)),
 		(*time.Time)(&offer.Created),
 	); err != nil {
 		log.Errorf("could not mark token as having offer; %s", err.Error())
@@ -161,7 +161,7 @@ func marketCloseOfferWithSale(evt *eth.Log, offer *types.Offer, blk *eth.Header,
 	if err := repo.TokenMarkSold(
 		&offer.Contract,
 		(*big.Int)(&offer.TokenId),
-		repo.GetUnitPriceAt(lo.marketplace, &offer.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&offer.UnitPrice)),
+		repo.GetUnifiedPriceAt(lo.marketplace, &offer.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&offer.UnitPrice)),
 		&up,
 	); err != nil {
 		log.Errorf("could not mark token as sold; %s", err.Error())

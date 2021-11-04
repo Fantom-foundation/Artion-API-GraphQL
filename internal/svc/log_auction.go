@@ -66,7 +66,7 @@ func auctionCreated(evt *eth.Log, lo *logObserver) {
 	if err := repo.TokenMarkAuctioned(
 		&auction.Contract,
 		(*big.Int)(&auction.TokenId),
-		repo.GetUnitPriceAt(lo.marketplace, &auction.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&auction.ReservePrice)),
+		repo.GetUnifiedPriceAt(lo.marketplace, &auction.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&auction.ReservePrice)),
 		(*time.Time)(&auction.Created),
 	); err != nil {
 		log.Errorf("could not mark token as having auction; %s", err.Error())
@@ -143,7 +143,7 @@ func auctionTimeBoundaryUpdated(evt *eth.Log, lo *logObserver, update func(*type
 	if err := repo.TokenMarkAuctioned(
 		&auction.Contract,
 		(*big.Int)(&auction.TokenId),
-		repo.GetUnitPriceAt(lo.marketplace, &auction.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&auction.ReservePrice)),
+		repo.GetUnifiedPriceAt(lo.marketplace, &auction.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&auction.ReservePrice)),
 		(*time.Time)(&auction.Created),
 	); err != nil {
 		log.Errorf("could not mark token as having auction; %s", err.Error())
@@ -204,7 +204,7 @@ func auctionReserveUpdated(evt *eth.Log, lo *logObserver) {
 	if err := repo.TokenMarkAuctioned(
 		&auction.Contract,
 		(*big.Int)(&auction.TokenId),
-		repo.GetUnitPriceAt(lo.marketplace, &auction.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&auction.ReservePrice)),
+		repo.GetUnifiedPriceAt(lo.marketplace, &auction.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&auction.ReservePrice)),
 		(*time.Time)(&auction.Created),
 	); err != nil {
 		log.Errorf("could not mark token as having auction; %s", err.Error())
@@ -392,7 +392,7 @@ func finishAuction(contract *common.Address, tokenID *big.Int, winner *common.Ad
 	if err := repo.TokenMarkSold(
 		&auction.Contract,
 		(*big.Int)(&auction.TokenId),
-		repo.GetUnitPriceAt(lo.marketplace, payToken, new(big.Int).SetUint64(evt.BlockNumber), new(big.Int).SetBytes(evt.Data[64:])),
+		repo.GetUnifiedPriceAt(lo.marketplace, payToken, new(big.Int).SetUint64(evt.BlockNumber), new(big.Int).SetBytes(evt.Data[64:])),
 		(*time.Time)(&when),
 	); err != nil {
 		log.Errorf("could not mark token as sold; %s", err.Error())

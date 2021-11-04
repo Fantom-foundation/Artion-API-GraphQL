@@ -12,13 +12,6 @@ import (
 	"time"
 )
 
-// TokenPriceDecimalsDiff is the amount of decimals we need to remove from prices.
-// Prices come in 18 decimals, we want to preserve 6 decimals on multiplied result by removing 3 from each number.
-var TokenPriceDecimalsDiff = new(big.Int).SetInt64(1_000_000_000_000_000)
-
-// TokenPriceDecimalsCorrection represents the value used to reduce price to stored fixed (6) decimals.
-var TokenPriceDecimalsCorrection = new(big.Int).Mul(TokenPriceDecimalsDiff, TokenPriceDecimalsDiff)
-
 // Token reads NFT detail from the persistent database.
 func (p *Proxy) Token(contract *common.Address, tokenId *hexutil.Big) (*types.Token, error) {
 	var key strings.Builder
@@ -30,19 +23,6 @@ func (p *Proxy) Token(contract *common.Address, tokenId *hexutil.Big) (*types.To
 		return p.db.GetToken(contract, (*big.Int)(tokenId))
 	})
 	return token.(*types.Token), err
-}
-
-// GetUnitPriceAt converts token price in pay-tokens to value in unified units for storing in database.
-func (p *Proxy) GetUnitPriceAt(marketplace *common.Address, payToken *common.Address, block *big.Int, val *big.Int) int64 {
-	// get the unit price of the payToken
-	unit, err := p.rpc.GetPayTokenPrice(marketplace, payToken, block)
-	if err != nil {
-		log.Warningf("unable to get price of pay token %s on marketplace %s (block %d); %s", payToken.String(), marketplace.String(), block.Uint64(), err.Error())
-		return 0
-	}
-
-	// recalculate to total updated to fixed decimals int64
-	return new(big.Int).Div(new(big.Int).Mul(val, unit), TokenPriceDecimalsCorrection).Int64()
 }
 
 // StoreToken puts the given token into the persistent storage.

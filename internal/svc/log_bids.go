@@ -64,7 +64,7 @@ func auctionBidPlaced(evt *eth.Log, lo *logObserver) {
 	if err := repo.TokenMarkBid(
 		&bid.Contract,
 		(*big.Int)(&bid.TokenId),
-		repo.GetUnitPriceAt(lo.marketplace, &auction.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&bid.Amount)),
+		repo.GetUnifiedPriceAt(lo.marketplace, &auction.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&bid.Amount)),
 		(*time.Time)(&bid.Placed),
 	); err != nil {
 		log.Errorf("could not mark token as having bid; %s", err.Error())

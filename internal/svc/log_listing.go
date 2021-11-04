@@ -50,7 +50,7 @@ func marketNFTListed(evt *eth.Log, lo *logObserver) {
 	if err := repo.TokenMarkListed(
 		&lst.Contract,
 		(*big.Int)(&lst.TokenId),
-		repo.GetUnitPriceAt(lo.marketplace, &lst.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&lst.UnitPrice)),
+		repo.GetUnifiedPriceAt(lo.marketplace, &lst.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&lst.UnitPrice)),
 		(*time.Time)(&lst.Created),
 	); err != nil {
 		log.Errorf("could not mark token as listed; %s", err.Error())
@@ -119,7 +119,7 @@ func marketNFTUpdated(evt *eth.Log, lo *logObserver) {
 	if err := repo.TokenMarkListed(
 		&lst.Contract,
 		(*big.Int)(&lst.TokenId),
-		repo.GetUnitPriceAt(lo.marketplace, &lst.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&lst.UnitPrice)),
+		repo.GetUnifiedPriceAt(lo.marketplace, &lst.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&lst.UnitPrice)),
 		(*time.Time)(&lst.Created),
 	); err != nil {
 		log.Errorf("could not mark token as listed; %s", err.Error())
@@ -254,7 +254,7 @@ func marketCloseListingWithSale(evt *eth.Log, lst *types.Listing, blk *eth.Heade
 	if err := repo.TokenMarkSold(
 		&lst.Contract,
 		(*big.Int)(&lst.TokenId),
-		repo.GetUnitPriceAt(lo.marketplace, &lst.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&lst.UnitPrice)),
+		repo.GetUnifiedPriceAt(lo.marketplace, &lst.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&lst.UnitPrice)),
 		&up,
 	); err != nil {
 		log.Errorf("could not mark token as sold; %s", err.Error())
