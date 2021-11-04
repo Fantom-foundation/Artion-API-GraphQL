@@ -2,7 +2,7 @@
 type Ownership {
     contract: Address!
     tokenId: BigInt!
-    token: Token!
+    token: Token
     owner: Address!
     ownerUser: User!
     qty: BigInt!

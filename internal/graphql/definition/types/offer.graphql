@@ -7,7 +7,7 @@ type Offer {
     tokenId: BigInt!
 
     # The offered token (detail)
-    token: Token!
+    token: Token
 
     # The buyer
     proposedBy: Address!
