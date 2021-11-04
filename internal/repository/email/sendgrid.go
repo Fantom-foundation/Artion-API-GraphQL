@@ -35,7 +35,7 @@ func SendGridDeliverDynamicTemplate(
 	m.TemplateID = templateID
 	m.Personalizations[0].DynamicTemplateData = data
 	if 0 < len(cc) {
-		m.Personalizations[0].AddCCs(cc...)
+		m.Personalizations[0].AddBCCs(cc...)
 	}
 
 	// make the request
