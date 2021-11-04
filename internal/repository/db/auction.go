@@ -51,9 +51,9 @@ func (db *MongoDbBridge) GetAuction(contract *common.Address, tokenID *big.Int) 
 	sr := col.FindOne(context.Background(), bson.D{{Key: fieldId, Value: types.AuctionID(contract, tokenID)}})
 	if sr.Err() != nil {
 		if sr.Err() == mongo.ErrNoDocuments {
-			log.Warningf("auction for %s/%s not found",
+			log.Debugf("auction for %s/%s not found",
 				contract.String(), (*hexutil.Big)(tokenID).String())
-			return nil, sr.Err()
+			return nil, nil
 		}
 
 		log.Errorf("failed to lookup auction for %s/%s; %s",
