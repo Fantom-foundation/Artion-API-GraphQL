@@ -45,9 +45,9 @@ func newNFTContract(evt *eth.Log, lo *logObserver) {
 }
 
 // extendNFTCollectionDetails collects details of an NFT contract.
-func extendNFTCollectionDetails(nft *types.Collection, evt *eth.Log, lo *logObserver) (err error) {
+func extendNFTCollectionDetails(nft *types.Collection, evt *eth.Log, _ *logObserver) (err error) {
 	// NFT contract type is derived from the factory contract type
-	nft.Type, err = lo.contractTypeByAddress(&evt.Address)
+	nft.Type, err = repo.NFTContractType(&evt.Address)
 	if err != nil {
 		log.Errorf("contract %s type not known; %s", evt.Address.String(), err.Error())
 		return err
@@ -115,7 +115,4 @@ func addObservedContract(nft *types.Collection, evt *eth.Log) {
 
 	// store observed contract into the repository
 	repo.AddObservedContract(&oc)
-
-	// let the log observer know there is a new contract it needs to monitor
-	Mgr().logObserver.addObservedContract(&oc.Address, oc.Type)
 }

@@ -42,8 +42,10 @@ type Proxy struct {
 	db        *db.MongoDbBridge
 	shared    *db.SharedMongoDbBridge
 	cache     *cache.MemCache
-	log       logger.Logger
 	callGroup *singleflight.Group
+
+	observedContracts []common.Address
+	nftTypes          map[common.Address]string
 
 	// notificationQueue processing channel
 	notificationQueue  chan types.Notification
@@ -125,8 +127,10 @@ func newProxy() *Proxy {
 		db:        db.New(),
 		shared:    db.NewShared(),
 		cache:     cache.New(),
-		log:       log,
 		callGroup: new(singleflight.Group),
+
+		// NFT contracts info
+		nftTypes: make(map[common.Address]string, 0),
 
 		notificationQueue:  make(chan types.Notification, notificationQueueCapacity),
 		newCollectionQueue: make(chan common.Address, addCollectionQueueCapacity),
@@ -167,4 +171,9 @@ func (p *Proxy) registerContracts() {
 			log.Panicf("mandatory contract %s not available", ct)
 		}
 	}
+
+	// load list of observed contract addresses
+	log.Notice("loading observed contracts")
+	p.observedContracts = p.ObservedContractsAddressList()
+	p.loadObservedCollections()
 }

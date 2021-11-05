@@ -3,8 +3,6 @@ package svc
 
 import (
 	"artion-api-graphql/internal/types"
-	"bytes"
-	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	eth "github.com/ethereum/go-ethereum/core/types"
 )
@@ -42,12 +40,6 @@ type logObserver struct {
 	// topics represents a map of topics to their respective event handlers.
 	topics map[common.Hash]EventHandler
 
-	// contracts represents a list of observed contracts.
-	contracts []common.Address
-
-	// nftTypes represents a map of types of observed NFT contracts.
-	nftTypes map[common.Address]string
-
 	// marketplace is the address of the Marketplace contract.
 	marketplace *common.Address
 }
@@ -59,7 +51,6 @@ func newLogObserver(mgr *Manager) *logObserver {
 		sigStop:           make(chan bool, 1),
 		outNftTokens:      make(chan *types.Token, nftMetadataUpdaterQueueCapacity),
 		outObservedBlocks: make(chan uint64, observedBlocksCapacity),
-		nftTypes:          make(map[common.Address]string, 0),
 		topics: map[common.Hash]EventHandler{
 			/* Factory::event ContractCreated(address creator, address nft) */
 			common.HexToHash("0x2d49c67975aadd2d389580b368cfff5b49965b0bd5da33c144922ce01e7a4d7b"): newNFTContract,
@@ -138,11 +129,7 @@ func (lo *logObserver) init() {
 	lo.inEvents = lo.mgr.blkObserver.outEvents
 
 	// get needed data sets
-	lo.contracts = repo.ObservedContractsAddressList()
 	lo.marketplace = repo.ObservedContractAddressByType("market")
-
-	// load observed collections
-	lo.loadObservedCollections()
 
 	// make sure we have what we need
 	if lo.marketplace == nil {
@@ -185,7 +172,7 @@ func (lo *logObserver) run() {
 // process an incoming event
 func (lo *logObserver) process(evt *eth.Log) {
 	// is this an event from an observed contract?
-	if !lo.isObservedContract(evt) {
+	if !repo.IsObservedContract(&evt.Address) {
 		log.Debugf("event #%d / %d on foreign contract %s skipped", evt.BlockNumber, evt.Index, evt.Address.String())
 		return
 	}
@@ -216,37 +203,6 @@ func (lo *logObserver) processed(evt *eth.Log) {
 	}
 }
 
-// isObservedContract checks if the given event log should be investigated and processed.
-func (lo *logObserver) isObservedContract(evt *eth.Log) bool {
-	for _, adr := range lo.contracts {
-		if 0 == bytes.Compare(adr.Bytes(), evt.Address.Bytes()) {
-			return true
-		}
-	}
-	return false
-}
-
-// addObservedContract is used to extend the list of observed contracts
-// with a newly created NFT contract address; subsequent NFT events should be observed on it.
-func (lo *logObserver) addObservedContract(adr *common.Address, ct string) {
-	// check if the contract is actually a new one
-	for _, con := range lo.contracts {
-		if 0 == bytes.Compare(adr.Bytes(), con.Bytes()) {
-			return
-		}
-	}
-
-	// add the contract to the list
-	lo.contracts = append(lo.contracts, *adr)
-
-	// an NFT contract? add it to the types map as well
-	if ct == types.ContractTypeERC721 || ct == types.ContractTypeERC1155 {
-		lo.nftTypes[*adr] = ct
-	}
-
-	log.Infof("new contract %s of type %s is now observed", adr.String(), ct)
-}
-
 // topicsList provides a list of observed topics for blocks event filtering
 func (lo *logObserver) topicsList() [][]common.Hash {
 	list := make([][]common.Hash, 1)
@@ -259,33 +215,4 @@ func (lo *logObserver) topicsList() [][]common.Hash {
 	}
 
 	return list
-}
-
-// loadObservedCollections loads observed collections into the log processor.
-func (lo *logObserver) loadObservedCollections() {
-	cl, err := repo.ObservedCollections()
-	if err != nil {
-		log.Critical("no observed collections; %s", err.Error())
-		return
-	}
-
-	for _, adr := range cl {
-		ct, err := repo.NFTContractType(&adr)
-		if err != nil {
-			log.Warningf("contract can not be observed; %s", err.Error())
-			continue
-		}
-
-		lo.addObservedContract(&adr, ct)
-	}
-}
-
-// contractTypeByAddress provides type of contract based on known address.
-// We use pre-loaded NFT types map to perform this.
-func (lo *logObserver) contractTypeByAddress(fa *common.Address) (string, error) {
-	tp, ok := lo.nftTypes[*fa]
-	if !ok {
-		return "", fmt.Errorf("address %s unknown", fa.String())
-	}
-	return tp, nil
 }
