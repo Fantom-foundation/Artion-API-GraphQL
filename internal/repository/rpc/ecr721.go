@@ -24,10 +24,8 @@ func (o *Opera) Erc721StartingBlockNumber(adr *common.Address) (uint64, error) {
 	}
 
 	var blk uint64
-	for iter.Next() {
-		if blk < iter.Event.Raw.BlockNumber {
-			blk = iter.Event.Raw.BlockNumber
-		}
+	if iter.Next() {
+		blk = iter.Event.Raw.BlockNumber
 	}
 
 	if err := iter.Close(); err != nil {
