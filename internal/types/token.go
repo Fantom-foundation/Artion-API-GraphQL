@@ -36,13 +36,13 @@ type Token struct {
 	OrdinalIndex    int64          `bson:"index"`
 	Created         Time           `bson:"created"`
 	CreatedBy       common.Address `bson:"created_by"`
-	HasListingSince *Time          `bson:"listed_since"`
+	HasListingSince *Time          `bson:"listed_since"` // earliest start of listing
 	HasAuctionSince *Time          `bson:"auction_since"`
 	HasAuctionUntil *Time          `bson:"auction_until"`
 	HasOfferUntil   *Time          `bson:"offer_until"`
 	HasBids         bool           `bson:"has_bid"`
 	LastTrade       *Time          `bson:"last_trade"`
-	LastListing     *Time          `bson:"last_list"`
+	LastListing     *Time          `bson:"last_list"` // last creation of listing
 	LastOffer       *Time          `bson:"last_offer"`
 	LastAuction     *Time          `bson:"last_auction"`
 	LastBid         *Time          `bson:"last_bid"`
