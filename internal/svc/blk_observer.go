@@ -4,15 +4,11 @@ package svc
 import (
 	"github.com/ethereum/go-ethereum/common"
 	eth "github.com/ethereum/go-ethereum/core/types"
-	"time"
 )
 
 const (
 	// logEventQueueCapacity represents the log events queue capacity.
 	logEventQueueCapacity = 200
-
-	// observedBlocksCapacity represents the capacity of channel for observed block IDs.
-	observedBlocksCapacity = 100
 )
 
 // blkObserver represents a service monitoring incoming blocks
@@ -36,9 +32,6 @@ type blkObserver struct {
 
 	// topics represents the topics observed by the API server
 	topics [][]common.Hash
-
-	// outObservedBlock is fed with numbers of processed blocks.
-	outObservedBlocks chan uint64
 }
 
 // newBlkObserver creates a new instance of the block observer service.
@@ -47,7 +40,6 @@ func newBlkObserver(mgr *Manager) *blkObserver {
 		mgr:               mgr,
 		sigStop:           make(chan bool, 1),
 		outEvents:         make(chan eth.Log, logEventQueueCapacity),
-		outObservedBlocks: make(chan uint64, observedBlocksCapacity),
 		topics:            nil,
 	}
 }
@@ -67,13 +59,8 @@ func (bo *blkObserver) init() {
 
 // run pulls block headers from the input queue and processes them.
 func (bo *blkObserver) run() {
-	// start the notification ticker
-	tick := time.NewTicker(obsBlocksNotificationTickInterval)
-
 	defer func() {
-		tick.Stop()
 		close(bo.outEvents)
-		close(bo.outObservedBlocks)
 		bo.mgr.closed(bo)
 	}()
 
@@ -118,14 +105,5 @@ func (bo *blkObserver) process(hdr *eth.Header) {
 		case bo.outEvents <- evt:
 			log.Debugf("observing #%d/#%d: %s", evt.BlockNumber, evt.Index, evt.Topics[0].String())
 		}
-	}
-
-	// notify the scanner we did process this block
-	// the scanner uses the info to decide if the server keeps up
-	// with the top head of the blockchain
-	select {
-	case bo.outObservedBlocks <- hdr.Number.Uint64():
-		log.Debugf("block #%d done", hdr.Number.Uint64())
-	default:
 	}
 }

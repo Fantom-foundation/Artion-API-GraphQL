@@ -64,6 +64,9 @@ type blkScanner struct {
 
 	// target represents the ID we need to reach
 	target uint64
+
+	// lastProcessedBlock represents the ID of the last processed block notified to us
+	lastProcessedBlock uint64
 }
 
 // newBlkScanner creates a new instance of the block scanner service.
@@ -82,7 +85,7 @@ func (bs *blkScanner) name() string {
 
 // init initializes the block scanner and registers it with the manager.
 func (bs *blkScanner) init() {
-	bs.inObservedBlocks = bs.mgr.blkObserver.outObservedBlocks
+	bs.inObservedBlocks = bs.mgr.logObserver.outObservedBlocks
 	bs.inRescanBlocks = bs.mgr.collectionValidator.outRescanQueue
 
 	bs.current, bs.target = bs.start(), bs.top()
@@ -117,14 +120,23 @@ func (bs *blkScanner) run() {
 
 		case <-topTick.C:
 			bs.target = bs.top()
-			log.Infof("scanner at #%d of #%d", bs.current, bs.target)
+			bs.notify()
 
 		case bid, ok := <-bs.inObservedBlocks:
 			if !ok {
 				return
 			}
+
+			// we just casually follow the chain head
 			if bs.state == blkIsIdling && bid > bs.current {
 				bs.current = bid
+				bs.lastProcessedBlock = bid
+				continue
+			}
+
+			// we rush to catch the head, so we don't accept processed blocks above scanner head
+			if bid > bs.lastProcessedBlock && bid <= bs.current {
+				bs.lastProcessedBlock = bid
 			}
 
 		case bid, ok := <-bs.inRescanBlocks:
@@ -134,7 +146,6 @@ func (bs *blkScanner) run() {
 			bs.rescan(bid)
 
 		case <-bs.scanTicker.C:
-			// let's do another scan loop
 		}
 
 		bs.next()
@@ -240,4 +251,13 @@ func (bs *blkScanner) top() uint64 {
 	}
 
 	return cur
+}
+
+// notify the repository about the latest observed block, if any.
+func (bs *blkScanner) notify() {
+	if bs.lastProcessedBlock == 0 {
+		return
+	}
+	repo.NotifyLastObservedBlock(bs.lastProcessedBlock)
+	log.Infof("scanner at #%d of #%d; processed #%d", bs.current, bs.target, bs.lastProcessedBlock)
 }

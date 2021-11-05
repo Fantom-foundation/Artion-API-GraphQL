@@ -7,13 +7,11 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	eth "github.com/ethereum/go-ethereum/core/types"
-	"time"
 )
 
 const (
-	// obsBlocksNotificationTickInterval represents the interval
-	// in which observed blocks are notified to repository.
-	obsBlocksNotificationTickInterval = 15 * time.Second
+	// observedBlocksCapacity represents the capacity of channel for observed block IDs.
+	observedBlocksCapacity = 100
 )
 
 // EventHandler represents a function used to process event log record.
@@ -35,11 +33,11 @@ type logObserver struct {
 	// for processing and metadata update
 	outNftTokens chan *types.Token
 
+	// outObservedBlock is fed with numbers of processed blocks.
+	outObservedBlocks chan uint64
+
 	// currentBlock contains the number of the currently processed block
 	currentBlock uint64
-
-	// lastProcessedBlock contains the number of the last processed block
-	lastProcessedBlock uint64
 
 	// topics represents a map of topics to their respective event handlers.
 	topics map[common.Hash]EventHandler
@@ -57,9 +55,10 @@ type logObserver struct {
 // newLogObserver creates a new instance of the event logs observer service.
 func newLogObserver(mgr *Manager) *logObserver {
 	return &logObserver{
-		mgr:          mgr,
-		sigStop:      make(chan bool, 1),
-		outNftTokens: make(chan *types.Token, nftMetadataUpdaterQueueCapacity),
+		mgr:               mgr,
+		sigStop:           make(chan bool, 1),
+		outNftTokens:      make(chan *types.Token, nftMetadataUpdaterQueueCapacity),
+		outObservedBlocks: make(chan uint64, observedBlocksCapacity),
 		topics: map[common.Hash]EventHandler{
 			/* Factory::event ContractCreated(address creator, address nft) */
 			common.HexToHash("0x2d49c67975aadd2d389580b368cfff5b49965b0bd5da33c144922ce01e7a4d7b"): newNFTContract,
@@ -159,13 +158,10 @@ func (lo *logObserver) close() {
 // run collects incoming event logs from the channel and processes them using
 // pre-configured callbacks.
 func (lo *logObserver) run() {
-	// start the notification ticker
-	tick := time.NewTicker(obsBlocksNotificationTickInterval)
-
 	defer func() {
-		tick.Stop()
-
 		close(lo.outNftTokens)
+		close(lo.outObservedBlocks)
+
 		lo.mgr.closed(lo)
 	}()
 
@@ -173,8 +169,6 @@ func (lo *logObserver) run() {
 		select {
 		case <-lo.sigStop:
 			return
-		case <-tick.C:
-			lo.notify()
 		case evt, ok := <-lo.inEvents:
 			if !ok {
 				return
@@ -205,22 +199,18 @@ func (lo *logObserver) process(evt *eth.Log) {
 	handler(evt, lo)
 }
 
-// processed updates the information about the current and processed block number.
+// processed manages information about block being evaluated and notifies about blocks done.
 func (lo *logObserver) processed(evt *eth.Log) {
-	// the last block is done
-	if lo.currentBlock < evt.BlockNumber {
-		lo.lastProcessedBlock = lo.currentBlock
+	if lo.currentBlock != evt.BlockNumber {
+		// notify we did process the last block
+		select {
+		case lo.outObservedBlocks <- lo.currentBlock:
+			log.Debugf("block #%d done", lo.currentBlock)
+		default:
+		}
+
 		lo.currentBlock = evt.BlockNumber
 	}
-}
-
-// notify the repository about the latest observed block, if any.
-func (lo *logObserver) notify() {
-	if lo.lastProcessedBlock == 0 {
-		return
-	}
-	repo.NotifyLastObservedBlock(lo.lastProcessedBlock)
-	log.Infof("last processed block is #%d", lo.lastProcessedBlock)
 }
 
 // isObservedContract checks if the given event log should be investigated and processed.
