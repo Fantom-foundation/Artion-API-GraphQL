@@ -14,7 +14,7 @@ const (
 	blkIsIdling
 
 	// scanTickFrequency is the time delay for the regular scanner
-	scanTickFrequency = 20 * time.Millisecond
+	scanTickFrequency = 5 * time.Millisecond
 
 	// idleTickFrequency is the time delay for the regular scanner
 	idleTickFrequency = 1 * time.Second
@@ -23,7 +23,7 @@ const (
 	topUpdateTickFrequency = 5 * time.Second
 
 	// blockQueueCapacity represents the capacity of block headers processor queue
-	blockQueueCapacity = 1000
+	blockQueueCapacity = 5000
 
 	// defStartingBlockNumber represents the first block we will scan from
 	// if the previous state is unknown.
