@@ -66,11 +66,10 @@ func (p *Proxy) MinObservedBlockNumber(def uint64) uint64 {
 			continue
 		}
 
-		if bn < blk {
+		if bn > 0 && bn < blk {
+			log.Infof("%s contract %s pushes scanner down to %d", ct, adr.String(), bn)
 			blk = bn
 		}
-
-		log.Infof("%s contract %s starts from %d", ct, adr.String(), bn)
 	}
 
 	return blk
