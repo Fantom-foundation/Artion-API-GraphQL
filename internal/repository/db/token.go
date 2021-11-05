@@ -223,6 +223,7 @@ func (db *MongoDbBridge) TokenMarkAuctioned(contract *common.Address, tokenID *b
 		{Key: fiTokenLastAuction, Value: *ts},
 		{Key: fiTokenHasAuctionSince, Value: aucSince},
 		{Key: fiTokenHasAuctionUntil, Value: aucUntil},
+		{Key: fiTokenHasBid, Value: false},
 	})
 }
 
@@ -255,6 +256,7 @@ func (db *MongoDbBridge) TokenMarkUnAuctioned(contract *common.Address, tokenID 
 	return db.UpdateToken(contract, tokenID, bson.D{
 		{Key: fiTokenHasAuctionSince, Value: aucSince},
 		{Key: fiTokenHasAuctionUntil, Value: aucUntil},
+		{Key: fiTokenHasBid, Value: false},
 	})
 }
 
@@ -275,6 +277,7 @@ func (db *MongoDbBridge) TokenMarkSold(contract *common.Address, tokenID *big.In
 		{Key: fiTokenHasAuctionSince, Value: aucSince},
 		{Key: fiTokenHasAuctionUntil, Value: aucUntil},
 		{Key: fiTokenTradePrice, Value: price},
+		{Key: fiTokenHasBid, Value: false},
 	})
 }
 
