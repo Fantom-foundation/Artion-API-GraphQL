@@ -57,6 +57,9 @@ func (o *Opera) SupportsInterface(adr *common.Address, in string) bool {
 	// we need 4 bytes for function hash (0x01ffc9a7) + 32 bytes for the interface hex input (only 4 are used)
 	call := make([]byte, 32+4)
 	copy(call[:4], []byte{0x01, 0xff, 0xc9, 0xa7})
+	if in[0:2] == "0x" {
+		in = in[2:]
+	}
 	copy(call[4:], hexutils.HexToBytes(in)[:4])
 
 	data, err := o.ftm.CallContract(context.Background(), ethereum.CallMsg{
