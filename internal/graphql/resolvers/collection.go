@@ -12,7 +12,7 @@ import (
 // Collection object is constructed from query, data from db are loaded on demand into "dbCollection" field.
 type Collection struct {
 	Contract     common.Address
-	dbCollection *types.Collection // data for collection loaded from Mongo
+	dbCollection *types.LegacyCollection // data for collection loaded from Mongo
 }
 
 type CollectionEdge struct {
@@ -20,7 +20,7 @@ type CollectionEdge struct {
 }
 
 func (edge CollectionEdge) Cursor() (types.Cursor, error) {
-	return sorting.CollectionSortingNone.GetCursor(edge.Node.dbCollection)
+	return sorting.LegacyCollectionSortingName.GetCursor(edge.Node.dbCollection)
 }
 
 type CollectionConnection struct {
@@ -29,7 +29,7 @@ type CollectionConnection struct {
 	PageInfo   PageInfo
 }
 
-func NewCollectionConnection(list *types.CollectionList) (con *CollectionConnection, err error) {
+func NewCollectionConnection(list *types.LegacyCollectionList) (con *CollectionConnection, err error) {
 	con = new(CollectionConnection)
 	con.TotalCount = (hexutil.Big)(*big.NewInt(list.TotalCount))
 	con.Edges = make([]CollectionEdge, len(list.Collection))
@@ -59,21 +59,13 @@ func NewCollectionConnection(list *types.CollectionList) (con *CollectionConnect
 
 func (t *Collection) load() error {
 	if t.dbCollection == nil {
-		tok, err := repository.R().GetCollection(t.Contract)
+		tok, err := repository.R().GetLegacyCollection(t.Contract)
 		if err != nil {
 			return err
 		}
 		t.dbCollection = tok
 	}
 	return nil
-}
-
-func (t Collection) Type() (string, error) {
-	err := t.load()
-	if err != nil {
-		return "", err
-	}
-	return t.dbCollection.Type, nil
 }
 
 func (t Collection) Name() (string, error) {
@@ -84,20 +76,12 @@ func (t Collection) Name() (string, error) {
 	return t.dbCollection.Name, nil
 }
 
-func (t Collection) Symbol() (string, error) {
+func (t Collection) Description() (string, error) {
 	err := t.load()
 	if err != nil {
 		return "", err
 	}
-	return t.dbCollection.Symbol, nil
-}
-
-func (t Collection) Created() (types.Time, error) {
-	err := t.load()
-	if err != nil {
-		return types.Time{}, err
-	}
-	return t.dbCollection.Created, nil
+	return t.dbCollection.Description, nil
 }
 
 func (t Collection) Categories() ([]int32, error) {
@@ -105,15 +89,15 @@ func (t Collection) Categories() ([]int32, error) {
 	if err != nil {
 		return nil, err
 	}
-	return t.dbCollection.Categories, nil
+	return t.dbCollection.CategoriesAsInt()
 }
 
-func (t Collection) IsActive() (bool, error) {
+func (t Collection) Image() (string, error) {
 	err := t.load()
 	if err != nil {
-		return false, err
+		return "", err
 	}
-	return t.dbCollection.IsActive, nil
+	return t.dbCollection.Image, nil
 }
 
 func (rs *RootResolver) Collection(args struct {
@@ -128,7 +112,7 @@ func (rs *RootResolver) Collections(args struct{ PaginationInput }) (con *Collec
 	if err != nil {
 		return nil, err
 	}
-	list, err := repository.R().ListCollections(cursor, count, backward)
+	list, err := repository.R().ListLegacyCollections(cursor, count, backward)
 	if err != nil {
 		return nil, err
 	}
