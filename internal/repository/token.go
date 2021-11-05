@@ -86,7 +86,7 @@ func (p *Proxy) TokenMarkUnBid(contract *common.Address, tokenID *big.Int) error
 	return p.db.TokenMarkUnBid(contract, tokenID)
 }
 
-// TokenMarkSold marks the given NFT as sold on a listing for direct sale for the given price.
+// TokenMarkSold marks the given NFT as sold on a listing/offer/auction for the given price.
 func (p *Proxy) TokenMarkSold(contract *common.Address, tokenID *big.Int, price int64, ts *time.Time) error {
 	return p.db.TokenMarkSold(contract, tokenID, price, ts)
 }

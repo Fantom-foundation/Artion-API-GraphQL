@@ -6,6 +6,7 @@ import (
 	"context"
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"strings"
 )
@@ -19,6 +20,8 @@ const (
 
 	// fiLegacyCollectionIsAppropriate is the name of field keeping status if the NFT contract.
 	fiLegacyCollectionIsAppropriate = "isAppropriate"
+
+	fiLegacyCollectionName = "collectionName"
 )
 
 func (sdb *SharedMongoDbBridge) GetLegacyCollection(address common.Address) (collection *types.LegacyCollection, err error) {
@@ -41,7 +44,7 @@ func (sdb *SharedMongoDbBridge) GetLegacyCollection(address common.Address) (col
 	return &row, err
 }
 
-func (sdb *SharedMongoDbBridge) ListLegacyCollections(cursor types.Cursor, count int, backward bool) (out *types.LegacyCollectionList, err error) {
+func (sdb *SharedMongoDbBridge) ListLegacyCollections(search *string, cursor types.Cursor, count int, backward bool) (out *types.LegacyCollectionList, err error) {
 	db := (*MongoDbBridge)(sdb)
 	var list types.LegacyCollectionList
 	col := sdb.client.Database(sdb.dbName).Collection(coLegacyCollection)
@@ -49,6 +52,12 @@ func (sdb *SharedMongoDbBridge) ListLegacyCollections(cursor types.Cursor, count
 
 	filter := bson.D{
 		{Key: fiLegacyCollectionIsAppropriate, Value: bson.D{{Key: "$eq", Value: true}}},
+	}
+	if search != nil {
+		filter = append(filter, bson.E{Key: fiLegacyCollectionName, Value: primitive.Regex{
+			Pattern: *search,
+			Options: "i",
+		}})
 	}
 
 	list.TotalCount, err = db.getTotalCount(col, filter)

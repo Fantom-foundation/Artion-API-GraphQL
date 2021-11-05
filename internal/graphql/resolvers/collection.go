@@ -107,12 +107,15 @@ func (rs *RootResolver) Collection(args struct {
 	return &Collection, nil
 }
 
-func (rs *RootResolver) Collections(args struct{ PaginationInput }) (con *CollectionConnection, err error) {
+func (rs *RootResolver) Collections(args struct{
+	Search *string
+	PaginationInput
+}) (con *CollectionConnection, err error) {
 	cursor, count, backward, err := args.ToRepositoryInput()
 	if err != nil {
 		return nil, err
 	}
-	list, err := repository.R().ListLegacyCollections(cursor, count, backward)
+	list, err := repository.R().ListLegacyCollections(args.Search, cursor, count, backward)
 	if err != nil {
 		return nil, err
 	}

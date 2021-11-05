@@ -9,6 +9,6 @@ func (p *Proxy) GetLegacyCollection(address common.Address) (*types.LegacyCollec
 	return p.shared.GetLegacyCollection(address)
 }
 
-func (p *Proxy) ListLegacyCollections(cursor types.Cursor, count int, backward bool) (out *types.LegacyCollectionList, err error) {
-	return p.shared.ListLegacyCollections(cursor, count, backward)
+func (p *Proxy) ListLegacyCollections(search *string, cursor types.Cursor, count int, backward bool) (out *types.LegacyCollectionList, err error) {
+	return p.shared.ListLegacyCollections(search, cursor, count, backward)
 }
