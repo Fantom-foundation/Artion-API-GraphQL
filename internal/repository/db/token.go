@@ -410,6 +410,9 @@ func tokenFilterToBson(f *types.TokenFilter) bson.D {
 
 	if f.HasBids != nil {
 		filter = append(filter, bson.E{Key: fiTokenHasBid, Value: *f.HasBids})
+		// filter for HasAuction time-range too, to exclude time-terminated auctions
+		filter = filterAddDateTimeLimit(filter, fiTokenHasAuctionSince, "$lte", now)
+		filter = filterAddDateTimeLimit(filter, fiTokenHasAuctionUntil, "$gt", now)
 	}
 
 	if f.Collections != nil && len(*f.Collections) > 0 {
