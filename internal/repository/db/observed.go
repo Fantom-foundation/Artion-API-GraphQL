@@ -72,10 +72,15 @@ func (db *MongoDbBridge) isObservedContractKnown(col *mongo.Collection, oc *type
 func (db *MongoDbBridge) MinObservedBlockNumber(def uint64) uint64 {
 	col := db.client.Database(db.dbName).Collection(coObservedContracts)
 	c, err := col.Aggregate(context.Background(), mongo.Pipeline{
-		{{Key: "$group", Value: bson.D{
-			{Key: "_id", Value: nil},
-			{Key: "blk", Value: bson.D{{Key: "$min", Value: "$block"}}},
-		}}},
+		{
+			{Key: "$match", Value: bson.D{
+				{Key: "block", Value: bson.D{{Key: "$gt", Value: 0}}},
+			}},
+			{Key: "$group", Value: bson.D{
+				{Key: "_id", Value: nil},
+				{Key: "blk", Value: bson.D{{Key: "$min", Value: "$block"}}},
+			}},
+		},
 	})
 	if err != nil {
 		log.Errorf("can not find min block of observed contracts; %s", err.Error())
