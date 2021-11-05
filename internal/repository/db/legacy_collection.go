@@ -15,6 +15,9 @@ const (
 
 	// fiCollectionAddress is the name of the field keeping the NFT contract address.
 	fiLegacyCollectionAddress = "erc721Address"
+
+	// fiLegacyCollectionIsAppropriate is the name of the field keeping the NFT contract appropriate flag.
+	fiLegacyCollectionIsAppropriate = "isAppropriate"
 )
 
 func (sdb *SharedMongoDbBridge) GetLegacyCollection(address common.Address) (collection *types.LegacyCollection, err error) {

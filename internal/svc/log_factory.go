@@ -117,5 +117,5 @@ func addObservedContract(nft *types.Collection, evt *eth.Log) {
 	repo.AddObservedContract(&oc)
 
 	// let the log observer know there is a new contract it needs to monitor
-	Mgr().logObserver.addObservedContract(&oc)
+	Mgr().logObserver.addObservedContract(&oc.Address, oc.Type)
 }

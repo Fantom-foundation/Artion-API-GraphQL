@@ -3,6 +3,7 @@ package repository
 
 import (
 	"artion-api-graphql/internal/types"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -42,4 +43,15 @@ func (p *Proxy) GetCollection(address common.Address) (*types.Collection, error)
 
 func (p *Proxy) ListCollections(cursor types.Cursor, count int, backward bool) (*types.CollectionList, error) {
 	return p.db.ListCollections(cursor, count, backward)
+}
+
+// NFTContractType analyses the contract on given address and returns the type, if possible.
+func (p *Proxy) NFTContractType(adr *common.Address) (string, error) {
+	if p.IsErc721Contract(adr) {
+		return types.ContractTypeERC721, nil
+	}
+	if p.IsErc1155Contract(adr) {
+		return types.ContractTypeERC1155, nil
+	}
+	return "", fmt.Errorf("unknown contract type at %s", adr.String())
 }

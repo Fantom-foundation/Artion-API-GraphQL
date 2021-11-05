@@ -181,3 +181,36 @@ func (db *MongoDbBridge) NFTContractsTypeMap() map[common.Address]string {
 	log.Noticef("%d NFT contracts known", len(list))
 	return list
 }
+
+// ObservedCollections provides list of addresses of observed collections known to Artion API.
+func (sdb *SharedMongoDbBridge) ObservedCollections() ([]common.Address, error) {
+	col := sdb.client.Database(sdb.dbName).Collection(coLegacyCollection)
+	cur, err := col.Find(context.Background(),
+		bson.D{{Key: fiLegacyCollectionIsAppropriate, Value: true}},
+		options.Find().SetProjection(bson.D{{Key: fiLegacyCollectionAddress, Value: 1}}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err := cur.Close(context.Background()); err != nil {
+			log.Errorf("could not close cursor; %s", err.Error())
+		}
+	}()
+
+	list := make([]common.Address, 0)
+	for cur.Next(context.Background()) {
+		var row struct {
+			Adr common.Address `bson:"erc721Address"`
+		}
+
+		if err := cur.Decode(&row); err != nil {
+			log.Errorf("could not decode collection address; %s", err.Error())
+			return nil, err
+		}
+
+		list = append(list, row.Adr)
+	}
+	return list, nil
+}

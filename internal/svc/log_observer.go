@@ -138,8 +138,10 @@ func (lo *logObserver) init() {
 
 	// get needed data sets
 	lo.contracts = repo.ObservedContractsAddressList()
-	lo.nftTypes = repo.NFTContractsTypeMap()
 	lo.marketplace = repo.ObservedContractAddressByType("market")
+
+	// load observed collections
+	lo.loadObservedCollections()
 
 	// make sure we have what we need
 	if lo.marketplace == nil {
@@ -225,23 +227,23 @@ func (lo *logObserver) isObservedContract(evt *eth.Log) bool {
 
 // addObservedContract is used to extend the list of observed contracts
 // with a newly created NFT contract address; subsequent NFT events should be observed on it.
-func (lo *logObserver) addObservedContract(oc *types.ObservedContract) {
+func (lo *logObserver) addObservedContract(adr *common.Address, ct string) {
 	// check if the contract is actually a new one
-	for _, adr := range lo.contracts {
-		if 0 == bytes.Compare(adr.Bytes(), oc.Address.Bytes()) {
+	for _, con := range lo.contracts {
+		if 0 == bytes.Compare(adr.Bytes(), con.Bytes()) {
 			return
 		}
 	}
 
 	// add the contract to the list
-	lo.contracts = append(lo.contracts, oc.Address)
+	lo.contracts = append(lo.contracts, *adr)
 
 	// an NFT contract? add it to the types map as well
-	if oc.Type == types.ContractTypeERC721 || oc.Type == types.ContractTypeERC1155 {
-		lo.nftTypes[oc.Address] = oc.Type
+	if ct == types.ContractTypeERC721 || ct == types.ContractTypeERC1155 {
+		lo.nftTypes[*adr] = ct
 	}
 
-	log.Infof("new contract %s is now observed", oc.Address.String())
+	log.Infof("new contract %s of type %s is now observed", adr.String(), ct)
 }
 
 // topicsList provides a list of observed topics for blocks event filtering
@@ -256,6 +258,25 @@ func (lo *logObserver) topicsList() [][]common.Hash {
 	}
 
 	return list
+}
+
+// loadObservedCollections loads observed collections into the log processor.
+func (lo *logObserver) loadObservedCollections() {
+	cl, err := repo.ObservedCollections()
+	if err != nil {
+		log.Critical("no observed collections; %s", err.Error())
+		return
+	}
+
+	for _, adr := range cl {
+		ct, err := repo.NFTContractType(&adr)
+		if err != nil {
+			log.Warningf("contract can not be observed; %s", err.Error())
+			continue
+		}
+
+		lo.addObservedContract(&adr, ct)
+	}
 }
 
 // contractTypeByAddress provides type of contract based on known address.

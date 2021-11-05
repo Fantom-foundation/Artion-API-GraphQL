@@ -41,5 +41,40 @@ func (p *Proxy) NFTContractsTypeMap() map[common.Address]string {
 
 // MinObservedBlockNumber provides the lowest observed block number.
 func (p *Proxy) MinObservedBlockNumber(def uint64) uint64 {
-	return p.db.MinObservedBlockNumber(def)
+	blk := p.db.MinObservedBlockNumber(def)
+
+	col, err := p.ObservedCollections()
+	if err != nil {
+		log.Warningf("could not account for collections; %s", err.Error())
+		return blk
+	}
+
+	var bn uint64
+	for _, adr := range col {
+		ct, err := p.NFTContractType(&adr)
+		if err != nil {
+			continue
+		}
+
+		switch ct {
+		case types.ContractTypeERC721:
+			bn, err = p.Erc721StartingBlockNumber(&adr)
+		case types.ContractTypeERC1155:
+			bn, err = p.Erc1155StartingBlockNumber(&adr)
+		}
+		if err != nil {
+			continue
+		}
+
+		if bn < blk {
+			blk = bn
+		}
+	}
+
+	return blk
+}
+
+// ObservedCollections provides list of addresses of observed collections known to Artion API.
+func (p *Proxy) ObservedCollections() ([]common.Address, error) {
+	return p.shared.ObservedCollections()
 }
