@@ -73,6 +73,5 @@ func (o *Opera) SupportsInterface(adr *common.Address, in string) bool {
 	}
 
 	// we expect 32 bytes 0x0000000000000000000000000000000000000000000000000000000000000001 for TRUE
-	log.Infof("%s (%s) responded with %s", adr.String(), in, hexutils.BytesToHex(data))
 	return len(data) == 32 && data[0] == 0 && data[31] > 0
 }

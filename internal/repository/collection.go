@@ -48,9 +48,11 @@ func (p *Proxy) ListCollections(cursor types.Cursor, count int, backward bool) (
 // NFTContractType analyses the contract on given address and returns the type, if possible.
 func (p *Proxy) NFTContractType(adr *common.Address) (string, error) {
 	if p.IsErc721Contract(adr) {
+		log.Infof("contract %s is ERC-721", adr.String())
 		return types.ContractTypeERC721, nil
 	}
 	if p.IsErc1155Contract(adr) {
+		log.Infof("contract %s is ERC-1155", adr.String())
 		return types.ContractTypeERC1155, nil
 	}
 	return "", fmt.Errorf("unknown contract type at %s", adr.String())

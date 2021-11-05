@@ -59,6 +59,7 @@ func newLogObserver(mgr *Manager) *logObserver {
 		sigStop:           make(chan bool, 1),
 		outNftTokens:      make(chan *types.Token, nftMetadataUpdaterQueueCapacity),
 		outObservedBlocks: make(chan uint64, observedBlocksCapacity),
+		nftTypes:          make(map[common.Address]string, 0),
 		topics: map[common.Hash]EventHandler{
 			/* Factory::event ContractCreated(address creator, address nft) */
 			common.HexToHash("0x2d49c67975aadd2d389580b368cfff5b49965b0bd5da33c144922ce01e7a4d7b"): newNFTContract,
