@@ -10,7 +10,7 @@ type Listing {
     tokenId: BigInt!
 
     # The listed token (detail)
-    token: Token!
+    token: Token
 
     # The listed amount (only this exact amount can be bought)
     quantity: BigInt!

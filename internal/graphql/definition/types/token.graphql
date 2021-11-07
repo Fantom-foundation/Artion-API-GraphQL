@@ -90,9 +90,18 @@ type TokenConnection {
 }
 
 enum TokenSorting {
+    # Recently Created / Oldest
     CREATED
+    # Recently Listed
     LAST_LISTING
+    # Recently Sold
     LAST_TRADE
+    # Ending Soon
+    AUCTION_UNTIL
+    # Most Expensive / Cheapest
+    PRICE
+    # Highest Last Sale
+    LAST_TRADE_AMOUNT
 }
 
 input TokenFilter {

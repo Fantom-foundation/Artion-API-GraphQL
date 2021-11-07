@@ -123,6 +123,7 @@ func (app *apiServer) setupHandlers(mux *http.ServeMux) {
 	// handle images
 	mux.Handle("/images/token/", handlers.ImageHandler(app.log, handlers.TokenImageResolver))
 	mux.Handle("/images/avatar/", handlers.ImageHandler(app.log, handlers.UserAvatarResolver))
+	mux.Handle("/images/collection/", handlers.ImageHandler(app.log, handlers.CollectionImageResolver))
 
 	// handle image upload
 	mux.Handle("/upload-image/user-avatar", handlers.AuthHandler(handlers.UploadImageHandler(app.log, handlers.StoreUserAvatar)))

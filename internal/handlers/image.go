@@ -59,7 +59,7 @@ func ImageHandler(log logger.Logger, resolver func(path string) (string, error))
 	})
 }
 
-// TokenImageResolver resolves /token-image/{nft}/{tokenId} to token image URI
+// TokenImageResolver resolves /token/{nft}/{tokenId} to token image URI
 func TokenImageResolver(path string) (imageUri string, err error) {
 	pathParts := strings.Split(path, "/")
 	if len(pathParts) != 5 {
@@ -86,7 +86,7 @@ func TokenImageResolver(path string) (imageUri string, err error) {
 	return *jsonMetadata.Image, nil
 }
 
-// UserAvatarResolver resolves /user-avatar/{address} to user avatar URI
+// UserAvatarResolver resolves /avatar/{address} to user avatar URI
 func UserAvatarResolver(path string) (imageUri string, err error) {
 	pathParts := strings.Split(path, "/")
 	if len(pathParts) != 5 {
@@ -101,4 +101,21 @@ func UserAvatarResolver(path string) (imageUri string, err error) {
 		return "", fmt.Errorf("user has no avatar; %s", err)
 	}
 	return "/ipfs/" + *user.Avatar, nil
+}
+
+// CollectionImageResolver resolves /collection/{address} to collection image URI
+func CollectionImageResolver(path string) (imageUri string, err error) {
+	pathParts := strings.Split(path, "/")
+	if len(pathParts) != 5 {
+		return "", errors.New("invalid amount of slash delimiters in URL")
+	}
+	collectionAddress := common.HexToAddress(pathParts[3])
+	collection, err := repository.R().GetLegacyCollection(collectionAddress)
+	if err != nil {
+		return "", fmt.Errorf("unable to find collection in db; %s", err)
+	}
+	if collection == nil || collection.Image == "" {
+		return "", fmt.Errorf("collection has no image; %s", err)
+	}
+	return "/ipfs/" + collection.Image, nil
 }
