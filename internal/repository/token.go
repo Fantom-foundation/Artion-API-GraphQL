@@ -106,21 +106,40 @@ func (p *Proxy) GetTokenJsonMetadata(uri string) (*types.JsonMetadata, error) {
 	return jsonMetadata.(*types.JsonMetadata), err
 }
 
-func (p *Proxy) GetImage(uri string) (image *types.Image, err error) {
-	key := "GetImage" + uri
-	data, err, _ := p.callGroup.Do(key, func() (interface{}, error) {
-		return p.uri.GetImage(uri)
+// GetImage downloads an image expected on the given URI.
+func (p *Proxy) GetImage(imgUri string) (*types.Image, error) {
+	var key strings.Builder
+	key.WriteString("GetImage")
+	key.WriteString(imgUri)
+
+	data, err, _ := p.callGroup.Do(key.String(), func() (interface{}, error) {
+		return p.uri.GetImage(imgUri)
 	})
+
+	if nil == data {
+		log.Errorf("image not found at %s", imgUri)
+		return nil, fmt.Errorf("image not found at given URI")
+	}
+
 	return data.(*types.Image), err
 }
 
-func (p *Proxy) GetImageThumbnail(uri string) (image *types.Image, err error) {
-	key := "GetImageThumbnail" + uri
-	data, err, _ := p.callGroup.Do(key, func() (interface{}, error) {
-		image, err := p.GetImage(uri)
+// GetImageThumbnail generates a thumbnail for an image expected to be downloadable from the given URI.
+func (p *Proxy) GetImageThumbnail(imgUri string) (*types.Image, error) {
+	var key strings.Builder
+	key.WriteString("GetImageThumbnail")
+	key.WriteString(imgUri)
+
+	data, err, _ := p.callGroup.Do(key.String(), func() (interface{}, error) {
+		image, err := p.GetImage(imgUri)
 		if err != nil || image == nil {
 			return nil, fmt.Errorf("getImage failed; %s", err)
 		}
+
+		if nil == image {
+			return nil, fmt.Errorf("image not found")
+		}
+
 		thumb, err := createThumbnail(*image)
 		if err != nil {
 			return nil, fmt.Errorf("createThumbnail failed; %s", err)

@@ -19,19 +19,19 @@ import (
 const ipfsRequestTimeout = 5 * time.Second
 
 type Downloader struct {
-	ipfsShell *ipfsapi.Shell
+	ipfsShell        *ipfsapi.Shell
 	skipHttpGateways bool
-	gateway string
-	gatewayBearer string
+	gateway          string
+	gatewayBearer    string
 }
 
 // New provides new Downloader instance.
 func New(cfg *config.Config) *Downloader {
 	d := &Downloader{
-		ipfsShell: ipfsapi.NewShell(cfg.Ipfs.Url),
+		ipfsShell:        ipfsapi.NewShell(cfg.Ipfs.Url),
 		skipHttpGateways: cfg.Ipfs.SkipHttpGateways,
-		gateway: cfg.Ipfs.Gateway,
-		gatewayBearer: cfg.Ipfs.GatewayBearer,
+		gateway:          cfg.Ipfs.Gateway,
+		gatewayBearer:    cfg.Ipfs.GatewayBearer,
 	}
 	d.ipfsShell.SetTimeout(ipfsRequestTimeout)
 	return d
@@ -51,18 +51,21 @@ func (d *Downloader) GetJsonMetadata(uri string) (*types.JsonMetadata, error) {
 }
 
 // GetImage downloads image from given URI and detect its mimetype
-func (d *Downloader) GetImage(uri string) (image *types.Image, err error) {
+func (d *Downloader) GetImage(uri string) (*types.Image, error) {
 	data, mimetype, err := d.getFromUri(uri)
 	if err != nil {
 		return nil, fmt.Errorf("unable to download image; %s", err)
 	}
+
 	if mimetype == "" {
 		mimetype = http.DetectContentType(data)
 	}
+
 	imgType := types.ImageTypeFromMimetype(mimetype)
 	if imgType == types.ImageTypeUnknown {
 		imgType = types.ImageTypeFromExtension(uri)
 	}
+
 	out := types.Image{
 		Data: data,
 		Type: imgType,
@@ -75,12 +78,15 @@ func (d *Downloader) getFromUri(uri string) (data []byte, mimetype string, err e
 	if strings.HasPrefix(uri, "data:") {
 		return d.getFromDataUri(uri)
 	}
+
 	if ipfsUri := d.getIpfsUri(uri); ipfsUri != "" {
 		return d.getFromIpfs(ipfsUri)
 	}
+
 	if strings.HasPrefix(uri, "http://") || strings.HasPrefix(uri, "https://") {
 		return d.getFromHttp(uri)
 	}
+
 	return nil, "", errors.New("Unexpected URI scheme for " + uri)
 }
 
@@ -128,12 +134,12 @@ func (d *Downloader) getFromIpfs(uri string) (data []byte, mimetype string, err 
 // getFromIpfsGateway downloads the file from IPFS HTTP gateway.
 func (d *Downloader) getFromIpfsGateway(uri string) (data []byte, mimetype string, err error) {
 	client := http.Client{}
-	req , err := http.NewRequest("GET", d.gateway + uri, nil)
+	req, err := http.NewRequest("GET", d.gateway+uri, nil)
 	if err != nil {
 		return nil, "", err
 	}
 	if d.gatewayBearer != "" {
-		req.Header.Set("Authorization", "Bearer " + d.gatewayBearer)
+		req.Header.Set("Authorization", "Bearer "+d.gatewayBearer)
 	}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -154,13 +160,18 @@ func (d *Downloader) getFromIpfsGateway(uri string) (data []byte, mimetype strin
 
 // getFromHttp downloads the file from HTTP.
 func (d *Downloader) getFromHttp(uri string) (data []byte, mimetype string, err error) {
-	resp, err := http.Get(uri)
+	client := http.DefaultClient
+	client.Timeout = 15 * time.Second
+
+	resp, err := client.Get(uri)
 	if err != nil {
 		return nil, "", err
 	}
+
 	if resp.StatusCode != 200 {
 		return nil, "", fmt.Errorf("HTTP server returned %s", resp.Status)
 	}
+
 	reader := resp.Body
 	out, err := io.ReadAll(reader)
 	if err != nil {
@@ -173,13 +184,13 @@ func (d *Downloader) getFromHttp(uri string) (data []byte, mimetype string, err 
 
 // getFromDataUri obtains the file encoded in "data:" URI.
 func (d *Downloader) getFromDataUri(uri string) (data []byte, mimetype string, err error) {
-	splitted := strings.Split(uri, ",")
-	if len(splitted) < 2 {
+	parts := strings.Split(uri, ",")
+	if len(parts) < 2 {
 		return nil, "", errors.New("Invalid data uri - no comma: " + uri)
 	}
-	mimetype = strings.Split(splitted[0][5:], ";")[0]
+	mimetype = strings.Split(parts[0][5:], ";")[0]
 
-	out, err := base64.StdEncoding.DecodeString(splitted[1])
+	out, err := base64.StdEncoding.DecodeString(parts[1])
 	if err != nil {
 		return nil, "", err
 	}

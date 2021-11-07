@@ -13,21 +13,26 @@ const thumbnailMaxWidth = 500
 
 // createThumbnail resize the Image
 func createThumbnail(input types.Image) (output types.Image, err error) {
-	if input.Type == types.ImageTypeSvg || len(input.Data) == 0 {
-		return input, nil // skip thumbnailing of SVG and empty files
+	// skip thumbnail of SVG, WebP and empty files
+	if input.Type == types.ImageTypeSvg || input.Type == types.ImageTypeWebp || len(input.Data) == 0 {
+		return input, nil
 	}
+
+	// create a thumbnail of a video file
 	if input.Type == types.ImageTypeMp4 {
 		input, err = createVideoThumbnail(input)
 		if err != nil {
 			return types.Image{}, err
 		}
 	}
+
+	// simple image frame nail
 	return createImageThumbnail(input)
 }
 
+// createImageThumbnail creates a smaller banner for the given image.
 func createImageThumbnail(input types.Image) (output types.Image, err error) {
 	reader := bytes.NewReader(input.Data)
-	var writer bytes.Buffer
 
 	img, err := imaging.Decode(reader, imaging.AutoOrientation(true))
 	if err != nil {
@@ -36,12 +41,14 @@ func createImageThumbnail(input types.Image) (output types.Image, err error) {
 
 	small := imaging.Fit(img, thumbnailMaxWidth, thumbnailMaxHeight, imaging.Linear)
 
+	var writer bytes.Buffer
 	if input.Type == types.ImageTypeJpeg {
 		err = imaging.Encode(&writer, small, imaging.JPEG, imaging.JPEGQuality(80))
 	} else {
 		err = imaging.Encode(&writer, small, imaging.PNG) // also for GIFs
 		input.Type = types.ImageTypePng
 	}
+
 	if err != nil {
 		return types.Image{}, err
 	}
