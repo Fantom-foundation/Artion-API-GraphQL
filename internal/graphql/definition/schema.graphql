@@ -48,6 +48,9 @@ type Query {
 
     # Get unlockable content attached to a NFT token (only token owner)
     unlockableContent(contract: Address!, tokenId: BigInt!): String
+
+    # Estimate platform fee and gas needed for token minting
+    estimateMintFeeGas(user: Address!, contract: Address!, tokenUri: String!): MintFeeGas!
 }
 
 # Mutation endpoints for modifying the data

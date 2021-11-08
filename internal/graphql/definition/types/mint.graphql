@@ -1,0 +1,5 @@
+# Platform fee and estimated gas for mint operation
+type MintFeeGas {
+    platformFee: BigInt
+    gas: BigInt
+}
