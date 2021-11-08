@@ -3,17 +3,13 @@ package svc
 
 import (
 	"artion-api-graphql/internal/types"
-	"bytes"
-	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	eth "github.com/ethereum/go-ethereum/core/types"
-	"time"
 )
 
 const (
-	// obsBlocksNotificationTickInterval represents the interval
-	// in which observed blocks are notified to repository.
-	obsBlocksNotificationTickInterval = 15 * time.Second
+	// observedBlocksCapacity represents the capacity of channel for observed block IDs.
+	observedBlocksCapacity = 100
 )
 
 // EventHandler represents a function used to process event log record.
@@ -35,20 +31,14 @@ type logObserver struct {
 	// for processing and metadata update
 	outNftTokens chan *types.Token
 
+	// outObservedBlock is fed with numbers of processed blocks.
+	outObservedBlocks chan uint64
+
 	// currentBlock contains the number of the currently processed block
 	currentBlock uint64
 
-	// lastProcessedBlock contains the number of the last processed block
-	lastProcessedBlock uint64
-
 	// topics represents a map of topics to their respective event handlers.
 	topics map[common.Hash]EventHandler
-
-	// contracts represents a list of observed contracts.
-	contracts []common.Address
-
-	// nftTypes represents a map of types of observed NFT contracts.
-	nftTypes map[common.Address]string
 
 	// marketplace is the address of the Marketplace contract.
 	marketplace *common.Address
@@ -57,9 +47,10 @@ type logObserver struct {
 // newLogObserver creates a new instance of the event logs observer service.
 func newLogObserver(mgr *Manager) *logObserver {
 	return &logObserver{
-		mgr:          mgr,
-		sigStop:      make(chan bool, 1),
-		outNftTokens: make(chan *types.Token, nftMetadataUpdaterQueueCapacity),
+		mgr:               mgr,
+		sigStop:           make(chan bool, 1),
+		outNftTokens:      make(chan *types.Token, nftMetadataUpdaterQueueCapacity),
+		outObservedBlocks: make(chan uint64, observedBlocksCapacity),
 		topics: map[common.Hash]EventHandler{
 			/* Factory::event ContractCreated(address creator, address nft) */
 			common.HexToHash("0x2d49c67975aadd2d389580b368cfff5b49965b0bd5da33c144922ce01e7a4d7b"): newNFTContract,
@@ -141,8 +132,6 @@ func (lo *logObserver) init() {
 	lo.inEvents = lo.mgr.blkObserver.outEvents
 
 	// get needed data sets
-	lo.contracts = repo.ObservedContractsAddressList()
-	lo.nftTypes = repo.NFTContractsTypeMap()
 	lo.marketplace = repo.ObservedContractAddressByType("market")
 
 	// make sure we have what we need
@@ -162,13 +151,10 @@ func (lo *logObserver) close() {
 // run collects incoming event logs from the channel and processes them using
 // pre-configured callbacks.
 func (lo *logObserver) run() {
-	// start the notification ticker
-	tick := time.NewTicker(obsBlocksNotificationTickInterval)
-
 	defer func() {
-		tick.Stop()
-
 		close(lo.outNftTokens)
+		close(lo.outObservedBlocks)
+
 		lo.mgr.closed(lo)
 	}()
 
@@ -176,8 +162,6 @@ func (lo *logObserver) run() {
 		select {
 		case <-lo.sigStop:
 			return
-		case <-tick.C:
-			lo.notify()
 		case evt, ok := <-lo.inEvents:
 			if !ok {
 				return
@@ -191,7 +175,7 @@ func (lo *logObserver) run() {
 // process an incoming event
 func (lo *logObserver) process(evt *eth.Log) {
 	// is this an event from an observed contract?
-	if !lo.isObservedContract(evt) {
+	if !repo.IsObservedContract(&evt.Address) {
 		log.Debugf("event #%d / %d on foreign contract %s skipped", evt.BlockNumber, evt.Index, evt.Address.String())
 		return
 	}
@@ -208,53 +192,18 @@ func (lo *logObserver) process(evt *eth.Log) {
 	handler(evt, lo)
 }
 
-// processed updates the information about the current and processed block number.
+// processed manages information about block being evaluated and notifies about blocks done.
 func (lo *logObserver) processed(evt *eth.Log) {
-	// the last block is done
-	if lo.currentBlock < evt.BlockNumber {
-		lo.lastProcessedBlock = lo.currentBlock
+	if lo.currentBlock != evt.BlockNumber {
+		// notify we did process the last block
+		select {
+		case lo.outObservedBlocks <- lo.currentBlock:
+			log.Debugf("block #%d done", lo.currentBlock)
+		default:
+		}
+
 		lo.currentBlock = evt.BlockNumber
 	}
-}
-
-// notify the repository about the latest observed block, if any.
-func (lo *logObserver) notify() {
-	if lo.lastProcessedBlock == 0 {
-		return
-	}
-	repo.NotifyLastObservedBlock(lo.lastProcessedBlock)
-	log.Infof("last processed block is #%d", lo.lastProcessedBlock)
-}
-
-// isObservedContract checks if the given event log should be investigated and processed.
-func (lo *logObserver) isObservedContract(evt *eth.Log) bool {
-	for _, adr := range lo.contracts {
-		if 0 == bytes.Compare(adr.Bytes(), evt.Address.Bytes()) {
-			return true
-		}
-	}
-	return false
-}
-
-// addObservedContract is used to extend the list of observed contracts
-// with a newly created NFT contract address; subsequent NFT events should be observed on it.
-func (lo *logObserver) addObservedContract(oc *types.ObservedContract) {
-	// check if the contract is actually a new one
-	for _, adr := range lo.contracts {
-		if 0 == bytes.Compare(adr.Bytes(), oc.Address.Bytes()) {
-			return
-		}
-	}
-
-	// add the contract to the list
-	lo.contracts = append(lo.contracts, oc.Address)
-
-	// an NFT contract? add it to the types map as well
-	if oc.Type == types.ContractTypeERC721 || oc.Type == types.ContractTypeERC1155 {
-		lo.nftTypes[oc.Address] = oc.Type
-	}
-
-	log.Infof("new contract %s is now observed", oc.Address.String())
 }
 
 // topicsList provides a list of observed topics for blocks event filtering
@@ -269,14 +218,4 @@ func (lo *logObserver) topicsList() [][]common.Hash {
 	}
 
 	return list
-}
-
-// contractTypeByAddress provides type of contract based on known address.
-// We use pre-loaded NFT types map to perform this.
-func (lo *logObserver) contractTypeByAddress(fa *common.Address) (string, error) {
-	tp, ok := lo.nftTypes[*fa]
-	if !ok {
-		return "", fmt.Errorf("address %s unknown", fa.String())
-	}
-	return tp, nil
 }

@@ -4,15 +4,11 @@ package svc
 import (
 	"github.com/ethereum/go-ethereum/common"
 	eth "github.com/ethereum/go-ethereum/core/types"
-	"time"
 )
 
 const (
 	// logEventQueueCapacity represents the log events queue capacity.
 	logEventQueueCapacity = 200
-
-	// observedBlocksCapacity represents the capacity of channel for observed block IDs.
-	observedBlocksCapacity = 100
 )
 
 // blkObserver represents a service monitoring incoming blocks
@@ -27,15 +23,15 @@ type blkObserver struct {
 	// inBlock represents an input channel receiving block headers to be observed
 	inBlocks chan *eth.Header
 
+	// inNewBlock represents an input channel receiving new headers from the blockchain
+	inNewBlocks chan *eth.Header
+
 	// outEvent represents an output channel being fed
 	// with recognized block events for processing
 	outEvents chan eth.Log
 
 	// topics represents the topics observed by the API server
 	topics [][]common.Hash
-
-	// outObservedBlock is fed with numbers of processed blocks.
-	outObservedBlocks chan uint64
 }
 
 // newBlkObserver creates a new instance of the block observer service.
@@ -44,7 +40,6 @@ func newBlkObserver(mgr *Manager) *blkObserver {
 		mgr:               mgr,
 		sigStop:           make(chan bool, 1),
 		outEvents:         make(chan eth.Log, logEventQueueCapacity),
-		outObservedBlocks: make(chan uint64, observedBlocksCapacity),
 		topics:            nil,
 	}
 }
@@ -56,20 +51,16 @@ func (bo *blkObserver) name() string {
 
 // init prepares the block observer to capture blocks.
 func (bo *blkObserver) init() {
-	bo.inBlocks = bo.mgr.blkRouter.outBlocks
+	bo.inBlocks = bo.mgr.blkScanner.outBlocks
+	bo.inNewBlocks = repo.NewHeaders()
 	bo.topics = bo.mgr.logObserver.topicsList()
 	bo.mgr.add(bo)
 }
 
 // run pulls block headers from the input queue and processes them.
 func (bo *blkObserver) run() {
-	// start the notification ticker
-	tick := time.NewTicker(obsBlocksNotificationTickInterval)
-
 	defer func() {
-		tick.Stop()
 		close(bo.outEvents)
-		close(bo.outObservedBlocks)
 		bo.mgr.closed(bo)
 	}()
 
@@ -78,6 +69,11 @@ func (bo *blkObserver) run() {
 		case <-bo.sigStop:
 			return
 		case hdr, ok := <-bo.inBlocks:
+			if !ok {
+				return
+			}
+			bo.process(hdr)
+		case hdr, ok := <-bo.inNewBlocks:
 			if !ok {
 				return
 			}
@@ -100,25 +96,14 @@ func (bo *blkObserver) process(hdr *eth.Header) {
 		return
 	}
 
-	// log.Infof("#%d has %d logs", hdr.Number.Uint64(), len(logs))
 	// push interesting events into the output queue, if any
 	for _, evt := range logs {
 		select {
 		case <-bo.sigStop:
 			bo.sigStop <- true
 			return
-		// case <-time.After(50 * time.Millisecond):
 		case bo.outEvents <- evt:
 			log.Debugf("observing #%d/#%d: %s", evt.BlockNumber, evt.Index, evt.Topics[0].String())
 		}
-	}
-
-	// notify the scanner we did process this block
-	// the scanner uses the info to decide if the server keeps up
-	// with the top head of the blockchain
-	select {
-	case bo.outObservedBlocks <- hdr.Number.Uint64():
-		log.Debugf("block #%d done", hdr.Number.Uint64())
-	default:
 	}
 }

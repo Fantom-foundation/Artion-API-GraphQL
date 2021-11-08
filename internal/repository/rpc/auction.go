@@ -20,7 +20,7 @@ const auctionDefaultDurationShift = (24 * 365 * 10) * time.Hour
 func (o *Opera) ExtendAuctionDetailAt(au *types.Auction, block *big.Int) error {
 	// get auction details
 	res, err := o.auctionContract.Auctions(&bind.CallOpts{
-		BlockNumber: block,
+		BlockNumber: nil,
 		Context:     context.Background(),
 	}, au.Contract, (*big.Int)(&au.TokenId))
 	if err != nil {
@@ -59,10 +59,10 @@ func (o *Opera) ExtendAuctionDetailAt(au *types.Auction, block *big.Int) error {
 }
 
 // ExtendAuctionV1DetailAt adds contract stored details to the provided auction record using V1 auction ABI.
-func (o *Opera) ExtendAuctionV1DetailAt(au *types.Auction, block *big.Int) error {
+func (o *Opera) ExtendAuctionV1DetailAt(au *types.Auction, _ *big.Int) error {
 	// get auction details
 	res, err := o.auctionV1Contract.Auctions(&bind.CallOpts{
-		BlockNumber: block,
+		BlockNumber: nil,
 		Context:     context.Background(),
 	}, au.Contract, (*big.Int)(&au.TokenId))
 	if err != nil {

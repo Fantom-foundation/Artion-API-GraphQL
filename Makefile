@@ -62,6 +62,12 @@ internal/repository/rpc/contracts/RandomNumberOracle.go: internal/repository/rpc
 internal/repository/rpc/contracts/RandomTrade.go: internal/repository/rpc/contracts/abi/RandomTrade.json
 	abigen --type RandomTrade --pkg contracts --abi $< --out $@
 
+internal/repository/rpc/contracts/Erc721.go: internal/repository/rpc/contracts/abi/Erc721.json
+	abigen --type Erc721 --pkg contracts --abi $< --out $@
+
+internal/repository/rpc/contracts/Erc1155.go: internal/repository/rpc/contracts/abi/Erc1155.json
+	abigen --type Erc1155 --pkg contracts --abi $< --out $@
+
 db_observed: doc/db/observed.json
 	mongoimport --db=artion --collection=observed --file=$<
 

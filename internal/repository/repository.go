@@ -12,6 +12,7 @@ import (
 	"artion-api-graphql/internal/repository/uri"
 	"artion-api-graphql/internal/types"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"golang.org/x/sync/singleflight"
 	"sync"
 )
@@ -41,11 +42,14 @@ type Proxy struct {
 	db        *db.MongoDbBridge
 	shared    *db.SharedMongoDbBridge
 	cache     *cache.MemCache
-	log       logger.Logger
 	callGroup *singleflight.Group
 
-	// notifications processing channel
-	notifications chan types.Notification
+	observedContracts []common.Address
+	nftTypes          map[common.Address]string
+
+	// notificationQueue processing channel
+	notificationQueue  chan types.Notification
+	newCollectionQueue chan common.Address
 }
 
 // R provides access to the singleton instance of the Repository.
@@ -123,10 +127,13 @@ func newProxy() *Proxy {
 		db:        db.New(),
 		shared:    db.NewShared(),
 		cache:     cache.New(),
-		log:       log,
 		callGroup: new(singleflight.Group),
 
-		notifications: make(chan types.Notification, notificationQueueCapacity),
+		// NFT contracts info
+		nftTypes: make(map[common.Address]string, 0),
+
+		notificationQueue:  make(chan types.Notification, notificationQueueCapacity),
+		newCollectionQueue: make(chan common.Address, addCollectionQueueCapacity),
 	}
 
 	if p.db == nil || p.rpc == nil || p.cache == nil {
@@ -143,7 +150,7 @@ func newProxy() *Proxy {
 
 // Close terminates repository connections.
 func (p *Proxy) Close() {
-	close(p.notifications)
+	close(p.notificationQueue)
 
 	if p.rpc != nil {
 		p.rpc.Close()
@@ -164,4 +171,9 @@ func (p *Proxy) registerContracts() {
 			log.Panicf("mandatory contract %s not available", ct)
 		}
 	}
+
+	// load list of observed contract addresses
+	log.Notice("loading observed contracts")
+	p.observedContracts = p.ObservedContractsAddressList()
+	p.loadObservedCollections()
 }

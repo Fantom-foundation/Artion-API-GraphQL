@@ -60,9 +60,9 @@ func erc1155TokenTransfer(evt *eth.Log, lo *logObserver) {
 }
 
 // balanceOf returns the balance of a token for the given owner on the given block.
-func balanceOf(con *common.Address, tokenId *big.Int, owner *common.Address, block uint64, lo *logObserver) hexutil.Big {
+func balanceOf(con *common.Address, tokenId *big.Int, owner *common.Address, block uint64, _ *logObserver) hexutil.Big {
 	// try to get the contract type
-	tt, err := lo.contractTypeByAddress(con)
+	tt, err := repo.ContractTypeByAddress(con)
 	if err != nil {
 		log.Criticalf("unknown contract type; %s", err.Error())
 		return hexutil.Big{}
@@ -102,7 +102,7 @@ func addERC1155Token(adr *common.Address, tokenID *big.Int, creator *common.Addr
 	// make the token
 	tok := types.NewToken(adr, tokenID, uri, int64(blk.Time), evt.BlockNumber, evt.Index)
 	tok.CreatedBy = *creator
-	
+
 	log.Infof("ERC-1155 token #%s found at %s", tok.TokenId.String(), tok.Contract.String())
 
 	// write token to the persistent storage

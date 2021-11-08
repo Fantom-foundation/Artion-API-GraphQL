@@ -12,13 +12,13 @@ type Manager struct {
 	svc []service
 
 	// managed services
-	blkRouter       *blkRouter
-	blkScanner      *blkScanner
-	blkObserver     *blkObserver
-	logObserver     *logObserver
-	nftMetaUpdater  *nftMetadataUpdater
-	nftMetaWorker   *nftMetadataWorker
-	notifyProcessor *notificationProcessor
+	blkScanner          *blkScanner
+	blkObserver         *blkObserver
+	logObserver         *logObserver
+	nftMetaUpdater      *nftMetadataUpdater
+	nftMetaWorker       *nftMetadataWorker
+	notifyProcessor     *notificationProcessor
+	collectionValidator *nftCollectionValidator
 }
 
 // newManager creates a new instance of the svc Manager.
@@ -33,13 +33,13 @@ func newManager() *Manager {
 	repo = repository.R()
 
 	// make services
-	mgr.blkRouter = newBlkRouter(&mgr)
 	mgr.blkScanner = newBlkScanner(&mgr)
 	mgr.blkObserver = newBlkObserver(&mgr)
 	mgr.logObserver = newLogObserver(&mgr)
 	mgr.nftMetaUpdater = newNFTMetadataUpdater(&mgr)
 	mgr.nftMetaWorker = newNFTMetadataWorker(&mgr)
 	mgr.notifyProcessor = newNotificationProcessor(&mgr)
+	mgr.collectionValidator = newNFTCollectionValidator(&mgr)
 
 	// init and run
 	mgr.init()
@@ -49,13 +49,13 @@ func newManager() *Manager {
 
 // init initializes the services in the correct order.
 func (mgr *Manager) init() {
-	mgr.blkRouter.init()
 	mgr.blkScanner.init()
 	mgr.blkObserver.init()
 	mgr.logObserver.init()
 	mgr.nftMetaWorker.init()
 	mgr.nftMetaUpdater.init()
 	mgr.notifyProcessor.init()
+	mgr.collectionValidator.init()
 }
 
 // add managed service instance to the Manager and run it.
