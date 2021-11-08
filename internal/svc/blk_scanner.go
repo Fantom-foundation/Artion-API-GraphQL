@@ -261,7 +261,7 @@ func (bs *blkScanner) notify() {
 	repo.NotifyLastObservedBlock(bs.lastProcessedBlock)
 
 	if bs.state == blkIsIdling {
-		log.Infof("idle at #%d of #%d", bs.current, bs.target, bs.lastProcessedBlock)
+		log.Infof("idle at #%d, head at #%d", bs.current, bs.target)
 		return
 	}
 	log.Infof("scanner at #%d of #%d; processed #%d", bs.current, bs.target, bs.lastProcessedBlock)
