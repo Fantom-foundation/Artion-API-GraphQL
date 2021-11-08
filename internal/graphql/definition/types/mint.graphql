@@ -1,5 +1,6 @@
 # Platform fee and estimated gas for mint operation
 type MintFeeGas {
+    error: String
     platformFee: BigInt
     gas: BigInt
 }
