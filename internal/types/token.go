@@ -49,8 +49,12 @@ type Token struct {
 	AmountLastTrade int64          `bson:"amo_trade"`
 	AmountLastOffer int64          `bson:"amo_offer"`
 	AmountLastBid   int64          `bson:"amo_bid"`
+	AmountReserve   int64          `bson:"amo_reserve"`
 	AmountLastList  int64          `bson:"amo_list"`
+	MinListAmount   *int64         `bson:"min_list"`
+	MinListValid    *Time          `bson:"min_list_valid"` // validity of MinListAmount until
 	Price           int64          `bson:"price"`
+	PriceValid      *Time          `bson:"price_valid"` // validity of Price until
 	Categories      []int32        `bson:"categories"`
 
 	// metadata refresh helpers

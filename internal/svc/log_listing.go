@@ -40,6 +40,7 @@ func marketNFTListed(evt *eth.Log, lo *logObserver) {
 		Closed:       nil,
 		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
 	}
+	lst.UnifiedPrice = repo.GetUnifiedPriceAt(lo.marketplace, &lst.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&lst.UnitPrice))
 
 	// store the listing into database
 	if err := repo.StoreListing(&lst); err != nil {
@@ -50,7 +51,7 @@ func marketNFTListed(evt *eth.Log, lo *logObserver) {
 	if err := repo.TokenMarkListed(
 		&lst.Contract,
 		(*big.Int)(&lst.TokenId),
-		repo.GetUnifiedPriceAt(lo.marketplace, &lst.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&lst.UnitPrice)),
+		lst.UnifiedPrice,
 		(*time.Time)(&lst.Created),
 	); err != nil {
 		log.Errorf("could not mark token as listed; %s", err.Error())
@@ -93,8 +94,8 @@ func marketNFTUpdated(evt *eth.Log, lo *logObserver) {
 
 	// try to get the listing
 	lst, err := repo.GetListing(&contract, tokenID, &owner)
-	if err != nil {
-		log.Errorf("update listing not found; %s", err.Error())
+	if lst == nil {
+		log.Errorf("update listing not found; %s", err)
 		return
 	}
 
@@ -108,6 +109,7 @@ func marketNFTUpdated(evt *eth.Log, lo *logObserver) {
 	// do the update
 	lst.PayToken = common.BytesToAddress(evt.Data[32:64])
 	lst.UnitPrice = hexutil.Big(*new(big.Int).SetBytes(evt.Data[64:]))
+	lst.UnifiedPrice = repo.GetUnifiedPriceAt(lo.marketplace, &lst.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&lst.UnitPrice))
 	lst.LastUpdate = (*types.Time)(&up)
 
 	// store the listing into database
@@ -119,7 +121,7 @@ func marketNFTUpdated(evt *eth.Log, lo *logObserver) {
 	if err := repo.TokenMarkListed(
 		&lst.Contract,
 		(*big.Int)(&lst.TokenId),
-		repo.GetUnifiedPriceAt(lo.marketplace, &lst.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&lst.UnitPrice)),
+		lst.UnifiedPrice,
 		(*time.Time)(&lst.Created),
 	); err != nil {
 		log.Errorf("could not mark token as listed; %s", err.Error())
@@ -160,8 +162,8 @@ func marketNFTUnlisted(evt *eth.Log, _ *logObserver) {
 
 	// try to get the listing
 	lst, err := repo.GetListing(&contract, tokenID, &owner)
-	if err != nil {
-		log.Errorf("listing not found; %s", err.Error())
+	if lst == nil {
+		log.Errorf("listing not found; %s", err)
 		return
 	}
 
@@ -221,16 +223,16 @@ func marketItemSold(evt *eth.Log, lo *logObserver) {
 		return
 	}
 
-	// try to get a listing
+	// try to get the listing
 	lst, err := repo.GetListing(&contract, tokenID, &owner)
-	if err == nil {
+	if lst != nil {
 		marketCloseListingWithSale(evt, lst, blk, lo, &buyer)
 		return
 	}
 
 	// try to get an offer
 	offer, err := repo.GetOffer(&contract, tokenID, &buyer)
-	if err == nil {
+	if offer != nil {
 		marketCloseOfferWithSale(evt, offer, blk, lo, &owner)
 		return
 	}
@@ -244,6 +246,7 @@ func marketCloseListingWithSale(evt *eth.Log, lst *types.Listing, blk *eth.Heade
 	lst.Closed = (*types.Time)(&up)
 	lst.PayToken = common.BytesToAddress(evt.Data[64:96])
 	lst.UnitPrice = hexutil.Big(*new(big.Int).SetBytes(evt.Data[128:]))
+	lst.UnifiedPrice = repo.GetUnifiedPriceAt(lo.marketplace, &lst.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&lst.UnitPrice))
 
 	// store the listing into database
 	if err := repo.StoreListing(lst); err != nil {
@@ -254,7 +257,7 @@ func marketCloseListingWithSale(evt *eth.Log, lst *types.Listing, blk *eth.Heade
 	if err := repo.TokenMarkSold(
 		&lst.Contract,
 		(*big.Int)(&lst.TokenId),
-		repo.GetUnifiedPriceAt(lo.marketplace, &lst.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&lst.UnitPrice)),
+		lst.UnifiedPrice,
 		&up,
 	); err != nil {
 		log.Errorf("could not mark token as sold; %s", err.Error())

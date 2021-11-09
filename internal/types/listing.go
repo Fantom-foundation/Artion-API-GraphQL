@@ -17,6 +17,7 @@ type Listing struct {
 	Quantity     hexutil.Big    `bson:"quantity"`
 	PayToken     common.Address `bson:"pay_token"`
 	UnitPrice    hexutil.Big    `bson:"price"`
+	UnifiedPrice int64          `bson:"uprice"`
 	Created      Time           `bson:"created"`
 	StartTime    Time           `bson:"start"`
 	LastUpdate   *Time          `bson:"updated"`

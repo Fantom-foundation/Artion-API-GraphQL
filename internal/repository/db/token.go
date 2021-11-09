@@ -69,25 +69,27 @@ const (
 	// fiTokenListedPrice is the column storing the latest price token is listed at.
 	fiTokenListedPrice = "amo_list"
 
-	// fiTokenTradePrice is the column storing the latest price token was sold for.
+	// fiTokenTradePrice is the column storing the last price token was sold for.
 	fiTokenTradePrice = "amo_trade"
 
-	// fiTokenOfferPrice is the column storing the latest price token was sold for.
+	// fiTokenOfferPrice is the column storing the last price token was sold for.
 	fiTokenOfferPrice = "amo_offer"
 
-	// fiTokenBidPrice is the column storing the latest price a bid was placed on token for.
+	// fiTokenBidPrice is the column storing the last bid placed on the token.
 	fiTokenBidPrice = "amo_bid"
 
-	// fiTokenLastTrade is the column storing the latest trade date/time.
+	fiTokenAmountReserve = "amo_reserve"
+
+	// fiTokenLastTrade is the column storing the last trade date/time.
 	fiTokenLastTrade = "last_trade"
 
-	// fiTokenLastListed is the column storing the latest listing date/time.
+	// fiTokenLastListed is the column storing the last listing creation date/time.
 	fiTokenLastListed = "last_list"
 
-	// fiTokenLastOffer is the column storing the latest offer date/time.
+	// fiTokenLastOffer is the column storing the last offer creation date/time.
 	fiTokenLastOffer = "last_offer"
 
-	// fiTokenLastAuction is the column storing the latest auction date/time.
+	// fiTokenLastAuction is the column storing the latest auction creation date/time.
 	fiTokenLastAuction = "last_auction"
 
 	// fiTokenLastBid is the column storing the latest auction bid date/time.
@@ -95,6 +97,18 @@ const (
 
 	// fiTokenCategories is the column storing categories ids of the token.
 	fiTokenCategories = "categories"
+
+	// fiTokenMinListAmount is the column storing minimal listing price.
+	fiTokenMinListAmount = "min_list"
+
+	// fiTokenMinListValid is the column storing end of minimal listing price validity.
+	fiTokenMinListValid = "min_list_until"
+
+	// fiTokenPrice is the column storing price of token in USD aggregated from listings and auctions.
+	fiTokenPrice = "price"
+
+	// fiTokenPriceValid is the column storing end of fiTokenPrice validity
+	fiTokenPriceValid = "price_valid"
 )
 
 // GetToken loads specific NFT token for the given contract address and token ID
@@ -209,37 +223,90 @@ func (db *MongoDbBridge) TokenMarkOffered(contract *common.Address, tokenID *big
 
 // TokenMarkListed marks the given NFT as listed for direct sale for the given price.
 func (db *MongoDbBridge) TokenMarkListed(contract *common.Address, tokenID *big.Int, price int64, ts *time.Time) error {
+	t, err := db.GetToken(contract, tokenID)
+	if t == nil {
+		log.Errorf("unable to load token; %s", err)
+		return err
+	}
+
+	t.HasListingSince = db.OpenListingSince(contract, tokenID)
+	t.MinListAmount, t.MinListValid = db.MinListingPrice(contract, tokenID)
+	t.Price, t.PriceValid = db.getTokenPrice(t)
+
 	return db.UpdateToken(contract, tokenID, bson.D{
 		{Key: fiTokenLastListed, Value: *ts},
-		{Key: fiTokenHasListingSince, Value: db.OpenListingSince(contract, tokenID)},
+		{Key: fiTokenHasListingSince, Value: t.HasListingSince},
 		{Key: fiTokenListedPrice, Value: price},
+		{Key: fiTokenMinListAmount, Value: t.MinListAmount},
+		{Key: fiTokenMinListValid, Value: t.MinListValid},
+		{Key: fiTokenPrice, Value: t.Price},
+		{Key: fiTokenPriceValid, Value: t.PriceValid},
 	})
 }
 
 // TokenMarkAuctioned marks the given NFT as auctioned for the given price.
-func (db *MongoDbBridge) TokenMarkAuctioned(contract *common.Address, tokenID *big.Int, _ int64, ts *time.Time) error {
-	aucSince, aucUntil := db.OpenAuctionRange(contract, tokenID)
+func (db *MongoDbBridge) TokenMarkAuctioned(contract *common.Address, tokenID *big.Int, reservePrice int64, ts *time.Time) error {
+	t, err := db.GetToken(contract, tokenID)
+	if t == nil {
+		log.Errorf("unable to load token; %s", err)
+		return err
+	}
+
+	t.HasAuctionSince, t.HasAuctionUntil = db.OpenAuctionRange(contract, tokenID)
+	t.HasBids = false
+	t.AmountReserve = reservePrice
+	t.Price, t.PriceValid = db.getTokenPrice(t)
+
 	return db.UpdateToken(contract, tokenID, bson.D{
 		{Key: fiTokenLastAuction, Value: *ts},
-		{Key: fiTokenHasAuctionSince, Value: aucSince},
-		{Key: fiTokenHasAuctionUntil, Value: aucUntil},
-		{Key: fiTokenHasBid, Value: false},
+		{Key: fiTokenHasAuctionSince, Value: t.HasAuctionSince},
+		{Key: fiTokenHasAuctionUntil, Value: t.HasAuctionUntil},
+		{Key: fiTokenHasBid, Value: t.HasBids},
+		{Key: fiTokenAmountReserve, Value: t.AmountReserve},
+		{Key: fiTokenPrice, Value: t.Price},
+		{Key: fiTokenPriceValid, Value: t.PriceValid},
 	})
 }
 
 // TokenMarkBid marks the given NFT as having auction bid for the given price.
 func (db *MongoDbBridge) TokenMarkBid(contract *common.Address, tokenID *big.Int, price int64, ts *time.Time) error {
+	t, err := db.GetToken(contract, tokenID)
+	if t == nil {
+		log.Errorf("unable to load token; %s", err)
+		return err
+	}
+
+	t.HasBids = true
+	t.AmountLastBid = price
+	t.Price, t.PriceValid = db.getTokenPrice(t)
+
 	return db.UpdateToken(contract, tokenID, bson.D{
-		{Key: fiTokenHasBid, Value: true},
-		{Key: fiTokenBidPrice, Value: price},
+		{Key: fiTokenHasBid, Value: t.HasBids},
+		{Key: fiTokenBidPrice, Value: t.AmountLastBid},
 		{Key: fiTokenLastBid, Value: ts},
+		{Key: fiTokenPrice, Value: t.Price},
+		{Key: fiTokenPriceValid, Value: t.PriceValid},
 	})
 }
 
 // TokenMarkUnlisted marks the given NFT as listed for direct sale for the given price.
 func (db *MongoDbBridge) TokenMarkUnlisted(contract *common.Address, tokenID *big.Int) error {
+	t, err := db.GetToken(contract, tokenID)
+	if t == nil {
+		log.Errorf("unable to load token; %s", err)
+		return err
+	}
+
+	t.HasListingSince = db.OpenListingSince(contract, tokenID)
+	t.MinListAmount, t.MinListValid = db.MinListingPrice(contract, tokenID)
+	t.Price, t.PriceValid = db.getTokenPrice(t)
+
 	return db.UpdateToken(contract, tokenID, bson.D{
-		{Key: fiTokenHasListingSince, Value: db.OpenListingSince(contract, tokenID)},
+		{Key: fiTokenHasListingSince, Value: t.HasListingSince},
+		{Key: fiTokenMinListAmount, Value: t.MinListAmount},
+		{Key: fiTokenMinListValid, Value: t.MinListValid},
+		{Key: fiTokenPrice, Value: t.Price},
+		{Key: fiTokenPriceValid, Value: t.PriceValid},
 	})
 }
 
@@ -252,32 +319,71 @@ func (db *MongoDbBridge) TokenMarkUnOffered(contract *common.Address, tokenID *b
 
 // TokenMarkUnAuctioned marks the given NFT as not having an active auction on.
 func (db *MongoDbBridge) TokenMarkUnAuctioned(contract *common.Address, tokenID *big.Int) error {
-	aucSince, aucUntil := db.OpenAuctionRange(contract, tokenID)
+	t, err := db.GetToken(contract, tokenID)
+	if t == nil {
+		log.Errorf("unable to load token; %s", err)
+		return err
+	}
+
+	t.HasAuctionSince, t.HasAuctionUntil = db.OpenAuctionRange(contract, tokenID)
+	t.HasBids = false
+	t.Price, t.PriceValid = db.getTokenPrice(t)
+
 	return db.UpdateToken(contract, tokenID, bson.D{
-		{Key: fiTokenHasAuctionSince, Value: aucSince},
-		{Key: fiTokenHasAuctionUntil, Value: aucUntil},
-		{Key: fiTokenHasBid, Value: false},
+		{Key: fiTokenHasAuctionSince, Value: t.HasAuctionSince},
+		{Key: fiTokenHasAuctionUntil, Value: t.HasAuctionUntil},
+		{Key: fiTokenHasBid, Value: t.HasBids},
+		{Key: fiTokenPrice, Value: t.Price},
+		{Key: fiTokenPriceValid, Value: t.PriceValid},
 	})
 }
 
 // TokenMarkUnBid marks the given NFT as not having a bid anymore.
 func (db *MongoDbBridge) TokenMarkUnBid(contract *common.Address, tokenID *big.Int) error {
+	t, err := db.GetToken(contract, tokenID)
+	if t == nil {
+		log.Errorf("unable to load token; %s", err)
+		return err
+	}
+
+	t.HasBids = false
+	t.Price, t.PriceValid = db.getTokenPrice(t)
+
 	return db.UpdateToken(contract, tokenID, bson.D{
 		{Key: fiTokenHasBid, Value: false},
+		{Key: fiTokenPrice, Value: t.Price},
+		{Key: fiTokenPriceValid, Value: t.PriceValid},
 	})
 }
 
 // TokenMarkSold marks the given NFT as sold for the given price.
 func (db *MongoDbBridge) TokenMarkSold(contract *common.Address, tokenID *big.Int, price int64, ts *time.Time) error {
-	aucSince, aucUntil := db.OpenAuctionRange(contract, tokenID)
+	t, err := db.GetToken(contract, tokenID)
+	if t == nil {
+		log.Errorf("unable to load token; %s", err)
+		return err
+	}
+
+	t.HasAuctionSince, t.HasAuctionUntil = db.OpenAuctionRange(contract, tokenID)
+	t.HasListingSince = db.OpenListingSince(contract, tokenID)
+	t.MinListAmount, t.MinListValid = db.MinListingPrice(contract, tokenID)
+	t.HasOfferUntil = db.OpenOfferUntil(contract, tokenID)
+	t.AmountLastTrade = price
+	t.HasBids = false
+	t.Price, t.PriceValid = db.getTokenPrice(t)
+
 	return db.UpdateToken(contract, tokenID, bson.D{
 		{Key: fiTokenLastTrade, Value: *ts},
-		{Key: fiTokenHasListingSince, Value: db.OpenListingSince(contract, tokenID)},
-		{Key: fiTokenHasOfferUntil, Value: db.OpenOfferUntil(contract, tokenID)},
-		{Key: fiTokenHasAuctionSince, Value: aucSince},
-		{Key: fiTokenHasAuctionUntil, Value: aucUntil},
-		{Key: fiTokenTradePrice, Value: price},
-		{Key: fiTokenHasBid, Value: false},
+		{Key: fiTokenHasListingSince, Value: t.HasListingSince},
+		{Key: fiTokenMinListAmount, Value: t.MinListAmount},
+		{Key: fiTokenMinListValid, Value: t.MinListValid},
+		{Key: fiTokenHasOfferUntil, Value: t.HasOfferUntil},
+		{Key: fiTokenHasAuctionSince, Value: t.HasAuctionSince},
+		{Key: fiTokenHasAuctionUntil, Value: t.HasAuctionUntil},
+		{Key: fiTokenTradePrice, Value: t.AmountLastTrade},
+		{Key: fiTokenHasBid, Value: t.HasBids},
+		{Key: fiTokenPrice, Value: t.Price},
+		{Key: fiTokenPriceValid, Value: t.PriceValid},
 	})
 }
 
@@ -316,6 +422,37 @@ func (db *MongoDbBridge) TokenMetadataRefreshSet() ([]*types.Token, error) {
 		i++
 	}
 	return list[:i], nil
+}
+
+func (db *MongoDbBridge) getTokenPrice(t *types.Token) (tokenPrice int64, priceValidUntil *types.Time) {
+	now := time.Now()
+
+	// has auction - use auction top bid (or reserve price)
+	if t.HasAuctionSince != nil && t.HasAuctionUntil != nil {
+		if (*time.Time)(t.HasAuctionSince).Before(now) && (*time.Time)(t.HasAuctionUntil).After(now) {
+			if t.HasBids {
+				tokenPrice = t.AmountLastBid
+			} else {
+				tokenPrice = t.AmountReserve
+			}
+			priceValidUntil = t.HasAuctionUntil
+		}
+	}
+
+	// has listing
+	if t.MinListAmount != nil {
+		// the listing is cheaper then auction
+		if tokenPrice == 0 || tokenPrice > *t.MinListAmount {
+			tokenPrice = *t.MinListAmount
+
+			// use minimum of validity-until
+			if priceValidUntil == nil || (*time.Time)(priceValidUntil).After(time.Time(*t.MinListValid)) {
+				priceValidUntil = t.MinListValid
+			}
+		}
+	}
+
+	return
 }
 
 func (db *MongoDbBridge) ListTokens(filter *types.TokenFilter, sorting sorting.TokenSorting, sortDesc bool, cursor types.Cursor, count int, backward bool) (out *types.TokenList, err error) {

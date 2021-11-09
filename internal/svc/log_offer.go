@@ -104,7 +104,7 @@ func marketOfferCanceled(evt *eth.Log, _ *logObserver) {
 
 	// try to get the offer being canceled
 	offer, err := repo.GetOffer(&contract, tokenID, &proposer)
-	if err != nil {
+	if offer == nil {
 		log.Errorf("offer not found; %s", err.Error())
 		return
 	}
