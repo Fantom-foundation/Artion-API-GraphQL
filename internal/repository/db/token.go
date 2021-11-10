@@ -102,13 +102,19 @@ const (
 	fiTokenMinListAmount = "min_list"
 
 	// fiTokenMinListValid is the column storing end of minimal listing price validity.
-	fiTokenMinListValid = "min_list_until"
+	fiTokenMinListValid = "min_list_valid"
 
 	// fiTokenPrice is the column storing price of token in USD aggregated from listings and auctions.
 	fiTokenPrice = "price"
 
 	// fiTokenPriceValid is the column storing end of fiTokenPrice validity
 	fiTokenPriceValid = "price_valid"
+
+	// fiTokenIpRights is the column storing URL of IP document
+	fiTokenIpRights = "ip_rights"
+
+	// fiTokenSymbol is the column storing symbol of the token
+	fiTokenSymbol = "symbol"
 )
 
 // GetToken loads specific NFT token for the given contract address and token ID
@@ -193,6 +199,8 @@ func (db *MongoDbBridge) UpdateTokenMetadata(nft *types.Token) error {
 		{Key: fiTokenDescription, Value: nft.Description},
 		{Key: fiTokenImageURI, Value: nft.ImageURI},
 		{Key: fiTokenImageType, Value: nft.ImageType},
+		{Key: fiTokenIpRights, Value: nft.IpRights},
+		{Key: fiTokenSymbol, Value: nft.Symbol},
 		{Key: fiTokenCategories, Value: nft.Categories},
 		{Key: fiTokenMetadataUpdate, Value: nft.MetaUpdate},
 		{Key: fiTokenMetadataUpdateFailures, Value: nft.MetaFailures},

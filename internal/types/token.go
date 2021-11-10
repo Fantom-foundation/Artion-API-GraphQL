@@ -31,6 +31,8 @@ type Token struct {
 	Uri             string         `bson:"uri"`
 	Name            string         `bson:"name"`
 	Description     string         `bson:"desc"`
+	Symbol          string         `bson:"symbol"`
+	IpRights        string         `bson:"ip_rights"`
 	ImageURI        string         `bson:"image"`
 	ImageType       ImageType      `bson:"image_type"`
 	OrdinalIndex    int64          `bson:"index"`

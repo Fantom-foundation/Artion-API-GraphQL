@@ -12,6 +12,12 @@ type Token {
     # Description of the token
     description: String!
 
+    # Symbol of the token
+    symbol: String!
+
+    # URL of IP document
+    ipRights: String!
+
     # URL of the token image
     image: String
 

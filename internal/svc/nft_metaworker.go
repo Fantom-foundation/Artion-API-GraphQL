@@ -110,6 +110,12 @@ func (mw *nftMetadataWorker) update(tok *types.Token) error {
 	if md.Image != nil {
 		tok.ImageURI = strings.TrimSpace(*md.Image)
 	}
+	if md.Properties.Symbol != nil {
+		tok.Symbol = *md.Properties.Symbol
+	}
+	if md.Properties.IpRights != nil {
+		tok.IpRights = *md.Properties.IpRights
+	}
 
 	updateTokenCategoriesFromCollection(tok)
 
