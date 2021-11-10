@@ -233,7 +233,7 @@ func (db *MongoDbBridge) TokenMarkOffered(contract *common.Address, tokenID *big
 func (db *MongoDbBridge) TokenMarkListed(contract *common.Address, tokenID *big.Int, price int64, ts *time.Time) error {
 	t, err := db.GetToken(contract, tokenID)
 	if t == nil {
-		log.Errorf("unable to load token; %s", err)
+		log.Errorf("unable to load token %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
 		return err
 	}
 
@@ -256,7 +256,7 @@ func (db *MongoDbBridge) TokenMarkListed(contract *common.Address, tokenID *big.
 func (db *MongoDbBridge) TokenMarkAuctioned(contract *common.Address, tokenID *big.Int, reservePrice int64, ts *time.Time) error {
 	t, err := db.GetToken(contract, tokenID)
 	if t == nil {
-		log.Errorf("unable to load token; %s", err)
+		log.Errorf("unable to load token %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
 		return err
 	}
 
@@ -280,7 +280,7 @@ func (db *MongoDbBridge) TokenMarkAuctioned(contract *common.Address, tokenID *b
 func (db *MongoDbBridge) TokenMarkBid(contract *common.Address, tokenID *big.Int, price int64, ts *time.Time) error {
 	t, err := db.GetToken(contract, tokenID)
 	if t == nil {
-		log.Errorf("unable to load token; %s", err)
+		log.Errorf("unable to load token %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
 		return err
 	}
 
@@ -301,7 +301,7 @@ func (db *MongoDbBridge) TokenMarkBid(contract *common.Address, tokenID *big.Int
 func (db *MongoDbBridge) TokenMarkUnlisted(contract *common.Address, tokenID *big.Int) error {
 	t, err := db.GetToken(contract, tokenID)
 	if t == nil {
-		log.Errorf("unable to load token; %s", err)
+		log.Errorf("unable to load token %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
 		return err
 	}
 
@@ -329,7 +329,7 @@ func (db *MongoDbBridge) TokenMarkUnOffered(contract *common.Address, tokenID *b
 func (db *MongoDbBridge) TokenMarkUnAuctioned(contract *common.Address, tokenID *big.Int) error {
 	t, err := db.GetToken(contract, tokenID)
 	if t == nil {
-		log.Errorf("unable to load token; %s", err)
+		log.Errorf("unable to load token %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
 		return err
 	}
 
@@ -350,7 +350,7 @@ func (db *MongoDbBridge) TokenMarkUnAuctioned(contract *common.Address, tokenID 
 func (db *MongoDbBridge) TokenMarkUnBid(contract *common.Address, tokenID *big.Int) error {
 	t, err := db.GetToken(contract, tokenID)
 	if t == nil {
-		log.Errorf("unable to load token; %s", err)
+		log.Errorf("unable to load token %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
 		return err
 	}
 
@@ -368,7 +368,7 @@ func (db *MongoDbBridge) TokenMarkUnBid(contract *common.Address, tokenID *big.I
 func (db *MongoDbBridge) TokenMarkSold(contract *common.Address, tokenID *big.Int, price int64, ts *time.Time) error {
 	t, err := db.GetToken(contract, tokenID)
 	if t == nil {
-		log.Errorf("unable to load token; %s", err)
+		log.Errorf("unable to load token %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
 		return err
 	}
 
