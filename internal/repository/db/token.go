@@ -445,8 +445,8 @@ func (db *MongoDbBridge) getTokenPrice(t *types.Token) (tokenPrice int64, priceV
 		if tokenPrice == 0 || tokenPrice > *t.MinListAmount {
 			tokenPrice = *t.MinListAmount
 
-			// use minimum of validity-until
-			if priceValidUntil == nil || (*time.Time)(priceValidUntil).After(time.Time(*t.MinListValid)) {
+			// if validity from auction is not shorter, set validity by listings validity
+			if t.MinListValid != nil && (priceValidUntil == nil || (*time.Time)(priceValidUntil).After(time.Time(*t.MinListValid))) {
 				priceValidUntil = t.MinListValid
 			}
 		}
