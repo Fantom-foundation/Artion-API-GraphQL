@@ -4,11 +4,11 @@ scalar Time
 # Cursor is a string representing position in a sequential list of edges.
 scalar Cursor
 
-# BigInt is a large (256bits) integer value serialized as string.
+# BigInt is a large (256bits) integer value, represented as 0x prefixed hexadecimal number in string.
 scalar BigInt
 
-# Address is a 20 byte Opera address, represented as 0x prefixed hexadecimal number.
+# Address is a 20 byte Opera address, represented as 0x prefixed hexadecimal number in string.
 scalar Address
 
-# Long is 64bits unsigned integer.
+# Long is 64bits unsigned integer, represented as 0x prefixed hexadecimal number in string.
 scalar Long

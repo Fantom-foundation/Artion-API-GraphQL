@@ -39,6 +39,9 @@ type Token {
     # Whether has the item some running auction.
     hasAuction: Boolean!
 
+    # Planned end of the auction.
+    hasAuctionUntil: Time
+
     # Whether has the item some running auction and at least one bid on it.
     hasBids: Boolean!
 
@@ -53,6 +56,12 @@ type Token {
 
     # Last auction bid time.
     lastBid: Time
+
+    # Listed price - price for Buy now in USD
+    listingPrice: Long
+
+    # Price of the token (aggregated from current listings and auctions) in USD
+    price: Long
 
     # How much times was the token viewed.
     views: BigInt!

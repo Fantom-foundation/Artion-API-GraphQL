@@ -48,7 +48,7 @@ func (ts TokenSorting) GetCursor(token *types.Token) (types.Cursor, error) {
 		params["auction_until"] = token.HasAuctionUntil
 	}
 	if ts == TokenSortingPrice {
-		params["price"] = token.Price
+		params["price"] = token.AmountPrice
 	}
 	if ts == TokenSortingLastTradeAmount {
 		params["amo_trade"] = token.AmountLastTrade

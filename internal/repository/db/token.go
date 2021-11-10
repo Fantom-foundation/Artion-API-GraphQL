@@ -239,7 +239,7 @@ func (db *MongoDbBridge) TokenMarkListed(contract *common.Address, tokenID *big.
 
 	t.HasListingSince = db.OpenListingSince(contract, tokenID)
 	t.MinListAmount, t.MinListValid = db.MinListingPrice(contract, tokenID)
-	t.Price, t.PriceValid = db.getTokenPrice(t)
+	t.AmountPrice, t.PriceValid = db.getTokenPrice(t)
 
 	return db.UpdateToken(contract, tokenID, bson.D{
 		{Key: fiTokenLastListed, Value: *ts},
@@ -247,7 +247,7 @@ func (db *MongoDbBridge) TokenMarkListed(contract *common.Address, tokenID *big.
 		{Key: fiTokenListedPrice, Value: price},
 		{Key: fiTokenMinListAmount, Value: t.MinListAmount},
 		{Key: fiTokenMinListValid, Value: t.MinListValid},
-		{Key: fiTokenPrice, Value: t.Price},
+		{Key: fiTokenPrice, Value: t.AmountPrice},
 		{Key: fiTokenPriceValid, Value: t.PriceValid},
 	})
 }
@@ -263,7 +263,7 @@ func (db *MongoDbBridge) TokenMarkAuctioned(contract *common.Address, tokenID *b
 	t.HasAuctionSince, t.HasAuctionUntil = db.OpenAuctionRange(contract, tokenID)
 	t.HasBids = false
 	t.AmountReserve = reservePrice
-	t.Price, t.PriceValid = db.getTokenPrice(t)
+	t.AmountPrice, t.PriceValid = db.getTokenPrice(t)
 
 	return db.UpdateToken(contract, tokenID, bson.D{
 		{Key: fiTokenLastAuction, Value: *ts},
@@ -271,7 +271,7 @@ func (db *MongoDbBridge) TokenMarkAuctioned(contract *common.Address, tokenID *b
 		{Key: fiTokenHasAuctionUntil, Value: t.HasAuctionUntil},
 		{Key: fiTokenHasBid, Value: t.HasBids},
 		{Key: fiTokenAmountReserve, Value: t.AmountReserve},
-		{Key: fiTokenPrice, Value: t.Price},
+		{Key: fiTokenPrice, Value: t.AmountPrice},
 		{Key: fiTokenPriceValid, Value: t.PriceValid},
 	})
 }
@@ -286,13 +286,13 @@ func (db *MongoDbBridge) TokenMarkBid(contract *common.Address, tokenID *big.Int
 
 	t.HasBids = true
 	t.AmountLastBid = price
-	t.Price, t.PriceValid = db.getTokenPrice(t)
+	t.AmountPrice, t.PriceValid = db.getTokenPrice(t)
 
 	return db.UpdateToken(contract, tokenID, bson.D{
 		{Key: fiTokenHasBid, Value: t.HasBids},
 		{Key: fiTokenBidPrice, Value: t.AmountLastBid},
 		{Key: fiTokenLastBid, Value: ts},
-		{Key: fiTokenPrice, Value: t.Price},
+		{Key: fiTokenPrice, Value: t.AmountPrice},
 		{Key: fiTokenPriceValid, Value: t.PriceValid},
 	})
 }
@@ -307,13 +307,13 @@ func (db *MongoDbBridge) TokenMarkUnlisted(contract *common.Address, tokenID *bi
 
 	t.HasListingSince = db.OpenListingSince(contract, tokenID)
 	t.MinListAmount, t.MinListValid = db.MinListingPrice(contract, tokenID)
-	t.Price, t.PriceValid = db.getTokenPrice(t)
+	t.AmountPrice, t.PriceValid = db.getTokenPrice(t)
 
 	return db.UpdateToken(contract, tokenID, bson.D{
 		{Key: fiTokenHasListingSince, Value: t.HasListingSince},
 		{Key: fiTokenMinListAmount, Value: t.MinListAmount},
 		{Key: fiTokenMinListValid, Value: t.MinListValid},
-		{Key: fiTokenPrice, Value: t.Price},
+		{Key: fiTokenPrice, Value: t.AmountPrice},
 		{Key: fiTokenPriceValid, Value: t.PriceValid},
 	})
 }
@@ -335,13 +335,13 @@ func (db *MongoDbBridge) TokenMarkUnAuctioned(contract *common.Address, tokenID 
 
 	t.HasAuctionSince, t.HasAuctionUntil = db.OpenAuctionRange(contract, tokenID)
 	t.HasBids = false
-	t.Price, t.PriceValid = db.getTokenPrice(t)
+	t.AmountPrice, t.PriceValid = db.getTokenPrice(t)
 
 	return db.UpdateToken(contract, tokenID, bson.D{
 		{Key: fiTokenHasAuctionSince, Value: t.HasAuctionSince},
 		{Key: fiTokenHasAuctionUntil, Value: t.HasAuctionUntil},
 		{Key: fiTokenHasBid, Value: t.HasBids},
-		{Key: fiTokenPrice, Value: t.Price},
+		{Key: fiTokenPrice, Value: t.AmountPrice},
 		{Key: fiTokenPriceValid, Value: t.PriceValid},
 	})
 }
@@ -355,11 +355,11 @@ func (db *MongoDbBridge) TokenMarkUnBid(contract *common.Address, tokenID *big.I
 	}
 
 	t.HasBids = false
-	t.Price, t.PriceValid = db.getTokenPrice(t)
+	t.AmountPrice, t.PriceValid = db.getTokenPrice(t)
 
 	return db.UpdateToken(contract, tokenID, bson.D{
 		{Key: fiTokenHasBid, Value: false},
-		{Key: fiTokenPrice, Value: t.Price},
+		{Key: fiTokenPrice, Value: t.AmountPrice},
 		{Key: fiTokenPriceValid, Value: t.PriceValid},
 	})
 }
@@ -378,7 +378,7 @@ func (db *MongoDbBridge) TokenMarkSold(contract *common.Address, tokenID *big.In
 	t.HasOfferUntil = db.OpenOfferUntil(contract, tokenID)
 	t.AmountLastTrade = price
 	t.HasBids = false
-	t.Price, t.PriceValid = db.getTokenPrice(t)
+	t.AmountPrice, t.PriceValid = db.getTokenPrice(t)
 
 	return db.UpdateToken(contract, tokenID, bson.D{
 		{Key: fiTokenLastTrade, Value: *ts},
@@ -390,7 +390,7 @@ func (db *MongoDbBridge) TokenMarkSold(contract *common.Address, tokenID *big.In
 		{Key: fiTokenHasAuctionUntil, Value: t.HasAuctionUntil},
 		{Key: fiTokenTradePrice, Value: t.AmountLastTrade},
 		{Key: fiTokenHasBid, Value: t.HasBids},
-		{Key: fiTokenPrice, Value: t.Price},
+		{Key: fiTokenPrice, Value: t.AmountPrice},
 		{Key: fiTokenPriceValid, Value: t.PriceValid},
 	})
 }
@@ -448,10 +448,10 @@ func (db *MongoDbBridge) getTokenPrice(t *types.Token) (tokenPrice int64, priceV
 	}
 
 	// has listing
-	if t.MinListAmount != nil {
+	if t.MinListAmount != 0 {
 		// the listing is cheaper then auction
-		if tokenPrice == 0 || tokenPrice > *t.MinListAmount {
-			tokenPrice = *t.MinListAmount
+		if tokenPrice == 0 || tokenPrice > t.MinListAmount {
+			tokenPrice = t.MinListAmount
 
 			// if validity from auction is not shorter, set validity by listings validity
 			if t.MinListValid != nil && (priceValidUntil == nil || (*time.Time)(priceValidUntil).After(time.Time(*t.MinListValid))) {

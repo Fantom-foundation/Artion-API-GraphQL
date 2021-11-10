@@ -22,9 +22,9 @@ type NotificationSettings struct {
 	FNotification    bool `bson:"fNotification"`    // Follower Activity Notifications
 	FBundleCreation  bool `bson:"fBundleCreation"`  // New bundle creation by follower
 	FBundleList      bool `bson:"fBundleList"`      // Bundle Listing by follower
-	FBundlePrice     bool `bson:"fBundlePrice"`     // Bundle Price Update by follower
-	FNftAuctionPrice bool `bson:"fNftAuctionPrice"` // NFT Auction Price update by follower
+	FBundlePrice     bool `bson:"fBundlePrice"`     // Bundle AmountPrice Update by follower
+	FNftAuctionPrice bool `bson:"fNftAuctionPrice"` // NFT Auction AmountPrice update by follower
 	FNftList         bool `bson:"fNftList"`         // NFT Listing by follower
 	FNftAuction      bool `bson:"fNftAuction"`      // New NFT Auction
-	FNftPrice        bool `bson:"fNftPrice"`        // NFT Price Update by follower
+	FNftPrice        bool `bson:"fNftPrice"`        // NFT AmountPrice Update by follower
 }

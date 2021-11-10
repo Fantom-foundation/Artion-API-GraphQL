@@ -224,6 +224,22 @@ func (t *Token) Auction() (auction *Auction, err error) {
 	return (*Auction)(a), nil
 }
 
+func (t *Token) ListingPrice() (*hexutil.Uint64, error) {
+	if t.MinListAmount == 0 {
+		return nil, nil
+	}
+	out := hexutil.Uint64(t.MinListAmount)
+	return &out, nil
+}
+
+func (t *Token) Price() (*hexutil.Uint64, error) {
+	if t.AmountPrice == 0 {
+		return nil, nil
+	}
+	out := hexutil.Uint64(t.AmountPrice)
+	return &out, nil
+}
+
 // Cursor generates unique row identifier of the scrollable Tokens list.
 func (edge TokenEdge) Cursor() (types.Cursor, error) {
 	return edge.sorting.GetCursor((*types.Token)(edge.Node))
