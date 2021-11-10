@@ -14,6 +14,33 @@ type Collection {
 
     # IPFS hash of the collection image
     image: String!
+
+    # Owner of the collection
+    owner: Address
+
+    # Recipient of royalty transfer fee
+    feeRecipient: Address
+
+    # Royalty - fee in percents (with decimals)
+    royalty: String!
+
+    # Social: Discord
+    discord: String!
+
+    # Social: E-mail
+    email: String!
+
+    # Social: Telegram
+    telegram: String!
+
+    # Social: Site URL
+    siteUrl: String!
+
+    # Social: Medium handle
+    mediumHandle: String!
+
+    # Social: Twitter handle
+    twitterHandle: String!
 }
 
 type CollectionEdge {

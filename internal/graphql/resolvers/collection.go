@@ -100,6 +100,78 @@ func (t Collection) Image() (string, error) {
 	return t.dbCollection.Image, nil
 }
 
+func (t Collection) Owner() (*common.Address, error) {
+	err := t.load()
+	if err != nil {
+		return nil, err
+	}
+	return &t.dbCollection.Owner, nil
+}
+
+func (t Collection) FeeRecipient() (*common.Address, error) {
+	err := t.load()
+	if err != nil {
+		return nil, err
+	}
+	return &t.dbCollection.FeeRecipient, nil
+}
+
+func (t Collection) Royalty() (string, error) {
+	err := t.load()
+	if err != nil {
+		return "", err
+	}
+	return t.dbCollection.Royalty.String(), nil
+}
+
+func (t Collection) Discord() (string, error) {
+	err := t.load()
+	if err != nil {
+		return "", err
+	}
+	return t.dbCollection.Discord, nil
+}
+
+func (t Collection) Email() (string, error) {
+	err := t.load()
+	if err != nil {
+		return "", err
+	}
+	return t.dbCollection.Email, nil
+}
+
+func (t Collection) Telegram() (string, error) {
+	err := t.load()
+	if err != nil {
+		return "", err
+	}
+	return t.dbCollection.Telegram, nil
+}
+
+func (t Collection) SiteUrl() (string, error) {
+	err := t.load()
+	if err != nil {
+		return "", err
+	}
+	return t.dbCollection.SiteUrl, nil
+}
+
+func (t Collection) MediumHandle() (string, error) {
+	err := t.load()
+	if err != nil {
+		return "", err
+	}
+	return t.dbCollection.MediumHandle, nil
+}
+
+func (t Collection) TwitterHandle() (string, error) {
+	err := t.load()
+	if err != nil {
+		return "", err
+	}
+	return t.dbCollection.TwitterHandle, nil
+}
+
 func (rs *RootResolver) Collection(args struct {
 	Contract common.Address
 }) (*Collection, error) {

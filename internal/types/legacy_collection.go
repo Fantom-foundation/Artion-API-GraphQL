@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/json"
 	"github.com/ethereum/go-ethereum/common"
 	"strconv"
 )
@@ -15,7 +16,7 @@ type LegacyCollection struct {
 	Image         string         `bson:"logoImageHash"`
 	Owner         common.Address `bson:"owner"`
 	FeeRecipient  common.Address `bson:"feeRecipient"`
-	//Royalty     int32          `bson:"royalty"` // percents of fee - sometime float - TODO
+	Royalty       json.Number    `bson:"royalty"` // percents of fee (mostly int32, but sometime float)
 	Discord       string         `bson:"discord"`
 	Email         string         `bson:"email"`
 	Telegram      string         `bson:"telegram"`

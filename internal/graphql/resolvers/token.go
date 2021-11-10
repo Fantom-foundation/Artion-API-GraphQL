@@ -152,6 +152,13 @@ func (t *Token) Views() (hexutil.Big, error) {
 	return hexutil.Big(*count), nil
 }
 
+// Collection resolves collection of the token.
+func (t *Token) Collection() Collection {
+	return Collection{
+		Contract: t.Contract,
+	}
+}
+
 func (t *Token) Ownerships(args struct{ PaginationInput }) (con *OwnershipConnection, err error) {
 	cursor, count, backward, err := args.ToRepositoryInput()
 	if err != nil {
