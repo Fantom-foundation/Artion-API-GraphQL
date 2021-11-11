@@ -1,5 +1,4 @@
 #!/bin/sh
-mongoexport --db=artion --collection=accounts --out accounts.json
 mongoexport --db=artion --collection=activities --out activities.json
 mongoexport --db=artion --collection=auctions --out auctions.json
 mongoexport --db=artion --collection=bids --out bids.json

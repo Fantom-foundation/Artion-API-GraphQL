@@ -52,18 +52,6 @@ func IndexDefinitionOwnership() []mongo.IndexModel {
 	return ix
 }
 
-// IndexDefinitionUsers provides a list of indexes expected to exist on users' collection.
-func IndexDefinitionUsers() []mongo.IndexModel {
-	ix := make([]mongo.IndexModel, 2)
-
-	ixUser := "ix_username"
-	ix[0] = mongo.IndexModel{Keys: bson.D{{Key: "username", Value: 1}}, Options: &options.IndexOptions{Name: &ixUser}}
-
-	ixEmail := "ix_email"
-	ix[1] = mongo.IndexModel{Keys: bson.D{{Key: "email", Value: 1}}, Options: &options.IndexOptions{Name: &ixEmail}}
-	return ix
-}
-
 // IndexDefinitionOffers provides list of indexes expected on listings.
 func IndexDefinitionOffers() []mongo.IndexModel {
 	ix := make([]mongo.IndexModel, 2)

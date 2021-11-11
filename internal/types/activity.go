@@ -8,20 +8,20 @@ import (
 type ActivityType int8
 
 const (
-	EvtUnknown ActivityType = iota
-	EvtListingCreated
-	EvtListingUpdated
-	EvtListingCancelled
-	EvtListingSold
-	EvtOfferCreated
-	EvtOfferCancelled
-	EvtOfferSold
-	EvtAuctionCreated
-	EvtAuctionBid
-	EvtAuctionBidWithdrawn
-	EvtAuctionCancelled
-	EvtAuctionResolved
-	EvtAuctionUpdated
+	EvtUnknown ActivityType = iota // 0
+	EvtListingCreated // 1
+	EvtListingUpdated // 2
+	EvtListingCancelled // 3
+	EvtListingSold // 4
+	EvtOfferCreated // 5
+	EvtOfferCancelled // 6
+	EvtOfferSold // 7
+	EvtAuctionCreated // 8
+	EvtAuctionBid // 9
+	EvtAuctionBidWithdrawn // 10
+	EvtAuctionCancelled // 11
+	EvtAuctionResolved // 12
+	EvtAuctionUpdated // 13
 )
 
 // Activity represents marketplace related events on tokens - when they are sold etc.

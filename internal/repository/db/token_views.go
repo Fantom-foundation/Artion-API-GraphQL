@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	// coUsers is the name of database collection.
+	// coLegacyTokens is the name of database collection.
 	coLegacyTokens = "nftitems"
 
 	fiLegacyTokenContract = "contractAddress"

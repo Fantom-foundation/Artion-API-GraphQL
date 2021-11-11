@@ -31,7 +31,6 @@ func (db *MongoDbBridge) updateDatabaseIndexes() {
 		coOffers:          IndexDefinitionOffers,
 		coTokenOwnerships: IndexDefinitionOwnership,
 		coTokens:          IndexDefinitionTokens,
-		coUsers:           IndexDefinitionUsers,
 	}
 
 	// the DB bridge needs a way to terminate this thread
