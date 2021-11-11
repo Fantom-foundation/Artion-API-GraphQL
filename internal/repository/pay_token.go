@@ -39,6 +39,10 @@ func (p *Proxy) GetUnifiedPriceAt(marketplace *common.Address, payToken *common.
 	// val and unit is in 18-decimals, product is in 36 decimals - we need to remove 30 decimals to get 6-decimals
 	// val is D-decimals, unit 18-decimals, product is D+18 decimals - to get 6-decimals we need to remove D+12
 	out.Usd = mulTeenPower(new(big.Int).Mul(val, unit), -(decimals + 12)).Int64()
+
+	if out.Usd < 0 {
+		log.Warningf("GetUnifiedPriceAt overflow - val: %s unit: %s decimals: %d", val.String(), unit.String(), decimals)
+	}
 	return
 }
 
