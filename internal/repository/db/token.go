@@ -94,11 +94,17 @@ const (
 	// fiTokenReservePrice is the column storing reserve price of running auction.
 	fiTokenReservePrice = "reserve"
 
-	// fiTokenMinListPrice is the column storing minimal listing price in USD.
+	// fiTokenMinListPrice is the column storing minimal listing price.
 	fiTokenMinListPrice = "min_list"
 
 	// fiTokenMinListValid is the column storing end of minimal listing price validity.
 	fiTokenMinListValid = "min_list_valid"
+
+	// fiTokenMaxOfferPrice is the column storing maximal offer price.
+	fiTokenMaxOfferPrice = "max_offer"
+
+	// fiTokenMaxOfferValid is the column storing end of minimal listing price validity.
+	fiTokenMaxOfferValid = "max_offer_valid"
 
 	// fiTokenPrice is the column storing price of token in USD aggregated from listings and auctions.
 	fiTokenPrice = "price"
@@ -223,10 +229,13 @@ func (db *MongoDbBridge) UpdateTokenMetadataRefreshSchedule(nft *types.Token) er
 
 // TokenMarkOffered marks the given NFT as having offer for the given price.
 func (db *MongoDbBridge) TokenMarkOffered(contract *common.Address, tokenID *big.Int, price types.TokenPrice, ts *time.Time) error {
+	maxOfferPrice, maxOfferValid := db.MaxOfferPrice(contract, tokenID)
 	return db.UpdateToken(contract, tokenID, bson.D{
 		{Key: fiTokenLastOffer, Value: *ts},
 		{Key: fiTokenHasOfferUntil, Value: db.OpenOfferUntil(contract, tokenID)},
 		{Key: fiTokenAmountLastOffer, Value: price},
+		{Key: fiTokenMaxOfferPrice, Value: maxOfferPrice},
+		{Key: fiTokenMaxOfferValid, Value: maxOfferValid},
 	})
 }
 
@@ -321,8 +330,11 @@ func (db *MongoDbBridge) TokenMarkUnlisted(contract *common.Address, tokenID *bi
 
 // TokenMarkUnOffered marks the given NFT as not having buy offers.
 func (db *MongoDbBridge) TokenMarkUnOffered(contract *common.Address, tokenID *big.Int) error {
+	maxOfferPrice, maxOfferValid := db.MaxOfferPrice(contract, tokenID)
 	return db.UpdateToken(contract, tokenID, bson.D{
 		{Key: fiTokenHasOfferUntil, Value: db.OpenOfferUntil(contract, tokenID)},
+		{Key: fiTokenMaxOfferPrice, Value: maxOfferPrice},
+		{Key: fiTokenMaxOfferValid, Value: maxOfferValid},
 	})
 }
 
@@ -376,6 +388,7 @@ func (db *MongoDbBridge) TokenMarkSold(contract *common.Address, tokenID *big.In
 	t.HasAuctionSince, t.HasAuctionUntil = db.OpenAuctionRange(contract, tokenID)
 	t.HasListingSince = db.OpenListingSince(contract, tokenID)
 	t.MinListPrice, t.MinListValid = db.MinListingPrice(contract, tokenID)
+	t.MaxOfferPrice, t.MaxOfferValid = db.MaxOfferPrice(contract, tokenID)
 	t.HasOfferUntil = db.OpenOfferUntil(contract, tokenID)
 	t.AmountLastTrade = price
 	t.HasBids = false
@@ -386,6 +399,8 @@ func (db *MongoDbBridge) TokenMarkSold(contract *common.Address, tokenID *big.In
 		{Key: fiTokenHasListingSince, Value: t.HasListingSince},
 		{Key: fiTokenMinListPrice, Value: t.MinListPrice},
 		{Key: fiTokenMinListValid, Value: t.MinListValid},
+		{Key: fiTokenMaxOfferPrice, Value: t.MaxOfferPrice},
+		{Key: fiTokenMaxOfferValid, Value: t.MaxOfferValid},
 		{Key: fiTokenHasOfferUntil, Value: t.HasOfferUntil},
 		{Key: fiTokenHasAuctionSince, Value: t.HasAuctionSince},
 		{Key: fiTokenHasAuctionUntil, Value: t.HasAuctionUntil},

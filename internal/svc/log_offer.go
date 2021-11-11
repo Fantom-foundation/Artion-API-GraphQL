@@ -39,6 +39,8 @@ func marketOfferCreated(evt *eth.Log, lo *logObserver) {
 		Closed:       nil,
 		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
 	}
+	tokenPrice := repo.GetUnifiedPriceAt(lo.marketplace, &offer.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&offer.UnitPrice))
+	offer.UnifiedPrice = tokenPrice.Usd
 
 	// store the listing into database
 	if err := repo.StoreOffer(&offer); err != nil {
@@ -49,7 +51,7 @@ func marketOfferCreated(evt *eth.Log, lo *logObserver) {
 	if err := repo.TokenMarkOffered(
 		&offer.Contract,
 		(*big.Int)(&offer.TokenId),
-		repo.GetUnifiedPriceAt(lo.marketplace, &offer.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&offer.UnitPrice)),
+		tokenPrice,
 		(*time.Time)(&offer.Created),
 	); err != nil {
 		log.Errorf("could not mark token as having offer; %s", err.Error())

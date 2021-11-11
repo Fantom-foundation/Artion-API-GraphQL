@@ -245,6 +245,13 @@ func (t *Token) AuctionReservePrice() (*types.TokenPrice, error) {
 	return &t.ReservePrice, nil
 }
 
+func (t *Token) OfferedPrice() (*types.TokenPrice, error) {
+	if t.MaxOfferPrice.Amount.ToInt().Uint64() == 0 {
+		return nil, nil
+	}
+	return &t.MaxOfferPrice, nil
+}
+
 // Cursor generates unique row identifier of the scrollable Tokens list.
 func (edge TokenEdge) Cursor() (types.Cursor, error) {
 	return edge.sorting.GetCursor((*types.Token)(edge.Node))

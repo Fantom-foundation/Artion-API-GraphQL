@@ -32,7 +32,10 @@ const (
 	fiOfferClosed = "closed"
 
 	// fiOfferDeadline is the name of the DB column of the offer expiring date/time.
-	// fiOfferDeadline = "deadline"
+	fiOfferDeadline = "deadline"
+
+	// fiOfferUnifiedPrice is the name of the DB column storing price converted to USD.
+	fiOfferUnifiedPrice = "uprice"
 )
 
 // GetOffer provides the token offer stored in the database, if available.
@@ -126,6 +129,39 @@ func (db *MongoDbBridge) OpenOfferUntil(contract *common.Address, tokenID *big.I
 
 	log.Infof("open offer on %s/%s until %s", contract.String(), (*hexutil.Big)(tokenID).String(), time.Time(row.Until).Format(time.RFC1123))
 	return &row.Until
+}
+
+// MaxOfferPrice obtains maximal offered price for the token and time until when is the information valid.
+func (db *MongoDbBridge) MaxOfferPrice(contract *common.Address, tokenID *big.Int) (tokenPrice types.TokenPrice, valid *types.Time) {
+	col := db.client.Database(db.dbName).Collection(coOffers)
+	now := time.Now()
+
+	// get minimal price starting before now
+	var maxOffer types.Offer
+	sr := col.FindOne(context.Background(), bson.D{
+		{Key: fiOfferContract, Value: *contract},
+		{Key: fiOfferTokenId, Value: hexutil.Big(*tokenID)},
+		{Key: fiOfferClosed, Value: bson.D{{Key: "$type", Value: 10}}}, // not closed yet
+		{Key: fiOfferDeadline, Value: bson.D{{Key: "$gte", Value: now}}}, // already started
+	}, options.FindOne().SetSort(bson.D{{Key: fiOfferUnifiedPrice, Value: -1}}))
+	if sr.Err() != nil {
+		if sr.Err() != mongo.ErrNoDocuments {
+			log.Errorf("error loading max offer price; %s", sr.Err())
+		}
+		return
+	}
+	err := sr.Decode(&maxOffer)
+	if err != nil {
+		log.Errorf("error decoding max offer price; %s", err)
+		return
+	}
+	tokenPrice = types.TokenPrice{
+		Usd:      maxOffer.UnifiedPrice,
+		Amount:   maxOffer.UnitPrice,
+		PayToken: maxOffer.PayToken,
+	}
+	valid = &maxOffer.Deadline
+	return
 }
 
 func (db *MongoDbBridge) ListOffers(contract *common.Address, tokenId *hexutil.Big, creator *common.Address, cursor types.Cursor, count int, backward bool) (out *types.OfferList, err error) {

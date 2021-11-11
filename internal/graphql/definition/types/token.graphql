@@ -57,7 +57,7 @@ type Token {
     # Last auction bid time.
     lastBid: Time
 
-    # Listed price - price for Buy now in USD
+    # Listed price - price for Buy now
     listingPrice: TokenPrice
 
     # Auctioned price - the last bid amount
@@ -65,6 +65,9 @@ type Token {
 
     # Reserve price of running auction
     auctionReservePrice: TokenPrice
+
+    # Offered price for selling the token
+    offeredPrice: TokenPrice
 
     # How much times was the token viewed.
     views: BigInt!

@@ -17,6 +17,7 @@ type Offer struct {
 	Quantity     hexutil.Big    `bson:"qty"`
 	PayToken     common.Address `bson:"pay_token"`
 	UnitPrice    hexutil.Big    `bson:"price"`
+	UnifiedPrice int64          `bson:"uprice"`
 	Created      Time           `bson:"created"`
 	Deadline     Time           `bson:"deadline"`
 	Closed       *Time          `bson:"closed"`
