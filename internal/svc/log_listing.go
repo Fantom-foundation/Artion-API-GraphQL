@@ -69,6 +69,7 @@ func marketNFTListed(evt *eth.Log, lo *logObserver) {
 		From:         lst.Owner,
 		PayToken:     &lst.PayToken,
 		UnitPrice:    &lst.UnitPrice,
+		UnifiedPrice: tokenPrice.Usd,
 		StartTime:    &lst.StartTime,
 	}
 	if err := repo.StoreActivity(&activity); err != nil {
@@ -139,6 +140,7 @@ func marketNFTUpdated(evt *eth.Log, lo *logObserver) {
 		From:         lst.Owner,
 		PayToken:     &lst.PayToken,
 		UnitPrice:    &lst.UnitPrice,
+		UnifiedPrice: tokenPrice.Usd,
 	}
 	if err := repo.StoreActivity(&activity); err != nil {
 		log.Errorf("could not store listing activity; %s", err.Error())
@@ -275,8 +277,9 @@ func marketCloseListingWithSale(evt *eth.Log, lst *types.Listing, blk *eth.Heade
 		TokenId:      lst.TokenId,
 		From:         lst.Owner,
 		To:           buyer,
-		UnitPrice:    &lst.UnitPrice,
 		PayToken:     &lst.PayToken,
+		UnitPrice:    &lst.UnitPrice,
+		UnifiedPrice: tokenPrice.Usd,
 	}
 	if err := repo.StoreActivity(&activity); err != nil {
 		log.Errorf("could not store listing activity; %s", err.Error())

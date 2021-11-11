@@ -42,6 +42,7 @@ type Activity struct {
 	// money for the token
 	PayToken     *common.Address `bson:"payToken"`
 	UnitPrice    *hexutil.Big    `bson:"price"`
+	UnifiedPrice int64           `bson:"uprice"`
 
 	StartTime    *Time           `bson:"startTime"`
 	EndTime      *Time           `bson:"endTime"`

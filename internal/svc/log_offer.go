@@ -68,6 +68,7 @@ func marketOfferCreated(evt *eth.Log, lo *logObserver) {
 		From:         offer.ProposedBy,
 		PayToken:     &offer.PayToken,
 		UnitPrice:    &offer.UnitPrice,
+		UnifiedPrice: tokenPrice.Usd,
 		EndTime:      &offer.Deadline,
 	}
 	if err := repo.StoreActivity(&activity); err != nil {

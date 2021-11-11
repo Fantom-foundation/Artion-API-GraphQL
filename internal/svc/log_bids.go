@@ -60,11 +60,13 @@ func auctionBidPlaced(evt *eth.Log, lo *logObserver) {
 		log.Errorf("could not store auction; %s", err.Error())
 	}
 
+	price := repo.GetUnifiedPriceAt(lo.marketplace, &auction.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&bid.Amount))
+
 	// mark the token as being auctioned
 	if err := repo.TokenMarkBid(
 		&bid.Contract,
 		(*big.Int)(&bid.TokenId),
-		repo.GetUnifiedPriceAt(lo.marketplace, &auction.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&bid.Amount)),
+		price,
 		(*time.Time)(&bid.Placed),
 	); err != nil {
 		log.Errorf("could not mark token as having bid; %s", err.Error())
@@ -81,6 +83,7 @@ func auctionBidPlaced(evt *eth.Log, lo *logObserver) {
 		To:           &auction.Owner,
 		PayToken:     &auction.PayToken,
 		UnitPrice:    &bid.Amount,
+		UnifiedPrice: price.Usd,
 	}
 	if err := repo.StoreActivity(&activity); err != nil {
 		log.Errorf("can not store bid activity %s on %s/%s; %s", bid.Bidder.String(), bid.Contract.String(), bid.TokenId.String(), err.Error())

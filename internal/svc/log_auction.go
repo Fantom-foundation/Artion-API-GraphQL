@@ -62,11 +62,13 @@ func auctionCreated(evt *eth.Log, lo *logObserver) {
 		log.Errorf("could not store auction; %s", err.Error())
 	}
 
+	price := repo.GetUnifiedPriceAt(lo.marketplace, &auction.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&auction.ReservePrice))
+
 	// mark the token as being auctioned
 	if err := repo.TokenMarkAuctioned(
 		&auction.Contract,
 		(*big.Int)(&auction.TokenId),
-		repo.GetUnifiedPriceAt(lo.marketplace, &auction.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&auction.ReservePrice)),
+		price,
 		(*time.Time)(&auction.Created),
 	); err != nil {
 		log.Errorf("could not mark token as having auction; %s", err.Error())
@@ -83,6 +85,7 @@ func auctionCreated(evt *eth.Log, lo *logObserver) {
 		From:         auction.Owner,
 		PayToken:     &auction.PayToken,
 		UnitPrice:    &auction.ReservePrice,
+		UnifiedPrice: price.Usd,
 		StartTime:    &auction.StartTime,
 		EndTime:      &auction.EndTime,
 	}
@@ -200,11 +203,13 @@ func auctionReserveUpdated(evt *eth.Log, lo *logObserver) {
 		log.Errorf("could not store auction; %s", err.Error())
 	}
 
+	price := repo.GetUnifiedPriceAt(lo.marketplace, &auction.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&auction.ReservePrice))
+
 	// mark the token as being re-auctioned
 	if err := repo.TokenMarkAuctioned(
 		&auction.Contract,
 		(*big.Int)(&auction.TokenId),
-		repo.GetUnifiedPriceAt(lo.marketplace, &auction.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&auction.ReservePrice)),
+		price,
 		(*time.Time)(&auction.Created),
 	); err != nil {
 		log.Errorf("could not mark token as having auction; %s", err.Error())
@@ -225,6 +230,7 @@ func auctionReserveUpdated(evt *eth.Log, lo *logObserver) {
 		Quantity:     &auction.Quantity,
 		From:         auction.Owner,
 		UnitPrice:    &auction.ReservePrice,
+		UnifiedPrice: price.Usd,
 		PayToken:     &auction.PayToken,
 	}
 	if err := repo.StoreActivity(&activity); err != nil {
@@ -388,11 +394,13 @@ func finishAuction(contract *common.Address, tokenID *big.Int, winner *common.Ad
 		log.Errorf("could not store auction; %s", err.Error())
 	}
 
+	price := repo.GetUnifiedPriceAt(lo.marketplace, payToken, new(big.Int).SetUint64(evt.BlockNumber), new(big.Int).SetBytes(evt.Data[64:]))
+
 	// mark the token as sold
 	if err := repo.TokenMarkSold(
 		&auction.Contract,
 		(*big.Int)(&auction.TokenId),
-		repo.GetUnifiedPriceAt(lo.marketplace, payToken, new(big.Int).SetUint64(evt.BlockNumber), new(big.Int).SetBytes(evt.Data[64:])),
+		price,
 		(*time.Time)(&when),
 	); err != nil {
 		log.Errorf("could not mark token as sold; %s", err.Error())
@@ -409,6 +417,7 @@ func finishAuction(contract *common.Address, tokenID *big.Int, winner *common.Ad
 		From:         auction.Owner,
 		To:           winner,
 		UnitPrice:    auction.WinningBid,
+		UnifiedPrice: price.Usd,
 		PayToken:     payToken,
 	}
 	if err := repo.StoreActivity(&activity); err != nil {
