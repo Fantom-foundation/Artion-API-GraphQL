@@ -394,7 +394,7 @@ func finishAuction(contract *common.Address, tokenID *big.Int, winner *common.Ad
 		log.Errorf("could not store auction; %s", err.Error())
 	}
 
-	price := repo.GetUnifiedPriceAt(lo.marketplace, payToken, new(big.Int).SetUint64(evt.BlockNumber), new(big.Int).SetBytes(evt.Data[64:]))
+	price := repo.GetUnifiedPriceAt(lo.marketplace, payToken, new(big.Int).SetUint64(evt.BlockNumber), amount)
 
 	// mark the token as sold
 	if err := repo.TokenMarkSold(

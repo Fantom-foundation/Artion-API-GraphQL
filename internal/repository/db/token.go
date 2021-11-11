@@ -509,7 +509,7 @@ func (db *MongoDbBridge) ListTokens(filter *types.TokenFilter, sorting sorting.T
 		if len(list.Collection) < count {
 			var row types.Token
 			if err = ld.Decode(&row); err != nil {
-				log.Errorf("can not decode the token in list; %s", err.Error())
+				log.Errorf("can not decode the token in list [%s]; %s", ld.Current.String(), err.Error())
 				return nil, err
 			}
 			list.Collection = append(list.Collection, &row)
