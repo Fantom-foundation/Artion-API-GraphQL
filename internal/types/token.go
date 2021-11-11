@@ -43,25 +43,34 @@ type Token struct {
 	HasAuctionUntil *Time          `bson:"auction_until"`
 	HasOfferUntil   *Time          `bson:"offer_until"`
 	HasBids         bool           `bson:"has_bid"`
+
 	LastTrade       *Time          `bson:"last_trade"`
 	LastListing     *Time          `bson:"last_list"` // last creation of listing
 	LastOffer       *Time          `bson:"last_offer"`
 	LastAuction     *Time          `bson:"last_auction"`
 	LastBid         *Time          `bson:"last_bid"`
-	AmountLastTrade int64          `bson:"amo_trade"`
-	AmountLastOffer int64          `bson:"amo_offer"`
-	AmountLastBid   int64          `bson:"amo_bid"`
-	AmountReserve   int64          `bson:"amo_reserve"`
-	AmountLastList  int64          `bson:"amo_list"`
-	MinListAmount   int64          `bson:"min_list"`
-	MinListValid    *Time          `bson:"min_list_valid"` // validity of MinListAmount until
-	AmountPrice     int64          `bson:"price"`
+	AmountLastTrade TokenPrice     `bson:"amo_trade"`
+	AmountLastOffer TokenPrice     `bson:"amo_offer"`
+	AmountLastBid   TokenPrice     `bson:"amo_bid"`
+	AmountLastList  TokenPrice     `bson:"amo_list"`
+	ReservePrice    TokenPrice     `bson:"reserve"`
+	MinListPrice    TokenPrice     `bson:"min_list"`
+	MinListValid    *Time          `bson:"min_list_valid"` // validity of MinListPrice until
+
+	AmountPrice     int64          `bson:"price"` // in USD
 	PriceValid      *Time          `bson:"price_valid"` // validity of AmountPrice until
+
 	Categories      []int32        `bson:"categories"`
 
 	// metadata refresh helpers
 	MetaUpdate   Time  `bson:"meta_update"`
 	MetaFailures int32 `bson:"meta_failures"`
+}
+
+type TokenPrice struct {
+	Usd      int64          `bson:"usd"`
+	Amount   hexutil.Big    `bson:"amount"`
+	PayToken common.Address `bson:"token"`
 }
 
 // OrdinalIndex generates numeric ordinal index from block number and log record index.

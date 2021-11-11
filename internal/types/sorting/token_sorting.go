@@ -23,7 +23,7 @@ func (ts TokenSorting) SortedFieldBson() string {
 	case TokenSortingLastTradeTime: return "last_trade"
 	case TokenSortingAuctionUntil: return "auction_until"
 	case TokenSortingPrice: return "price"
-	case TokenSortingLastTradeAmount: return "amo_trade"
+	case TokenSortingLastTradeAmount: return "amo_trade.usd"
 	}
 	return ""
 }
@@ -51,7 +51,7 @@ func (ts TokenSorting) GetCursor(token *types.Token) (types.Cursor, error) {
 		params["price"] = token.AmountPrice
 	}
 	if ts == TokenSortingLastTradeAmount {
-		params["amo_trade"] = token.AmountLastTrade
+		params["amo_trade.usd"] = token.AmountLastTrade.Usd
 	}
 	return CursorFromParams(params)
 }

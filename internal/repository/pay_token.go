@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
 )
 
@@ -13,29 +14,35 @@ import (
 var tokenPriceDecimalsCorrection = big.NewInt(1_000_000_000_000)
 
 // GetUnifiedPriceAt converts token price in pay-tokens to value in unified units for storing in database.
-func (p *Proxy) GetUnifiedPriceAt(marketplace *common.Address, payToken *common.Address, block *big.Int, val *big.Int) int64 {
+func (p *Proxy) GetUnifiedPriceAt(marketplace *common.Address, payToken *common.Address, block *big.Int, val *big.Int) (out types.TokenPrice) {
+	out = types.TokenPrice{
+		Usd:      0,
+		Amount:   hexutil.Big(*val),
+		PayToken: *payToken,
+	}
+
 	// get price of 1 wei of payToken in USD in 18-decimals fixed point
 	unit, err := p.rpc.GetPayTokenPrice(marketplace, payToken, block)
 	if err != nil {
 		log.Warningf("unable to get price of pay token %s; %s", payToken.String(), err.Error())
-		return 0
+		return
 	}
 
 	// get amount of pay-token decimals
 	decimals, err := p.getPayTokenDecimals(payToken)
 	if err != nil {
 		log.Warningf("unable to get decimals of pay token %s; %s", payToken.String(), err.Error())
-		return 0
+		return
 	}
 
 	// calculate price for val wei in USD in 6-decimals fixed point
 	// val and unit is in 18-decimals, product is in 36 decimals - we need to remove 30 decimals to get 6-decimals
 	// val is D-decimals, unit 18-decimals, product is D+18 decimals - to get 6-decimals we need to remove D+12
-	result := mulTeenPower(new(big.Int).Mul(val, unit), -(decimals + 12)).Int64()
-	return result
+	out.Usd = mulTeenPower(new(big.Int).Mul(val, unit), -(decimals + 12)).Int64()
+	return
 }
 
-// GetUnifiedUnitPrice converts token price in pay-tokens to value in unified units for storing in database.
+// GetUnifiedUnitPrice obtains price of pay-token in unified units (USD with 6 decimals) for storing in database.
 func (p *Proxy) GetUnifiedUnitPrice(payToken *common.Address) (uint64, error) {
 	price, err, _ := p.callGroup.Do("GetUnifiedUnitPrice" + payToken.String(), func() (interface{}, error) {
 		// get price of 1 whole payToken in USD in 18-decimals fixed point

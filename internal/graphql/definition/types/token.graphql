@@ -58,10 +58,13 @@ type Token {
     lastBid: Time
 
     # Listed price - price for Buy now in USD
-    listingPrice: Long
+    listingPrice: TokenPrice
 
-    # Price of the token (aggregated from current listings and auctions) in USD
-    price: Long
+    # Auctioned price - the last bid amount
+    auctionedPrice: TokenPrice
+
+    # Reserve price of running auction
+    auctionReservePrice: TokenPrice
 
     # How much times was the token viewed.
     views: BigInt!
@@ -89,6 +92,11 @@ type Token {
 
     # Currently running or last finished auction of the token
     auction: Auction
+}
+
+type TokenPrice {
+    amount: BigInt!
+    payToken: Address!
 }
 
 type TokenEdge {

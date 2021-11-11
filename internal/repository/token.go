@@ -47,22 +47,22 @@ func (p *Proxy) TokenMetadataRefreshSet() ([]*types.Token, error) {
 }
 
 // TokenMarkListed marks the given NFT as listed for direct sale for the given price.
-func (p *Proxy) TokenMarkListed(contract *common.Address, tokenID *big.Int, price int64, ts *time.Time) error {
+func (p *Proxy) TokenMarkListed(contract *common.Address, tokenID *big.Int, price types.TokenPrice, ts *time.Time) error {
 	return p.db.TokenMarkListed(contract, tokenID, price, ts)
 }
 
 // TokenMarkOffered marks the given NFT as having offer for the given price.
-func (p *Proxy) TokenMarkOffered(contract *common.Address, tokenID *big.Int, price int64, ts *time.Time) error {
+func (p *Proxy) TokenMarkOffered(contract *common.Address, tokenID *big.Int, price types.TokenPrice, ts *time.Time) error {
 	return p.db.TokenMarkOffered(contract, tokenID, price, ts)
 }
 
 // TokenMarkAuctioned marks the given NFT as having auction for the given price.
-func (p *Proxy) TokenMarkAuctioned(contract *common.Address, tokenID *big.Int, price int64, ts *time.Time) error {
+func (p *Proxy) TokenMarkAuctioned(contract *common.Address, tokenID *big.Int, price types.TokenPrice, ts *time.Time) error {
 	return p.db.TokenMarkAuctioned(contract, tokenID, price, ts)
 }
 
 // TokenMarkBid marks the given NFT as having auction bid for the given price.
-func (p *Proxy) TokenMarkBid(contract *common.Address, tokenID *big.Int, price int64, ts *time.Time) error {
+func (p *Proxy) TokenMarkBid(contract *common.Address, tokenID *big.Int, price types.TokenPrice, ts *time.Time) error {
 	return p.db.TokenMarkBid(contract, tokenID, price, ts)
 }
 
@@ -87,7 +87,7 @@ func (p *Proxy) TokenMarkUnBid(contract *common.Address, tokenID *big.Int) error
 }
 
 // TokenMarkSold marks the given NFT as sold on a listing/offer/auction for the given price.
-func (p *Proxy) TokenMarkSold(contract *common.Address, tokenID *big.Int, price int64, ts *time.Time) error {
+func (p *Proxy) TokenMarkSold(contract *common.Address, tokenID *big.Int, price types.TokenPrice, ts *time.Time) error {
 	return p.db.TokenMarkSold(contract, tokenID, price, ts)
 }
 

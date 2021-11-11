@@ -224,20 +224,25 @@ func (t *Token) Auction() (auction *Auction, err error) {
 	return (*Auction)(a), nil
 }
 
-func (t *Token) ListingPrice() (*hexutil.Uint64, error) {
-	if t.MinListAmount == 0 {
+func (t *Token) ListingPrice() (*types.TokenPrice, error) {
+	if t.MinListPrice.Amount.ToInt().Uint64() == 0 {
 		return nil, nil
 	}
-	out := hexutil.Uint64(t.MinListAmount)
-	return &out, nil
+	return &t.MinListPrice, nil
 }
 
-func (t *Token) Price() (*hexutil.Uint64, error) {
-	if t.AmountPrice == 0 {
+func (t *Token) AuctionedPrice() (*types.TokenPrice, error) {
+	if !t.HasAuction() || !t.HasBids {
 		return nil, nil
 	}
-	out := hexutil.Uint64(t.AmountPrice)
-	return &out, nil
+	return &t.MinListPrice, nil
+}
+
+func (t *Token) AuctionReservePrice() (*types.TokenPrice, error) {
+	if !t.HasAuction() {
+		return nil, nil
+	}
+	return &t.ReservePrice, nil
 }
 
 // Cursor generates unique row identifier of the scrollable Tokens list.
