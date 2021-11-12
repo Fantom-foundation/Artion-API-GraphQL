@@ -4,6 +4,7 @@ import (
 	"artion-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"strings"
 	"time"
 )
 
@@ -17,5 +18,14 @@ func (p *Proxy) ListActivities(contract *common.Address, tokenId *hexutil.Big, u
 
 // TokenPriceHistory provides aggregation of trading prices of the token in time.
 func (p *Proxy) TokenPriceHistory(contract *common.Address, tokenId *hexutil.Big, from time.Time, to time.Time) ([]types.PriceHistory, error) {
-	return p.db.TokenPriceHistory(contract, tokenId, from, to)
+	var key strings.Builder
+	key.WriteString("TokenPriceHistory")
+	key.WriteString(contract.String())
+	key.WriteString(tokenId.String())
+	key.WriteString(from.String())
+	key.WriteString(to.String())
+	history, err, _ := p.callGroup.Do(key.String(), func() (interface{}, error) {
+		return p.db.TokenPriceHistory(contract, tokenId, from, to)
+	})
+	return history.([]types.PriceHistory), err
 }
