@@ -42,8 +42,18 @@ func (p *Proxy) UpdateTokenMetadataRefreshSchedule(nft *types.Token) error {
 }
 
 // TokenMetadataRefreshSet pulls s set of NFT tokens scheduled to be updated up to this time.
-func (p *Proxy) TokenMetadataRefreshSet() ([]*types.Token, error) {
-	return p.db.TokenMetadataRefreshSet()
+func (p *Proxy) TokenMetadataRefreshSet(setSize int64) ([]*types.Token, error) {
+	return p.db.TokenMetadataRefreshSet(setSize)
+}
+
+// TokenPriceRefreshSet pulls s set of NFT tokens scheduled to be updated their price.
+func (p *Proxy) TokenPriceRefreshSet(setSize int64) ([]*types.Token, error) {
+	return p.db.TokenPriceRefreshSet(setSize)
+}
+
+// TokenPriceRefresh recalculates token prices and updates them in database.
+func (p *Proxy) TokenPriceRefresh(t *types.Token) error {
+	return p.db.TokenPriceRefresh(t)
 }
 
 // TokenMarkListed marks the given NFT as listed for direct sale for the given price.

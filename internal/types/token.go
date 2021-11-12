@@ -18,9 +18,6 @@ const (
 	// TokenSuccessMetadataUpdateDelay is the minimal time delay before
 	// a new metadata update attempt after a successful update.
 	TokenSuccessMetadataUpdateDelay = 7 * 24 * time.Hour
-
-	// MetadataRefreshSetSize is the max size of metadata refresh set pulled at once.
-	MetadataRefreshSetSize = 50
 )
 
 // Token represents item list-able in the marketplace.

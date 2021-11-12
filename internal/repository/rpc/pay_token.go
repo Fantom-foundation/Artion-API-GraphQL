@@ -9,7 +9,7 @@ import (
 	"math/big"
 )
 
-// GetPayTokenPrice extracts price of pay token using Marketplace contract.
+// GetPayTokenPrice extracts price of 1 whole pay token in USD in 6-decimals fixed point using Marketplace contract.
 func (o *Opera) GetPayTokenPrice(_ *common.Address, token *common.Address, _ *big.Int) (*big.Int, error) {
 	return o.marketplace.GetPrice(nil, *token)
 }

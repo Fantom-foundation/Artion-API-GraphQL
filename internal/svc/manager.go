@@ -19,6 +19,7 @@ type Manager struct {
 	nftMetaWorker       *nftMetadataWorker
 	notifyProcessor     *notificationProcessor
 	collectionValidator *nftCollectionValidator
+	priceUpdater        *priceUpdater
 }
 
 // newManager creates a new instance of the svc Manager.
@@ -40,6 +41,7 @@ func newManager() *Manager {
 	mgr.nftMetaWorker = newNFTMetadataWorker(&mgr)
 	mgr.notifyProcessor = newNotificationProcessor(&mgr)
 	mgr.collectionValidator = newNFTCollectionValidator(&mgr)
+	mgr.priceUpdater = newPriceUpdater(&mgr)
 
 	// init and run
 	mgr.init()
@@ -56,6 +58,7 @@ func (mgr *Manager) init() {
 	mgr.nftMetaUpdater.init()
 	mgr.notifyProcessor.init()
 	mgr.collectionValidator.init()
+	mgr.priceUpdater.init()
 }
 
 // add managed service instance to the Manager and run it.

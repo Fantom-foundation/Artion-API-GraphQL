@@ -21,7 +21,7 @@ func (p *Proxy) GetUnifiedPriceAt(marketplace *common.Address, payToken *common.
 		PayToken: *payToken,
 	}
 
-	// get price of 1 wei of payToken in USD in 18-decimals fixed point
+	// get price of 1 whole payToken in USD in 18-decimals fixed point
 	unit, err := p.rpc.GetPayTokenPrice(marketplace, payToken, block)
 	if err != nil {
 		log.Warningf("unable to get price of pay token %s; %s", payToken.String(), err.Error())

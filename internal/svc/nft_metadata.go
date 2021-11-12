@@ -12,6 +12,9 @@ const (
 
 	// nftMetadataRefreshTick is the tick used to pull NFT metadata refresh candidates.
 	nftMetadataRefreshTick = 5 * time.Minute
+
+	// nftMetadataRefreshSetSize is the max size of metadata refresh set pulled at once.
+	nftMetadataRefreshSetSize = 50
 )
 
 // nftMetadataUpdater represents a service responsible for periodic update of NFT token metadata
@@ -40,7 +43,7 @@ func newNFTMetadataUpdater(mgr *Manager) *nftMetadataUpdater {
 		mgr:          mgr,
 		sigStop:      make(chan bool, 1),
 		outTokens:    make(chan *types.Token, nftMetadataUpdaterQueueCapacity),
-		refreshQueue: make(chan *types.Token, types.MetadataRefreshSetSize),
+		refreshQueue: make(chan *types.Token, nftMetadataRefreshSetSize),
 	}
 }
 
@@ -117,7 +120,7 @@ func (mu *nftMetadataUpdater) scheduleMetadataRefreshSet() {
 		}
 	}()
 
-	rs, err := repo.TokenMetadataRefreshSet()
+	rs, err := repo.TokenMetadataRefreshSet(nftMetadataRefreshSetSize)
 	if err != nil {
 		log.Errorf("metadata refresh set not available; %s", err.Error())
 		return

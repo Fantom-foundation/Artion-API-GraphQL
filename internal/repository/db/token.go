@@ -412,8 +412,8 @@ func (db *MongoDbBridge) TokenMarkSold(contract *common.Address, tokenID *big.In
 }
 
 // TokenMetadataRefreshSet pulls s set of NFT tokens scheduled to be updated up to this time.
-func (db *MongoDbBridge) TokenMetadataRefreshSet() ([]*types.Token, error) {
-	list := make([]*types.Token, types.MetadataRefreshSetSize)
+func (db *MongoDbBridge) TokenMetadataRefreshSet(setSize int64) ([]*types.Token, error) {
+	list := make([]*types.Token, setSize)
 	col := db.client.Database(db.dbName).Collection(coTokens)
 
 	// load the set from database
@@ -423,7 +423,7 @@ func (db *MongoDbBridge) TokenMetadataRefreshSet() ([]*types.Token, error) {
 			{Key: fiTokenMetadataUpdate, Value: bson.D{{"$lt", time.Now()}}},
 			{Key: fiTokenMetadataURI, Value: bson.D{{"$ne", ""}}},
 		},
-		options.Find().SetSort(bson.D{{Key: fiTokenMetadataUpdate, Value: -1}}).SetLimit(types.MetadataRefreshSetSize),
+		options.Find().SetSort(bson.D{{Key: fiTokenMetadataUpdate, Value: 1}}).SetLimit(setSize),
 	)
 	if err != nil {
 		log.Errorf("can not pull metadata refresh set; %s", err.Error())
@@ -446,6 +446,79 @@ func (db *MongoDbBridge) TokenMetadataRefreshSet() ([]*types.Token, error) {
 		i++
 	}
 	return list[:i], nil
+}
+
+// TokenPriceRefreshSet pulls s set of tokens scheduled to be their price updated.
+func (db *MongoDbBridge) TokenPriceRefreshSet(setSize int64) ([]*types.Token, error) {
+	list := make([]*types.Token, setSize)
+	col := db.client.Database(db.dbName).Collection(coTokens)
+	now := time.Now()
+
+	// load the set from database
+	cur, err := col.Find(
+		context.Background(),
+		bson.D{{
+			Key: "$or",
+			Value: bson.A{
+				bson.D{{Key: fiTokenPriceValid, Value: bson.D{{"$lt", now}}}},
+				bson.D{{Key: fiTokenMinListValid, Value: bson.D{{"$lt", now}}}},
+				bson.D{{Key: fiTokenMaxOfferValid, Value: bson.D{{"$lt", now}}}},
+			},
+		}},
+		options.Find().SetSort(bson.D{{Key: fiTokenPriceValid, Value: 1}}).SetLimit(setSize),
+	)
+	if err != nil {
+		log.Errorf("can not pull price refresh set; %s", err.Error())
+		return nil, err
+	}
+	defer func() {
+		if err := cur.Close(context.Background()); err != nil {
+			log.Errorf("can not close cursor; %s", err.Error())
+		}
+	}()
+
+	var i int
+	for cur.Next(context.Background()) {
+		var row types.Token
+		if err := cur.Decode(&row); err != nil {
+			log.Errorf("can not decode Token; %s", err.Error())
+			return nil, err
+		}
+		list[i] = &row
+		i++
+	}
+	return list[:i], nil
+}
+
+// TokenPriceRefresh recalculates token prices and updates them in database.
+func (db *MongoDbBridge) TokenPriceRefresh(t *types.Token) error {
+	now := time.Now()
+	updates := bson.D{}
+	minListUpdated := false
+
+	if t.MinListValid != nil && (*time.Time)(t.MinListValid).Before(now) {
+		t.MinListPrice, t.MinListValid = db.MinListingPrice(&t.Contract, t.TokenId.ToInt())
+		updates = append(updates,
+			bson.E{Key: fiTokenMinListPrice, Value: t.MinListPrice},
+			bson.E{Key: fiTokenMinListValid, Value: t.MinListValid})
+		minListUpdated = true
+	}
+
+	if t.MaxOfferValid != nil && (*time.Time)(t.MaxOfferValid).Before(now) {
+		t.MaxOfferPrice, t.MaxOfferValid = db.MaxOfferPrice(&t.Contract, t.TokenId.ToInt())
+		updates = append(updates,
+			bson.E{Key: fiTokenMaxOfferPrice, Value: t.MaxOfferPrice},
+			bson.E{Key: fiTokenMaxOfferValid, Value: t.MaxOfferValid})
+	}
+
+	if minListUpdated || (t.PriceValid != nil && (*time.Time)(t.PriceValid).Before(now)) {
+		t.AmountPrice, t.PriceValid = db.getTokenPrice(t)
+		updates = append(updates,
+			bson.E{Key: fiTokenPrice, Value: t.AmountPrice},
+			bson.E{Key: fiTokenPriceValid, Value: t.PriceValid})
+	}
+
+	return db.UpdateToken(&t.Contract, t.TokenId.ToInt(), updates)
 }
 
 func (db *MongoDbBridge) getTokenPrice(t *types.Token) (tokenPrice int64, priceValidUntil *types.Time) {
