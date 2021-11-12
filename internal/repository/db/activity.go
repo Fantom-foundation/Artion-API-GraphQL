@@ -9,6 +9,9 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"time"
 )
 
 const (
@@ -21,6 +24,8 @@ const (
 	fiActivityFrom = "from"
 	fiActivityTo   = "to"
 	fiActivityType = "type"
+	fiActivityTime = "time"
+	fiActivityUnifiedPrice = "uprice"
 )
 
 func (db *MongoDbBridge) StoreActivity(activity *types.Activity) error {
@@ -109,4 +114,57 @@ func (db *MongoDbBridge) listActivities(filter bson.D, cursor types.Cursor, coun
 		list.Reverse()
 	}
 	return &list, nil
+}
+
+// TokenPriceHistory provides aggregation of trading prices of the token in time.
+func (db *MongoDbBridge) TokenPriceHistory(contract *common.Address, tokenId *hexutil.Big, from time.Time, to time.Time) ([]types.PriceHistory, error) {
+	var list []types.PriceHistory
+	col := db.client.Database(db.dbName).Collection(coActivities)
+
+	tradesActivityTypes := []types.ActivityType{
+		types.EvtListingSold, types.EvtOfferSold, types.EvtAuctionResolved,
+	}
+
+	// load the set from database
+	cur, err := col.Aggregate(
+		context.Background(),
+		mongo.Pipeline{
+			{{Key: "$match", Value: bson.D{
+				{Key: fiActivityTime, Value: bson.D{{"$gte", from}}},
+				{Key: fiActivityTime, Value: bson.D{{"$lte", to}}},
+				{Key: fiActivityContract, Value: contract.String()},
+				{Key: fiActivityTokenId, Value: tokenId.String()},
+				{Key: fiActivityType, Value: bson.D{{Key: "$in", Value: tradesActivityTypes}}},
+			} }},
+			{{Key: "$group", Value: bson.D{
+				{Key: "_id", Value: bson.D{
+					{Key: "y", Value: bson.D{{"$year", "$"+fiActivityTime}}},
+					{Key: "m", Value: bson.D{{"$month", "$"+fiActivityTime}}},
+					{Key: "d", Value: bson.D{{"$dayOfMonth", "$"+fiActivityTime}}},
+				}},
+				{Key: fiActivityTime, Value: bson.D{{"$first", "$" + fiActivityTime}}},
+				{Key: fiActivityUnifiedPrice, Value: bson.D{{"$avg", "$" + fiActivityUnifiedPrice}}},
+			}}},
+		},
+		options.Aggregate(),
+	)
+	if err != nil {
+		log.Errorf("can not load token price history; %s", err.Error())
+		return nil, err
+	}
+	defer func() {
+		if err := cur.Close(context.Background()); err != nil {
+			log.Errorf("can not close cursor; %s", err.Error())
+		}
+	}()
+
+	for cur.Next(context.Background()) {
+		var row types.PriceHistory
+		if err := cur.Decode(&row); err != nil {
+			log.Errorf("can not decode PriceHistory; %s", err.Error())
+			return nil, err
+		}
+		list = append(list, row)
+	}
+	return list, nil
 }

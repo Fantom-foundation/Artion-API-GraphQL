@@ -95,6 +95,9 @@ type Token {
 
     # Currently running or last finished auction of the token
     auction: Auction
+
+    # Price history of the token aggregated from trades (aggregated by days)
+    priceHistory(from: Time!, to: Time!): [PriceHistory!]!
 }
 
 type TokenPrice {

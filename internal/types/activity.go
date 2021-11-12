@@ -1,8 +1,10 @@
 package types
 
 import (
+	"encoding/json"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"strings"
 )
 
 type ActivityType int8
@@ -46,4 +48,23 @@ type Activity struct {
 
 	StartTime    *Time           `bson:"startTime"`
 	EndTime      *Time           `bson:"endTime"`
+}
+
+// PriceHistory aggregates price history from Activity collection
+type PriceHistory struct {
+	Time         Time        `bson:"time"`
+	UnifiedPrice json.Number `bson:"uprice"`
+}
+
+func (ph PriceHistory) Price() (hexutil.Uint64, error) {
+	priceStr := ph.UnifiedPrice
+	dotPos := strings.IndexByte(string(priceStr), '.')
+	if dotPos != -1 {
+		priceStr = priceStr[0:dotPos]
+	}
+	pr, err := priceStr.Int64()
+	if err != nil {
+		return hexutil.Uint64(0), err
+	}
+	return hexutil.Uint64(uint64(pr)), nil
 }

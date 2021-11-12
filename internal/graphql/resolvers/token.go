@@ -252,6 +252,13 @@ func (t *Token) OfferedPrice() (*types.TokenPrice, error) {
 	return &t.MaxOfferPrice, nil
 }
 
+func (t *Token) PriceHistory(args struct {
+	From types.Time
+	To types.Time
+}) ([]types.PriceHistory, error) {
+	return repository.R().TokenPriceHistory(&t.Contract, &t.TokenId, time.Time(args.From), time.Time(args.To))
+}
+
 // Cursor generates unique row identifier of the scrollable Tokens list.
 func (edge TokenEdge) Cursor() (types.Cursor, error) {
 	return edge.sorting.GetCursor((*types.Token)(edge.Node))

@@ -51,3 +51,12 @@ type ActivityConnection {
 input ActivityFilter {
     types: [ActivityType!]
 }
+
+# Price history is aggregation of trades from one day
+type PriceHistory {
+    # Time of the day
+    time: Time!
+
+    # Average token price in USD, 6-decimals fixed point, hex
+    price: Long!
+}
