@@ -41,6 +41,9 @@ type Collection {
 
     # Social: Twitter handle
     twitterHandle: String!
+
+    # canMint checks if the given user address can create new tokens on the collection
+    canMint(user:Address!): Boolean!
 }
 
 type CollectionEdge {

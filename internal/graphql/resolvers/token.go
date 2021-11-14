@@ -153,10 +153,8 @@ func (t *Token) Views() (hexutil.Big, error) {
 }
 
 // Collection resolves collection of the token.
-func (t *Token) Collection() Collection {
-	return Collection{
-		Contract: t.Contract,
-	}
+func (t *Token) Collection() (*Collection, error) {
+	return NewCollection(&t.Contract)
 }
 
 func (t *Token) Ownerships(args struct{ PaginationInput }) (con *OwnershipConnection, err error) {
@@ -195,7 +193,7 @@ func (t *Token) Offers(args struct{ PaginationInput }) (con *OfferConnection, er
 	return NewOfferConnection(list)
 }
 
-func (t Token) Activities(args struct{
+func (t Token) Activities(args struct {
 	Filter *ActivityFilter
 	PaginationInput
 }) (con *ActivityConnection, err error) {
@@ -254,7 +252,7 @@ func (t *Token) OfferedPrice() (*types.TokenPrice, error) {
 
 func (t *Token) PriceHistory(args struct {
 	From types.Time
-	To types.Time
+	To   types.Time
 }) ([]types.PriceHistory, error) {
 	return repository.R().TokenPriceHistory(&t.Contract, &t.TokenId, time.Time(args.From), time.Time(args.To))
 }
@@ -281,16 +279,16 @@ func (rs *RootResolver) Tokens(args struct {
 	if err != nil {
 		return nil, err
 	}
-	sorting, err := tokenSortingFromString(args.SortBy)
+	srt, err := tokenSortingFromString(args.SortBy)
 	if err != nil {
 		return nil, err
 	}
 
-	list, err := repository.R().ListTokens(args.Filter, sorting, isSortingDirectionDesc(args.SortDir), cursor, count, backward)
+	list, err := repository.R().ListTokens(args.Filter, srt, isSortingDirectionDesc(args.SortDir), cursor, count, backward)
 	if err != nil {
 		return nil, err
 	}
-	return NewTokenConnection(list, sorting)
+	return NewTokenConnection(list, srt)
 }
 
 // IncrementTokenViews increments amount of views of the token.
