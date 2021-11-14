@@ -7,10 +7,15 @@ import (
 	"context"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"math/big"
 )
 
 // defaultMintingTestTokenUrl is the URL we used to test NFT minting calls.
 const defaultMintingTestTokenUrl = "https://minter.artion.io/default/access/minter/estimation.json"
+
+// defaultMintingTestFee is the default fee we try on minting test (10 FTM).
+var defaultMintingTestFee = hexutil.MustDecodeBig("0x8AC7230489E80000")
 
 // Erc721StartingBlockNumber provides the first important block number for the ERC-721 contract.
 // We try to get the first Transfer() event on the contract,
@@ -40,17 +45,23 @@ func (o *Opera) Erc721StartingBlockNumber(adr *common.Address) (uint64, error) {
 }
 
 // CanMintErc721 checks if the given user can mint a new token on the given NFT contract.
-func (o *Opera) CanMintErc721(contract *common.Address, user *common.Address) (bool, error) {
+func (o *Opera) CanMintErc721(contract *common.Address, user *common.Address, fee *big.Int) (bool, error) {
 	data, err := o.abiFantom721.Pack("mint", *user, defaultMintingTestTokenUrl)
 	if err != nil {
 		return false, err
 	}
 
+	// use default fee, if not specified
+	if fee == nil {
+		fee = defaultMintingTestFee
+	}
+
 	// try to estimate the call
 	gas, err := o.ftm.EstimateGas(context.Background(), ethereum.CallMsg{
-		From: *user,
-		To:   contract,
-		Data: data,
+		From:  *user,
+		To:    contract,
+		Data:  data,
+		Value: fee,
 	})
 	if err != nil {
 		log.Warningf("user %s can not mint on ERC-721 %s; %s", user.String(), contract.String(), err.Error())

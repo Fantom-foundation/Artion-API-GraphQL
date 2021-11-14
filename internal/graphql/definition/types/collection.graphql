@@ -43,7 +43,7 @@ type Collection {
     twitterHandle: String!
 
     # canMint checks if the given user address can create new tokens on the collection
-    canMint(user:Address!): Boolean!
+    canMint(user:Address!, fee: BigInt): Boolean!
 }
 
 type CollectionEdge {

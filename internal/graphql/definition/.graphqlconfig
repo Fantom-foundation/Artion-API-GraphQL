@@ -23,6 +23,13 @@
           "user-agent": "JS GraphQL"
         },
         "introspect": false
+      },
+      "GraphQL Server D": {
+        "url": "https://artion-api-d.fantom.network/graphql",
+        "headers": {
+          "user-agent": "JS GraphQL"
+        },
+        "introspect": false
       }
     }
   }

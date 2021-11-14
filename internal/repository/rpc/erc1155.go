@@ -130,17 +130,23 @@ func (o *Opera) Erc1155FirstMintBatchBlock(erc *contracts.Erc1155) (uint64, erro
 }
 
 // CanMintErc1155 checks if the given user can mint a new token on the given NFT contract.
-func (o *Opera) CanMintErc1155(contract *common.Address, user *common.Address) (bool, error) {
+func (o *Opera) CanMintErc1155(contract *common.Address, user *common.Address, fee *big.Int) (bool, error) {
 	data, err := o.abiFantom1155.Pack("mint", *user, big.NewInt(1), defaultMintingTestTokenUrl)
 	if err != nil {
 		return false, err
 	}
 
+	// use default fee, if not specified
+	if fee == nil {
+		fee = defaultMintingTestFee
+	}
+
 	// try to estimate the call
 	gas, err := o.ftm.EstimateGas(context.Background(), ethereum.CallMsg{
-		From: *user,
-		To:   contract,
-		Data: data,
+		From:  *user,
+		To:    contract,
+		Data:  data,
+		Value: fee,
 	})
 	if err != nil {
 		log.Warningf("user %s can not mint on ERC-1155 %s; %s", user.String(), contract.String(), err.Error())

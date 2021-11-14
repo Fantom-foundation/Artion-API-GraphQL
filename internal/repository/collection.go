@@ -5,6 +5,7 @@ import (
 	"artion-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"math/big"
 )
 
 // addCollectionQueueCapacity is the capacity of the queue being filled with
@@ -59,12 +60,12 @@ func (p *Proxy) NFTContractType(adr *common.Address) (string, error) {
 }
 
 // CanMint checks if the given user can mint a new token on the given NFT contract.
-func (p *Proxy) CanMint(contract *common.Address, user *common.Address) (bool, error) {
+func (p *Proxy) CanMint(contract *common.Address, user *common.Address, fee *big.Int) (bool, error) {
 	// the ERC-721 minter differs from other contracts, we need to check the type first
 	if p.IsErc721Contract(contract) {
-		return p.rpc.CanMintErc721(contract, user)
+		return p.rpc.CanMintErc721(contract, user, fee)
 	}
 
 	// it's either ERC-1155 or not a valid minter at all
-	return p.rpc.CanMintErc1155(contract, user)
+	return p.rpc.CanMintErc1155(contract, user, fee)
 }

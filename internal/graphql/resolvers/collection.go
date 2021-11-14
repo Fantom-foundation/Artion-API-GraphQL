@@ -116,6 +116,7 @@ func (t *Collection) Royalty() string {
 // CanMint resolves the minting privilege for the given user by address.
 func (t *Collection) CanMint(args struct {
 	User common.Address
+	Fee  *hexutil.Big
 }) (bool, error) {
-	return repository.R().CanMint(&t.Address, &args.User)
+	return repository.R().CanMint(&t.Address, &args.User, (*big.Int)(args.Fee))
 }
