@@ -97,3 +97,10 @@ func (db *MongoDbBridge) Close() {
 		log.Errorf("can not disconnect database; %s", err.Error())
 	}
 }
+
+// closeFindCursor closes Mongo Find cursor safely.
+func closeFindCursor(name string, cur *mongo.Cursor) {
+	if err := cur.Close(context.Background()); err != nil {
+		log.Errorf("could not close %s cursor; %s", name, err.Error())
+	}
+}

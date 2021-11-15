@@ -20,11 +20,13 @@ BUILD_COMMIT := $(shell git show --format="%H" --no-patch)
 BUILD_COMMIT_TIME := $(shell git show --format="%cD" --no-patch)
 
 build/artionapi: internal/graphql/schema/gen/schema.graphql
-	go build \
+	@go build -v \
 	-gcflags="all=-N -l" \
 	-ldflags="-X 'artion-api-graphql/cmd/artionapi/build.Version=$(APP_VERSION)' -X 'artion-api-graphql/cmd/artionapi/build.Time=$(BUILD_DATE)' -X 'artion-api-graphql/cmd/artionapi/build.Compiler=$(BUILD_COMPILER)' -X 'artion-api-graphql/cmd/artionapi/build.Commit=$(BUILD_COMMIT)' -X 'artion-api-graphql/cmd/artionapi/build.CommitTime=$(BUILD_COMMIT_TIME)'" \
-	-o build/artionapi \
+	-o $@ \
 	./cmd/artionapi
+
+	@touch "internal/graphql/schema/gen/schema.graphql"
 
 test: internal/graphql/schema/gen/schema.graphql
 	go test ./...

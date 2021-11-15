@@ -14,7 +14,7 @@ const (
 	blkIsIdling
 
 	// scanTickFrequency is the time delay for the regular scanner
-	scanTickFrequency = 5 * time.Millisecond
+	scanTickFrequency = 4 * time.Millisecond
 
 	// idleTickFrequency is the time delay for the regular scanner
 	idleTickFrequency = 1 * time.Second
