@@ -35,6 +35,7 @@ func (rs *RootResolver) Collection(args struct {
 // Collections resolve a list of NFT Collection for the given criteria.
 func (rs *RootResolver) Collections(args struct {
 	Search *string
+	MintableBy *common.Address
 	PaginationInput
 }) (con *CollectionConnection, err error) {
 	cursor, count, backward, err := args.ToRepositoryInput()
@@ -42,7 +43,7 @@ func (rs *RootResolver) Collections(args struct {
 		return nil, err
 	}
 
-	list, err := repository.R().ListLegacyCollections(args.Search, cursor, count, backward)
+	list, err := repository.R().ListLegacyCollections(args.Search, args.MintableBy, cursor, count, backward)
 	if err != nil {
 		return nil, err
 	}
