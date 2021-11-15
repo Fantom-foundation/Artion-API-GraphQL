@@ -283,8 +283,14 @@ func (rs *RootResolver) Tokens(args struct {
 	if err != nil {
 		return nil, err
 	}
+	sortDesc := isSortingDirectionDesc(args.SortDir)
 
-	list, err := repository.R().ListTokens(args.Filter, srt, isSortingDirectionDesc(args.SortDir), cursor, count, backward)
+	if srt == sorting.TokenSortingNone { // default sorting Recently Created
+		srt = sorting.TokenSortingCreated
+		sortDesc = true
+	}
+
+	list, err := repository.R().ListTokens(args.Filter, srt, sortDesc, cursor, count, backward)
 	if err != nil {
 		return nil, err
 	}
