@@ -137,12 +137,33 @@ enum TokenSorting {
 }
 
 input TokenFilter {
+    # search tokens by name
     search: String
+
+    # filter tokens with listing (buy now)
     hasListing: Boolean
+
+    # filter tokens with auction
     hasAuction: Boolean
+
+    # filter tokens with at least one offer
     hasOffer: Boolean
+
+    # filter tokens with auction and at least one bid
     hasBids: Boolean
+
+    # filter tokens by collections
     collections: [Address!]
+
+    # filter tokens by category id
     categories: [Int!]
+
+    # filter tokens created by user
     createdBy: Address
+
+    # minimal token price in USD
+    priceMin: BigInt
+
+    # maximal token price in USD
+    priceMax: BigInt
 }

@@ -673,5 +673,12 @@ func tokenFilterToBson(f *types.TokenFilter) bson.D {
 		filter = append(filter, bson.E{Key: fiTokenCreatedBy, Value: *f.CreatedBy})
 	}
 
+	if f.PriceMin != nil {
+		filter = append(filter, bson.E{Key: fiTokenPrice, Value: bson.D{{Key: "$gte", Value: f.PriceMin.ToInt().Int64()}}})
+	}
+	if f.PriceMax != nil {
+		filter = append(filter, bson.E{Key: fiTokenPrice, Value: bson.D{{Key: "$lte", Value: f.PriceMax.ToInt().Int64()}}})
+	}
+
 	return filter
 }
