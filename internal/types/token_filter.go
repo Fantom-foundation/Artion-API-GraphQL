@@ -2,6 +2,7 @@ package types
 
 import (
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 type TokenFilter struct {
@@ -13,4 +14,6 @@ type TokenFilter struct {
 	Collections *[]common.Address
 	Categories *[]int32
 	CreatedBy  *common.Address
+	PriceMin *hexutil.Big
+	PriceMax *hexutil.Big
 }
