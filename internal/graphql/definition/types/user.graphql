@@ -22,7 +22,7 @@ type User {
     banner: String
 
     # List owned tokens and their amount
-    ownerships(first: Int, after: Cursor, last: Int, before: Cursor): OwnershipConnection!
+    ownerships(collection: Address, first: Int, after: Cursor, last: Int, before: Cursor): OwnershipConnection!
 
     # List user favourite tokens
     tokenLikes(first: Int, after: Cursor, last: Int, before: Cursor): TokenLikeConnection!

@@ -19,7 +19,7 @@ type User struct {
 }
 
 type UserEdge struct {
-	Node    *User
+	Node *User
 }
 
 // Cursor generates unique row identifier of the scrollable Tokens list.
@@ -44,10 +44,10 @@ func NewUserConnection(list *types.UserList) (con *UserConnection, err error) {
 	for i := 0; i < len(list.Collection); i++ {
 		user := User{
 			Address: list.Collection[i].Address,
-			dbUser: list.Collection[i],
+			dbUser:  list.Collection[i],
 		}
 		con.Edges[i] = UserEdge{
-			Node:    &user,
+			Node: &user,
 		}
 	}
 
@@ -115,12 +115,17 @@ func (user User) Banner() (*string, error) {
 	return user.dbUser.Banner, nil
 }
 
-func (user User) Ownerships(args struct{ PaginationInput }) (con *OwnershipConnection, err error) {
+// Ownerships resolves a paginated list of tokens owned by the given user.
+func (user User) Ownerships(args struct {
+	Collection *common.Address
+	PaginationInput
+}) (con *OwnershipConnection, err error) {
 	cursor, count, backward, err := args.ToRepositoryInput()
 	if err != nil {
 		return nil, err
 	}
-	list, err := repository.R().ListOwnerships(nil, nil, &user.Address, cursor, count, backward)
+
+	list, err := repository.R().ListOwnerships(args.Collection, nil, &user.Address, cursor, count, backward)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +185,7 @@ func (user User) Following(args struct{ PaginationInput }) (con *FollowConnectio
 	return NewFollowConnection(list)
 }
 
-func (user User) Activities(args struct{
+func (user User) Activities(args struct {
 	Filter *ActivityFilter
 	PaginationInput
 }) (con *ActivityConnection, err error) {
@@ -271,7 +276,7 @@ func (rs *RootResolver) Login(args struct {
 }
 
 func (rs *RootResolver) Users(args struct {
-	Search  *string
+	Search *string
 	PaginationInput
 }) (con *UserConnection, err error) {
 	cursor, count, backward, err := args.ToRepositoryInput()
