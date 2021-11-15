@@ -9,6 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
 	"strings"
 )
@@ -138,7 +139,8 @@ func (o *Opera) CanMintErc1155(contract *common.Address, user *common.Address, f
 
 	// use default fee, if not specified
 	if fee == nil {
-		fee = defaultMintingTestFee
+		fee = o.MustPlatformFee(contract)
+		log.Infof("platform fee for %s is %s", contract.String(), (*hexutil.Big)(fee).String())
 	}
 
 	// try to estimate the call

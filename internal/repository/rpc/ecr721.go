@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/status-im/keycard-go/hexutils"
 	"math/big"
 )
 
@@ -53,7 +54,8 @@ func (o *Opera) CanMintErc721(contract *common.Address, user *common.Address, fe
 
 	// use default fee, if not specified
 	if fee == nil {
-		fee = defaultMintingTestFee
+		fee = o.MustPlatformFee(contract)
+		log.Infof("platform fee for %s is %s", contract.String(), (*hexutil.Big)(fee).String())
 	}
 
 	// try to estimate the call
@@ -70,4 +72,25 @@ func (o *Opera) CanMintErc721(contract *common.Address, user *common.Address, fe
 
 	log.Infof("user %s can mint on ERC-721 %s for %d gas", user.String(), contract.String(), gas)
 	return true, nil
+}
+
+// MustPlatformFee returns the platform fee for the given contract, or the default one.
+func (o *Opera) MustPlatformFee(contract *common.Address) *big.Int {
+	data, err := o.ftm.CallContract(context.Background(), ethereum.CallMsg{
+		From: common.Address{},
+		To:   contract,
+		Data: hexutils.HexToBytes("26232a2e"),
+	}, nil)
+	if err != nil {
+		log.Errorf("can not get platform fee from %s; %s", contract.String(), err.Error())
+		return defaultMintingTestFee
+	}
+
+	// try to unpack the data if possible; we expect uint256 value = 32 bytes
+	if len(data) != 32 {
+		log.Errorf("invalid platform fee response from %s; expected 32 bytes, %d bytes received", contract.String(), len(data))
+		return defaultMintingTestFee
+	}
+
+	return new(big.Int).SetBytes(data)
 }
