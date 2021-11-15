@@ -9,13 +9,20 @@ import (
 
 // IndexDefinitionTokens provides a list of indexes expected to exist on tokens' collection.
 func IndexDefinitionTokens() []mongo.IndexModel {
-	ix := make([]mongo.IndexModel, 2)
+	ix := make([]mongo.IndexModel, 3)
 
 	ixContractToken := "ix_contract_token"
 	ix[0] = mongo.IndexModel{Keys: bson.D{{Key: "contract", Value: 1}, {Key: "token", Value: 1}}, Options: &options.IndexOptions{Name: &ixContractToken}}
 
 	ixOrdinal := "ix_ordinal"
 	ix[1] = mongo.IndexModel{Keys: bson.D{{Key: "index", Value: -1}}, Options: &options.IndexOptions{Name: &ixOrdinal}}
+
+	ixFulltext := "ix_fulltext"
+	ix[2] = mongo.IndexModel{Keys: bson.D{
+		{Key: "name", Value: "text"},
+		{Key: "desc", Value: "text"},
+		{Key: "symbol", Value: "text"},
+	}, Options: &options.IndexOptions{Name: &ixFulltext}}
 	return ix
 }
 

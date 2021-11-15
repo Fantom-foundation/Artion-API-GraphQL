@@ -10,25 +10,25 @@ type Query {
     # version represents the API server version responding to your requests.
     version: String!
 
-    # Get list of token collections categories
+    # Get list of token collections categories.
     categories: [Category!]!
 
-    # Get collection by address
+    # Get collection by address.
     collection(contract: Address!): Collection!
 
-    # List all collections
+    # List all collections.
     collections(search: String, first: Int, after: Cursor, last: Int, before: Cursor): CollectionConnection!
 
-    # Get token by address and id
+    # Get token by address and id.
     token(contract: Address!, tokenId: BigInt!): Token
 
-    # List all tokens (with defined filter and sorting)
+    # List all tokens (with defined filter and sorting).
     tokens(filter: TokenFilter, sortBy: TokenSorting, sortDir: SortingDirection, first: Int, after: Cursor, last: Int, before: Cursor): TokenConnection!
 
-    # List of tokens supported for payments on the marketplace
+    # List of tokens supported for payments on the marketplace.
     payTokens: [PayToken!]!
 
-    # Get user by address
+    # Get user by address.
     user(address: Address!): User!
 
     # List or search users
@@ -37,20 +37,23 @@ type Query {
     # randomTrade resolves a Random ERC-721 NFT Trade by address.
     randomTrade(contract: Address!): RandomTrade
 
-    # Get user authenticated using bearer token
+    # Get user authenticated using bearer token.
     loggedUser: User
 
     # Get currently set shipping address for tokens redeem.
     loggedUserShippingAddress: ShippingAddress
 
-    # Get notification settings of logged user
+    # Get notification settings of logged user.
     notificationSettings: NotificationSettings
 
-    # Get unlockable content attached to a NFT token (only token owner)
+    # Get unlockable content attached to a NFT token (only token owner).
     unlockableContent(contract: Address!, tokenId: BigInt!): String
 
-    # Estimate platform fee and gas needed for token minting
+    # Estimate platform fee and gas needed for token minting.
     estimateMintFeeGas(user: Address!, contract: Address!, tokenUri: String!): MintFeeGas!
+
+    # Search collections and tokens for the given phrase and return paginated list of relevant results.
+    textSearch(phrase: String!, maxLength: Int = 15): [TextSearchEdge]!
 }
 
 # Mutation endpoints for modifying the data

@@ -72,13 +72,7 @@ func (sdb *SharedMongoDbBridge) ListLegacyCollections(search *string, cursor typ
 	}
 
 	// close the cursor as we leave
-	defer func() {
-		err = ld.Close(ctx)
-		if err != nil {
-			log.Errorf("error closing LegacyCollections list cursor; %s", err.Error())
-		}
-	}()
-
+	defer closeFindCursor("LegacyCollections", ld)
 	for ld.Next(ctx) {
 		if len(list.Collection) < count {
 			var row types.LegacyCollection

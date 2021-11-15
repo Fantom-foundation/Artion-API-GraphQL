@@ -10,6 +10,7 @@
 # the first argument is the output file to be generated
 TARGET_FILE="$1"
 shift 1
+echo "Schema ${TARGET_FILE} is generated."
 
 # make sure we have the target directory
 TARGET_DIR=$(dirname "${TARGET_FILE}")

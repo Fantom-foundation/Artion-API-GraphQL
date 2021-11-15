@@ -1,0 +1,5 @@
+# TextSearchEdge is a single edge in a paginated text search output set.
+type TextSearchEdge {
+    collection: Collection
+    token: Token
+}
