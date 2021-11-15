@@ -233,7 +233,7 @@ func (t *Token) AuctionedPrice() (*types.TokenPrice, error) {
 	if !t.HasAuction() || !t.HasBids {
 		return nil, nil
 	}
-	return &t.MinListPrice, nil
+	return &t.AmountLastBid, nil
 }
 
 func (t *Token) AuctionReservePrice() (*types.TokenPrice, error) {
