@@ -242,9 +242,13 @@ func (db *MongoDbBridge) TokenMarkOffered(contract *common.Address, tokenID *big
 // TokenMarkListed marks the given NFT as listed for direct sale for the given price.
 func (db *MongoDbBridge) TokenMarkListed(contract *common.Address, tokenID *big.Int, price types.TokenPrice, ts *time.Time) error {
 	t, err := db.GetToken(contract, tokenID)
-	if t == nil {
+	if err != nil {
 		log.Errorf("unable to load token %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
 		return err
+	}
+	if t == nil {
+		log.Criticalf("unknown token %s/%s", contract.String(), (*hexutil.Big)(tokenID).String())
+		return nil
 	}
 
 	t.HasListingSince = db.OpenListingSince(contract, tokenID)
@@ -265,9 +269,13 @@ func (db *MongoDbBridge) TokenMarkListed(contract *common.Address, tokenID *big.
 // TokenMarkAuctioned marks the given NFT as auctioned for the given price.
 func (db *MongoDbBridge) TokenMarkAuctioned(contract *common.Address, tokenID *big.Int, reservePrice types.TokenPrice, ts *time.Time) error {
 	t, err := db.GetToken(contract, tokenID)
-	if t == nil {
+	if err != nil {
 		log.Errorf("unable to load token %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
 		return err
+	}
+	if t == nil {
+		log.Criticalf("unknown token %s/%s", contract.String(), (*hexutil.Big)(tokenID).String())
+		return nil
 	}
 
 	t.HasAuctionSince, t.HasAuctionUntil = db.OpenAuctionRange(contract, tokenID)
@@ -289,9 +297,13 @@ func (db *MongoDbBridge) TokenMarkAuctioned(contract *common.Address, tokenID *b
 // TokenMarkBid marks the given NFT as having auction bid for the given price.
 func (db *MongoDbBridge) TokenMarkBid(contract *common.Address, tokenID *big.Int, price types.TokenPrice, ts *time.Time) error {
 	t, err := db.GetToken(contract, tokenID)
-	if t == nil {
+	if err != nil {
 		log.Errorf("unable to load token %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
 		return err
+	}
+	if t == nil {
+		log.Criticalf("unknown token %s/%s", contract.String(), (*hexutil.Big)(tokenID).String())
+		return nil
 	}
 
 	t.HasBids = true
@@ -310,9 +322,13 @@ func (db *MongoDbBridge) TokenMarkBid(contract *common.Address, tokenID *big.Int
 // TokenMarkUnlisted marks the given NFT as listed for direct sale for the given price.
 func (db *MongoDbBridge) TokenMarkUnlisted(contract *common.Address, tokenID *big.Int) error {
 	t, err := db.GetToken(contract, tokenID)
-	if t == nil {
+	if err != nil {
 		log.Errorf("unable to load token %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
 		return err
+	}
+	if t == nil {
+		log.Criticalf("unknown token %s/%s", contract.String(), (*hexutil.Big)(tokenID).String())
+		return nil
 	}
 
 	t.HasListingSince = db.OpenListingSince(contract, tokenID)
@@ -341,9 +357,13 @@ func (db *MongoDbBridge) TokenMarkUnOffered(contract *common.Address, tokenID *b
 // TokenMarkUnAuctioned marks the given NFT as not having an active auction on.
 func (db *MongoDbBridge) TokenMarkUnAuctioned(contract *common.Address, tokenID *big.Int) error {
 	t, err := db.GetToken(contract, tokenID)
-	if t == nil {
+	if err != nil {
 		log.Errorf("unable to load token %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
 		return err
+	}
+	if t == nil {
+		log.Criticalf("unknown token %s/%s", contract.String(), (*hexutil.Big)(tokenID).String())
+		return nil
 	}
 
 	t.HasAuctionSince, t.HasAuctionUntil = db.OpenAuctionRange(contract, tokenID)
@@ -362,9 +382,13 @@ func (db *MongoDbBridge) TokenMarkUnAuctioned(contract *common.Address, tokenID 
 // TokenMarkUnBid marks the given NFT as not having a bid anymore.
 func (db *MongoDbBridge) TokenMarkUnBid(contract *common.Address, tokenID *big.Int) error {
 	t, err := db.GetToken(contract, tokenID)
-	if t == nil {
+	if err != nil {
 		log.Errorf("unable to load token %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
 		return err
+	}
+	if t == nil {
+		log.Criticalf("unknown token %s/%s", contract.String(), (*hexutil.Big)(tokenID).String())
+		return nil
 	}
 
 	t.HasBids = false
@@ -380,9 +404,13 @@ func (db *MongoDbBridge) TokenMarkUnBid(contract *common.Address, tokenID *big.I
 // TokenMarkSold marks the given NFT as sold for the given price.
 func (db *MongoDbBridge) TokenMarkSold(contract *common.Address, tokenID *big.Int, price types.TokenPrice, ts *time.Time) error {
 	t, err := db.GetToken(contract, tokenID)
-	if t == nil {
+	if err != nil {
 		log.Errorf("unable to load token %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
 		return err
+	}
+	if t == nil {
+		log.Criticalf("unknown token %s/%s", contract.String(), (*hexutil.Big)(tokenID).String())
+		return nil
 	}
 
 	t.HasAuctionSince, t.HasAuctionUntil = db.OpenAuctionRange(contract, tokenID)
