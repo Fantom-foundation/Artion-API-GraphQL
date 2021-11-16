@@ -290,6 +290,7 @@ func (rs *RootResolver) Tokens(args struct {
 		sortDesc = true
 	}
 
+	log.Infof("%+v", args.Filter)
 	list, err := repository.R().ListTokens(args.Filter, srt, sortDesc, cursor, count, backward)
 	if err != nil {
 		return nil, err
