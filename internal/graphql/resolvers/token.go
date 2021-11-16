@@ -296,6 +296,7 @@ func (rs *RootResolver) Tokens(args struct {
 		args.Filter.PriceMin = (*hexutil.Big)(big.NewInt(1))
 	}
 
+	log.Infof("Filtering by %+v", args.Filter)
 	list, err := repository.R().ListTokens(args.Filter, srt, sortDesc, cursor, count, backward)
 	if err != nil {
 		return nil, err
