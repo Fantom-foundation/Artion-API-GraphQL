@@ -558,6 +558,7 @@ func (db *MongoDbBridge) ListTokens(filter *types.TokenFilter, sorting sorting.T
 	ctx := context.Background()
 
 	bsonFilter := tokenFilterToBson(filter)
+	log.Infof("Filter: %+v", bsonFilter)
 
 	list.TotalCount, err = db.getTotalCount(col, bsonFilter)
 	if err != nil {
