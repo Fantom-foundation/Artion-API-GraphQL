@@ -285,12 +285,17 @@ func (rs *RootResolver) Tokens(args struct {
 	}
 	sortDesc := isSortingDirectionDesc(args.SortDir)
 
-	if srt == sorting.TokenSortingNone { // default sorting Recently Created
+	// default sorting Recently Created
+	if srt == sorting.TokenSortingNone {
 		srt = sorting.TokenSortingCreated
 		sortDesc = true
 	}
 
-	log.Infof("%+v", args.Filter)
+	// when sorting by price, skip zero price (not-listed/auctioned) items
+	if srt == sorting.TokenSortingPrice && args.Filter.PriceMin == nil {
+		args.Filter.PriceMin = (*hexutil.Big)(big.NewInt(1))
+	}
+
 	list, err := repository.R().ListTokens(args.Filter, srt, sortDesc, cursor, count, backward)
 	if err != nil {
 		return nil, err
