@@ -14,7 +14,7 @@ const (
 	nftMetadataRefreshTick = 20 * time.Second
 
 	// nftMetadataRefreshSetSize is the max size of metadata refresh set pulled at once.
-	nftMetadataRefreshSetSize = 50
+	nftMetadataRefreshSetSize = 65
 )
 
 // nftMetadataUpdater represents a service responsible for periodic update of NFT token metadata
