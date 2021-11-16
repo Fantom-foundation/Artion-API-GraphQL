@@ -13,7 +13,7 @@ import (
 )
 
 // zeroAddress represents an empty address.
-var zeroAddress common.Address
+var zeroAddress = common.Address{}
 
 // erc721TokenMinted handles log event for new NFT token minted on an observed ERC721 contract.
 // ERC721::Minted(uint256 tokenId, address beneficiary, string tokenUri, address minter)
@@ -56,8 +56,9 @@ func erc721TokenMinted(evt *eth.Log, lo *logObserver) {
 	queueMetadataUpdate(tok, lo)
 }
 
-// erc721CheckToken validates token existence.
-func erc721CheckToken(contract *common.Address, tokenID *big.Int, blk *eth.Header, evt *eth.Log) {
+// erc721TokenMustExist ensures ERC-721 token existence in the local database.
+func erc721TokenMustExist(contract *common.Address, tokenID *big.Int, blk *eth.Header, evt *eth.Log, lo *logObserver) {
+	log.Debugf("checking %s / #%d", contract.String(), tokenID.Uint64())
 	tok, err := repo.Token(contract, (*hexutil.Big)(tokenID))
 	if err != nil {
 		log.Errorf("can not get token %s / #%d; %s", contract.String(), tokenID.Uint64(), err.Error())
@@ -81,15 +82,22 @@ func erc721CheckToken(contract *common.Address, tokenID *big.Int, blk *eth.Heade
 	tok = types.NewToken(contract, tokenID, uri, int64(blk.Time), evt.BlockNumber, evt.Index)
 	log.Infof("ERC-721 token %s found at %s block %d", tok.TokenId.String(), tok.Contract.String(), evt.BlockNumber)
 
+	// add details
+	tok.CreatedBy = repo.MustTransactionSender(evt.BlockHash, evt.TxIndex)
+
 	// write token to the persistent storage
 	if err := repo.StoreToken(tok); err != nil {
 		log.Errorf("could not store token %s at %s; %s", tok.TokenId.String(), tok.Contract.String(), err.Error())
+		return
 	}
+
+	// schedule metadata update on the token (do not wait for result)
+	queueMetadataUpdate(tok, lo)
 }
 
 // erc721TokenTransfer handles log event for NFT token ownership transfer on an observed ERC721 contract.
 // ERC721::Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
-func erc721TokenTransfer(evt *eth.Log, _ *logObserver) {
+func erc721TokenTransfer(evt *eth.Log, lo *logObserver) {
 	// sanity check: 1 + 3 extra topics for indexed parties; no additional data = 0 bytes
 	if len(evt.Data) != 0 || len(evt.Topics) != 4 {
 		log.Errorf("not ERC721::Transfer() event #%d/#%d; expected no data, %d given; expected 4 topics, %d given",
@@ -109,9 +117,12 @@ func erc721TokenTransfer(evt *eth.Log, _ *logObserver) {
 		return
 	}
 
+	// log what we do
+	log.Debugf("erc721 %s / %s transfer %s -> %s", evt.Address.String(), tokenID.String(), from.String(), to.String())
+
 	// this may be a mint; if so, we have that one covered already
-	if 0 == bytes.Compare(zeroAddress.Bytes(), evt.Topics[1].Bytes()) {
-		erc721CheckToken(&evt.Address, (*big.Int)(&tokenID), blk, evt)
+	if 0 == bytes.Compare(zeroAddress.Bytes(), from.Bytes()) {
+		erc721TokenMustExist(&evt.Address, (*big.Int)(&tokenID), blk, evt, lo)
 	}
 
 	// ERC-721 tokens don't have quantity; the amount is always 1

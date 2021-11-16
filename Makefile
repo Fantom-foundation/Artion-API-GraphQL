@@ -70,6 +70,8 @@ internal/repository/rpc/contracts/Erc721.go: internal/repository/rpc/contracts/a
 internal/repository/rpc/contracts/Erc1155.go: internal/repository/rpc/contracts/abi/Erc1155.json
 	abigen --type Erc1155 --pkg contracts --abi $< --out $@
 
+db: db_observed db_status
+
 db_observed: doc/db/observed.json
 	mongoimport --db=artion --collection=observed --file=$<
 
