@@ -69,3 +69,15 @@ func (p *Proxy) CanMint(contract *common.Address, user *common.Address, fee *big
 	// it's either ERC-1155 or not a valid minter at all
 	return p.rpc.CanMintErc1155(contract, user, fee)
 }
+
+
+func (p *Proxy) CanRegisterCollection(contract *common.Address, user *common.Address) (error) {
+	if !p.IsErc721Contract(contract) {
+		return fmt.Errorf("the contract is not ERC-721")
+	}
+
+	// TODO check contract validity
+	// is user the collection minter?
+
+	return nil
+}
