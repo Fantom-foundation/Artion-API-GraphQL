@@ -79,7 +79,7 @@ type Token {
     isLiked: Boolean!
 
     # Collection (token contract) of the token
-    collection: Collection!
+    collection: Collection
 
     # List owners of the token and their token balances
     ownerships(first: Int, after: Cursor, last: Int, before: Cursor): OwnershipConnection!

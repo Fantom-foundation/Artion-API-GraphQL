@@ -4,7 +4,6 @@ import (
 	"artion-api-graphql/internal/types"
 	"artion-api-graphql/internal/types/sorting"
 	"context"
-	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -60,10 +59,7 @@ func (sdb *SharedMongoDbBridge) GetLegacyCollection(address common.Address) (col
 }
 
 // InsertLegacyCollection inserts collection record.
-func (sdb *SharedMongoDbBridge) InsertLegacyCollection(c *types.LegacyCollection) error {
-	if c == nil {
-		return fmt.Errorf("no value to store")
-	}
+func (sdb *SharedMongoDbBridge) InsertLegacyCollection(c types.LegacyCollection) error {
 	col := sdb.client.Database(sdb.dbName).Collection(coLegacyCollection)
 
 	if _, err := col.InsertOne(

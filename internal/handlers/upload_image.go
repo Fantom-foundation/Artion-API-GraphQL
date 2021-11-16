@@ -117,3 +117,23 @@ func StoreToken(identity common.Address, image types.Image, req *http.Request) (
 	}
 	return uri, nil
 }
+
+func StoreCollection(identity common.Address, image types.Image, req *http.Request) (string, error) {
+	applicationJson := req.FormValue("data")
+	if applicationJson == "" {
+		return "", fmt.Errorf("no collection registration application sent")
+	}
+	app, err := types.DecodeCollectionApplication([]byte(applicationJson))
+	if err != nil {
+		return "", fmt.Errorf("failed to parse collection registration application json; %s", err)
+	}
+	err = repository.R().CanRegisterCollection(&app.Contract, &identity)
+	if err != nil {
+		return "", err
+	}
+	err = repository.R().UploadCollectionApplication(*app, image, identity)
+	if err != nil {
+		return "", fmt.Errorf("collection upload failed; %s", err)
+	}
+	return "OK", nil
+}

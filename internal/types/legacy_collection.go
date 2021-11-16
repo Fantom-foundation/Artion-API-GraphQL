@@ -46,3 +46,57 @@ func (lc LegacyCollection) CategoriesAsInt() ([]int32, error) {
 	}
 	return out, nil
 }
+
+// CollectionApplication is input for new LegacyCollection registration
+type CollectionApplication struct {
+	Contract      common.Address `json:"contract"`
+	Name          string         `json:"name"`
+	Description   string         `json:"description"`
+	Royalty       json.Number    `json:"royalty"` // percents of fee
+	FeeRecipient  common.Address `json:"feeRecipient"`
+	Categories    []int32        `bson:"categories"`
+	Discord       string         `bson:"discord"`
+	Email         string         `bson:"email"`
+	Telegram      string         `bson:"telegram"`
+	SiteUrl       string         `bson:"siteUrl"`
+	MediumHandle  string         `bson:"mediumHandle"`
+	TwitterHandle string         `bson:"twitterHandle"`
+}
+
+// DecodeCollectionApplication parses the collection registration application JSON.
+func DecodeCollectionApplication(data []byte) (*CollectionApplication, error) {
+	var out CollectionApplication
+	err := json.Unmarshal(data, &out)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (app CollectionApplication) ToCollection(image string, owner *common.Address) LegacyCollection {
+	categoriesStr := make([]string, len(app.Categories))
+	for i, categoryId := range app.Categories {
+		categoriesStr[i] = string(categoryId)
+	}
+	return LegacyCollection{
+		Address:       app.Contract,
+		Name:          app.Name,
+		Description:   app.Description,
+		CategoriesStr: categoriesStr,
+		Image:         image,
+		Owner:         owner,
+		FeeRecipient:  &app.FeeRecipient,
+		RoyaltyValue:  app.Royalty,
+		Discord:       app.Discord,
+		Email:         app.Email,
+		Telegram:      app.Telegram,
+		SiteUrl:       app.SiteUrl,
+		MediumHandle:  app.MediumHandle,
+		TwitterHandle: app.TwitterHandle,
+		IsAppropriate: false,
+		IsInternal:    false,
+		IsOwnerOnly:   false,
+		IsVerified:    false,
+		IsReviewed:    false,
+	}
+}
