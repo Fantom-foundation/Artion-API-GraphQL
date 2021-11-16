@@ -16,7 +16,7 @@ import (
 )
 
 // ipfsRequestTimeout represents the timeout applied to IPFS requests.
-const ipfsRequestTimeout = 15 * time.Second
+const ipfsRequestTimeout = 2 * time.Second
 
 type Downloader struct {
 	ipfsShell        *ipfsapi.Shell
