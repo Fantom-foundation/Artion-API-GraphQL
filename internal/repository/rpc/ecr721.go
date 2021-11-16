@@ -5,11 +5,14 @@ package rpc
 import (
 	"artion-api-graphql/internal/repository/rpc/contracts"
 	"context"
+	"fmt"
 	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/status-im/keycard-go/hexutils"
 	"math/big"
+	"strings"
 )
 
 // defaultMintingTestTokenUrl is the URL we used to test NFT minting calls.
@@ -93,4 +96,31 @@ func (o *Opera) MustPlatformFee(contract *common.Address) *big.Int {
 	}
 
 	return new(big.Int).SetBytes(data)
+}
+
+// Erc721TokenUri gets a token specific URI address from ERC-721 contract using tokenURI() call.
+func (o *Opera) Erc721TokenUri(contract *common.Address, tokenId *big.Int) (string, error) {
+	// prepare params
+	input, err := o.Erc721Abi().Pack("tokenURI", tokenId)
+	if err != nil {
+		log.Errorf("can not pack data; %s", err.Error())
+		return "", err
+	}
+
+	// call the contract
+	data, err := o.ftm.CallContract(context.Background(), ethereum.CallMsg{
+		From: common.Address{},
+		To:   contract,
+		Data: input,
+	}, nil)
+	res, err := o.abiFantom721.Unpack("tokenURI", data)
+	if err != nil {
+		log.Errorf("can not decode response; %s", err.Error())
+		return "", err
+	}
+
+	return strings.Replace(
+		*abi.ConvertType(res[0], new(string)).(*string),
+		"{id}",
+		fmt.Sprintf("%064x", tokenId), -1), nil
 }

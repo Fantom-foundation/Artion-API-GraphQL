@@ -56,6 +56,37 @@ func erc721TokenMinted(evt *eth.Log, lo *logObserver) {
 	queueMetadataUpdate(tok, lo)
 }
 
+// erc721CheckToken validates token existence.
+func erc721CheckToken(contract *common.Address, tokenID *big.Int, blk *eth.Header, evt *eth.Log) {
+	tok, err := repo.Token(contract, (*hexutil.Big)(tokenID))
+	if err != nil {
+		log.Errorf("can not get token %s / #%d; %s", contract.String(), tokenID.Uint64(), err.Error())
+		return
+	}
+
+	// token found
+	if tok != nil {
+		log.Infof("found token %s / #%d", contract.String(), tokenID.Uint64())
+		return
+	}
+
+	// get token URI
+	uri, err := repo.Erc721TokenUri(contract, tokenID)
+	if err != nil {
+		log.Errorf("could not get token URI for %s / #%d; %s", contract.String(), tokenID.Uint64(), err.Error())
+		uri = ""
+	}
+
+	// make the token
+	tok = types.NewToken(contract, tokenID, uri, int64(blk.Time), evt.BlockNumber, evt.Index)
+	log.Infof("ERC-721 token %s found at %s block %d", tok.TokenId.String(), tok.Contract.String(), evt.BlockNumber)
+
+	// write token to the persistent storage
+	if err := repo.StoreToken(tok); err != nil {
+		log.Errorf("could not store token %s at %s; %s", tok.TokenId.String(), tok.Contract.String(), err.Error())
+	}
+}
+
 // erc721TokenTransfer handles log event for NFT token ownership transfer on an observed ERC721 contract.
 // ERC721::Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
 func erc721TokenTransfer(evt *eth.Log, _ *logObserver) {
@@ -63,12 +94,6 @@ func erc721TokenTransfer(evt *eth.Log, _ *logObserver) {
 	if len(evt.Data) != 0 || len(evt.Topics) != 4 {
 		log.Errorf("not ERC721::Transfer() event #%d/#%d; expected no data, %d given; expected 4 topics, %d given",
 			evt.BlockNumber, evt.Index, len(evt.Data), len(evt.Topics))
-		return
-	}
-
-	// this may be a mint; if so, we have that one covered already
-	if 0 == bytes.Compare(zeroAddress.Bytes(), evt.Topics[1].Bytes()) {
-		log.Debug("ERC721::Mint() detected by token transfer")
 		return
 	}
 
@@ -82,6 +107,11 @@ func erc721TokenTransfer(evt *eth.Log, _ *logObserver) {
 	if err != nil {
 		log.Errorf("can not load event header #%d; %s", evt.BlockNumber, err.Error())
 		return
+	}
+
+	// this may be a mint; if so, we have that one covered already
+	if 0 == bytes.Compare(zeroAddress.Bytes(), evt.Topics[1].Bytes()) {
+		erc721CheckToken(&evt.Address, (*big.Int)(&tokenID), blk, evt)
 	}
 
 	// ERC-721 tokens don't have quantity; the amount is always 1
