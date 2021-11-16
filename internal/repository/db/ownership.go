@@ -69,7 +69,7 @@ func (db *MongoDbBridge) StoreOwnership(to *types.Ownership) error {
 		return err
 	}
 	if rs.UpsertedCount > 0 {
-		log.Infof("token %s / #%s ownership updated to %s", to.Contract.String(), to.TokenId.String(), to.Owner.String())
+		log.Debugf("token %s / #%s ownership updated to %s", to.Contract.String(), to.TokenId.String(), to.Owner.String())
 	}
 	return nil
 }
@@ -95,7 +95,7 @@ func (db *MongoDbBridge) DeleteOwnership(to *types.Ownership) error {
 	}
 
 	if dr.DeletedCount > 0 {
-		log.Infof("token %s / #%s ownership by %s deleted", to.Contract.String(), to.TokenId.String(), to.Owner.String())
+		log.Debugf("token %s / #%s ownership by %s deleted", to.Contract.String(), to.TokenId.String(), to.Owner.String())
 	}
 	return nil
 }

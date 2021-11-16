@@ -188,7 +188,7 @@ func (lo *logObserver) process(evt *eth.Log) {
 	}
 
 	// do the handler job
-	log.Infof("processing event #%d/#%d at %s -> topic %s", evt.BlockNumber, evt.Index, evt.Address.String(), evt.Topics[0].String())
+	log.Debugf("processing event #%d/#%d at %s -> topic %s", evt.BlockNumber, evt.Index, evt.Address.String(), evt.Topics[0].String())
 	handler(evt, lo)
 }
 
