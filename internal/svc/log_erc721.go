@@ -67,7 +67,7 @@ func erc721TokenMustExist(contract *common.Address, tokenID *big.Int, blk *eth.H
 
 	// token found
 	if tok != nil {
-		log.Infof("found token %s / #%d", contract.String(), tokenID.Uint64())
+		log.Debugf("found token %s / #%d", contract.String(), tokenID.Uint64())
 		return
 	}
 
@@ -153,7 +153,7 @@ func queueMetadataUpdate(nft *types.Token, lo *logObserver) {
 	// if the updater queue is full, we just let the updater pick the token for update later
 	select {
 	case lo.outNftTokens <- nft:
-	case <-time.After(10 * time.Second):
+	default:
 		log.Errorf("NFT token updater queue full, postponing token %s at %s metadata update", nft.TokenId.String(), nft.Contract.String())
 	}
 }

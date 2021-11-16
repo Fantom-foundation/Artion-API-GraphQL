@@ -8,7 +8,7 @@ import (
 
 const (
 	// nftMetadataUpdaterQueueCapacity is the capacity of NFT metadata updater queue.
-	nftMetadataUpdaterQueueCapacity = 5000
+	nftMetadataUpdaterQueueCapacity = 25000
 
 	// nftMetadataRefreshTick is the tick used to pull NFT metadata refresh candidates.
 	nftMetadataRefreshTick = 2 * time.Minute
