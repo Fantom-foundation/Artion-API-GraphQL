@@ -113,13 +113,13 @@ func (d *Downloader) getIpfsUri(uri string) string {
 
 	if d.skipHttpGateways {
 		if strings.HasPrefix(uri, "https://gateway.pinata.cloud/ipfs/") {
-			return "/ipfs/" + unescapeIPFSUri(uri[34:])
+			return unescapeIPFSUri(uri[34:])
 		}
 		if strings.HasPrefix(uri, "https://ipfs.io/ipfs/") {
-			return "/ipfs/" + unescapeIPFSUri(uri[21:])
+			return unescapeIPFSUri(uri[21:])
 		}
 		if idx := strings.Index(uri, ".mypinata.cloud/ipfs/"); idx > 8 && idx < 30 {
-			return "/ipfs/" + unescapeIPFSUri(uri[idx+21:])
+			return unescapeIPFSUri(uri[idx+21:])
 		}
 	}
 	return ""
