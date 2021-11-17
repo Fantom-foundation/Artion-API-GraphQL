@@ -32,12 +32,24 @@ func (p *Proxy) Token(contract *common.Address, tokenId *hexutil.Big) (*types.To
 			return nil, e
 		}
 
+		if t == nil {
+			log.Warningf("token %s / %s not found", contract.String(), tokenId.String())
+			return nil, nil
+		}
+
 		// the token may not have been fully parsed yet
 		if t.IsActive == false {
 			return p.shared.ExtendLegacyToken(t)
 		}
 		return t, nil
 	})
+	if err != nil {
+		return nil, err
+	}
+	if token == nil {
+		return nil, nil
+	}
+
 	return token.(*types.Token), err
 }
 
