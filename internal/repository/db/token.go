@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"math/big"
+	"strings"
 	"time"
 )
 
@@ -714,4 +715,32 @@ func tokenFilterToBson(f *types.TokenFilter) bson.D {
 	}
 
 	return filter
+}
+
+// ExtendLegacyToken tries to load token metadata details from the shared legacy database.
+func (sdb *SharedMongoDbBridge) ExtendLegacyToken(token *types.Token) (*types.Token, error) {
+	col := sdb.client.Database(sdb.dbName).Collection(coLegacyTokens)
+
+	result := col.FindOne(context.Background(), bson.D{
+		{Key: fiLegacyTokenContract, Value: strings.ToLower(token.Contract.String())},
+		{Key: fiLegacyTokenTokenId, Value: int32(token.TokenId.ToInt().Int64())},
+	})
+	if result.Err() != nil {
+		if result.Err() == mongo.ErrNoDocuments {
+			log.Errorf("token %s / %s not found", token.Contract.String(), token.TokenId.String())
+			return token, nil
+		}
+		return nil, result.Err()
+	}
+
+	var row types.LegacyToken
+	if err := result.Decode(&row); err != nil {
+		log.Errorf("can not decode LegacyToken %s / %s; %s", token.Contract.String(), token.TokenId.String(), err.Error())
+		return token, nil
+	}
+
+	token.Name = row.Name
+	token.ImageURI = row.ImageURL
+	token.IsActive = row.IsActive
+	return token, nil
 }

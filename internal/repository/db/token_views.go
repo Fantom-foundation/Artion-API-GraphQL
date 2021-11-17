@@ -34,7 +34,7 @@ func (sdb *SharedMongoDbBridge) GetTokenViews(contract common.Address, tokenId b
 		if result.Err() == mongo.ErrNoDocuments {
 			return big.NewInt(0), nil
 		}
-		return nil, err
+		return nil, result.Err()
 	}
 
 	var row types.LegacyToken

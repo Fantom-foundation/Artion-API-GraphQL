@@ -20,7 +20,17 @@ func (p *Proxy) Token(contract *common.Address, tokenId *hexutil.Big) (*types.To
 	key.WriteString(tokenId.String())
 
 	token, err, _ := p.callGroup.Do(key.String(), func() (interface{}, error) {
-		return p.db.GetToken(contract, (*big.Int)(tokenId))
+		// load the token locally
+		t, e := p.db.GetToken(contract, (*big.Int)(tokenId))
+		if e != nil {
+			return nil, e
+		}
+
+		// the token may not have been fully parsed yet
+		if t.IsActive == false {
+			return p.shared.ExtendLegacyToken(t)
+		}
+		return t, nil
 	})
 	return token.(*types.Token), err
 }
