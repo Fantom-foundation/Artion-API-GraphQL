@@ -60,7 +60,7 @@ func ImageHandler(log logger.Logger, resolver func(path string) (string, error))
 }
 
 // TokenImageResolver resolves /token/{nft}/{tokenId} to token image URI
-func TokenImageResolver(path string) (imageUri string, err error) {
+func TokenImageResolver(path string) (string, error) {
 	pathParts := strings.Split(path, "/")
 	if len(pathParts) != 5 {
 		return "", errors.New("invalid amount of slash delimiters in URL")
@@ -74,6 +74,9 @@ func TokenImageResolver(path string) (imageUri string, err error) {
 	tok, err := repository.R().Token(&tokenAddress, (*hexutil.Big)(tokenId))
 	if err != nil {
 		return "", fmt.Errorf("unable to get token in db; %s", err)
+	}
+	if tok.ImageURI != "" {
+		return tok.ImageURI, nil
 	}
 
 	jsonMetadata, err := repository.R().GetTokenJsonMetadata(tok.Uri)
