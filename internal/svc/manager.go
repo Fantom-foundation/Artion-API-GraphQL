@@ -20,6 +20,7 @@ type Manager struct {
 	notifyProcessor     *notificationProcessor
 	collectionValidator *nftCollectionValidator
 	priceUpdater        *priceUpdater
+	likesViewsUpdater   *likesViewsUpdater
 }
 
 // newManager creates a new instance of the svc Manager.
@@ -42,6 +43,7 @@ func newManager() *Manager {
 	mgr.notifyProcessor = newNotificationProcessor(&mgr)
 	mgr.collectionValidator = newNFTCollectionValidator(&mgr)
 	mgr.priceUpdater = newPriceUpdater(&mgr)
+	mgr.likesViewsUpdater = newLikesViewsUpdater(&mgr)
 
 	// init and run
 	mgr.init()
@@ -59,6 +61,7 @@ func (mgr *Manager) init() {
 	mgr.notifyProcessor.init()
 	mgr.collectionValidator.init()
 	mgr.priceUpdater.init()
+	mgr.likesViewsUpdater.init()
 }
 
 // add managed service instance to the Manager and run it.

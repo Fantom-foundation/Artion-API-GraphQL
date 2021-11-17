@@ -22,6 +22,10 @@ func tokenSortingFromString(s *string) (sorting.TokenSorting, error) {
 		return sorting.TokenSortingPrice, nil
 	case "LAST_TRADE_AMOUNT":
 		return sorting.TokenSortingLastTradeAmount, nil
+	case "VIEWS":
+		return sorting.TokenSortingCachedViews, nil
+	case "LIKES":
+		return sorting.TokenSortingCachedLikes, nil
 	}
 	panic("Unknown TokenSorting")
 }

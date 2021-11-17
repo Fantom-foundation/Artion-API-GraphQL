@@ -46,6 +46,10 @@ func erc721TokenMinted(evt *eth.Log, lo *logObserver) {
 	// store the extra data
 	tok.CreatedBy = args[3].(common.Address)
 
+	if err := repo.TokenLikesViewsRefresh(tok); err != nil {
+		log.Errorf("could not load token views/likes %s/%s; %s", tok.TokenId.String(), tok.Contract.String(), err)
+	}
+
 	// write token to the persistent storage
 	if err := repo.StoreToken(tok); err != nil {
 		log.Errorf("could not store token %s at %s; %s", tok.TokenId.String(), tok.Contract.String(), err.Error())
@@ -77,6 +81,10 @@ func erc721TokenMustExist(contract *common.Address, tokenID *big.Int, blk *eth.H
 
 	// add details
 	tok.CreatedBy = repo.MustTransactionSender(evt.BlockHash, evt.TxIndex)
+
+	if err := repo.TokenLikesViewsRefresh(tok); err != nil {
+		log.Errorf("could not load token views/likes %s/%s; %s", tok.TokenId.String(), tok.Contract.String(), err)
+	}
 
 	// write token to the persistent storage
 	if err := repo.StoreToken(tok); err != nil {

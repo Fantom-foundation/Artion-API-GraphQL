@@ -134,6 +134,10 @@ enum TokenSorting {
     PRICE
     # Highest Last Sale
     LAST_TRADE_AMOUNT
+    # Mostly Viewed
+    VIEWS
+    # Mostly Liked
+    LIKES
 }
 
 input TokenFilter {

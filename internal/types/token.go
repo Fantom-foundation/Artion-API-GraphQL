@@ -62,6 +62,10 @@ type Token struct {
 
 	Categories []int32 `bson:"categories"`
 
+	CachedLikes     int64          `bson:"likes"`
+	CachedViews     int64          `bson:"views"`
+	LikesUpdate     Time           `bson:"likes_update"` // last update of CachedLikes and CachedViews
+
 	// metadata refresh helpers
 	MetaUpdate   Time  `bson:"meta_update"`
 	MetaFailures int32 `bson:"meta_failures"`

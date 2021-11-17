@@ -89,6 +89,33 @@ func (p *Proxy) TokenPriceRefresh(t *types.Token) error {
 	return p.db.TokenPriceRefresh(t)
 }
 
+func (p *Proxy) TokenLikesViewsRefresh(t *types.Token) error {
+	err := p.LoadTokenLikesViews(t)
+	if err != nil {
+		return err
+	}
+	return p.db.TokenLikesViewsStore(t)
+}
+
+func (p *Proxy) LoadTokenLikesViews(t *types.Token) error {
+	views, err := p.shared.GetTokenViews(t.Contract, big.Int(t.TokenId))
+	if err != nil {
+		return err
+	}
+	likes, err := p.shared.GetTokenLikesCount(&t.Contract, (*big.Int)(&t.TokenId))
+	if err != nil {
+		return err
+	}
+	t.CachedViews = views.Int64()
+	t.CachedLikes = likes
+	t.LikesUpdate = types.Time(time.Now())
+	return nil
+}
+
+func (p *Proxy) TokenLikesViewsRefreshSet(setSize int64) ([]*types.Token, error) {
+	return p.db.TokenLikesViewsRefreshSet(setSize)
+}
+
 // TokenMarkListed marks the given NFT as listed for direct sale for the given price.
 func (p *Proxy) TokenMarkListed(contract *common.Address, tokenID *big.Int, price types.TokenPrice, ts *time.Time) error {
 	return p.db.TokenMarkListed(contract, tokenID, price, ts)

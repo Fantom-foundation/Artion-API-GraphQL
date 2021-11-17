@@ -12,7 +12,8 @@ const (
 	TokenSortingAuctionUntil    // Ending Soon
 	TokenSortingPrice           // Most Expensive / Cheapest
 	TokenSortingLastTradeAmount // Highest Last Sale
-	// Mostly Viewed
+	TokenSortingCachedViews     // Mostly Viewed
+	TokenSortingCachedLikes     // Mostly Liked
 )
 
 func (ts TokenSorting) SortedFieldBson() string {
@@ -24,6 +25,8 @@ func (ts TokenSorting) SortedFieldBson() string {
 	case TokenSortingAuctionUntil: return "auction_until"
 	case TokenSortingPrice: return "price"
 	case TokenSortingLastTradeAmount: return "amo_trade.usd"
+	case TokenSortingCachedViews: return "views"
+	case TokenSortingCachedLikes: return "likes"
 	}
 	return ""
 }
@@ -52,6 +55,12 @@ func (ts TokenSorting) GetCursor(token *types.Token) (types.Cursor, error) {
 	}
 	if ts == TokenSortingLastTradeAmount {
 		params["amo_trade.usd"] = token.AmountLastTrade.Usd
+	}
+	if ts == TokenSortingCachedViews {
+		params["views"] = token.CachedViews
+	}
+	if ts == TokenSortingCachedLikes {
+		params["likes"] = token.CachedLikes
 	}
 	return CursorFromParams(params)
 }
