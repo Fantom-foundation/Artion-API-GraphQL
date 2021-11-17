@@ -581,7 +581,15 @@ func (db *MongoDbBridge) getTokenPrice(t *types.Token) (tokenPrice int64, priceV
 	return
 }
 
-func (db *MongoDbBridge) ListTokens(filter *types.TokenFilter, sorting sorting.TokenSorting, sortDesc bool, cursor types.Cursor, count int, backward bool) (out *types.TokenList, err error) {
+func (db *MongoDbBridge) ListTokens(
+	filter *types.TokenFilter,
+	sorting sorting.TokenSorting,
+	sortDesc bool,
+	cursor types.Cursor,
+	count int,
+	backward bool,
+	extend func(*types.Token) (*types.Token, error),
+) (out *types.TokenList, err error) {
 	var list types.TokenList
 	col := db.client.Database(db.dbName).Collection(coTokens)
 	ctx := context.Background()
@@ -615,6 +623,19 @@ func (db *MongoDbBridge) ListTokens(filter *types.TokenFilter, sorting sorting.T
 				log.Errorf("can not decode the token in list [%s]; %s", ld.Current.String(), err.Error())
 				return nil, err
 			}
+
+			// do we need to extend?
+			if row.IsActive == false {
+				t, err := extend(&row)
+				if err != nil {
+					list.Collection = append(list.Collection, &row)
+					continue
+				}
+
+				list.Collection = append(list.Collection, t)
+				continue
+			}
+
 			list.Collection = append(list.Collection, &row)
 		} else {
 			// skip the last row and set HasNext only

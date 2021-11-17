@@ -111,8 +111,10 @@ func (p *Proxy) TokenMarkSold(contract *common.Address, tokenID *big.Int, price 
 	return p.db.TokenMarkSold(contract, tokenID, price, ts)
 }
 
-func (p *Proxy) ListTokens(filter *types.TokenFilter, sorting sorting.TokenSorting, sortDesc bool, cursor types.Cursor, count int, backward bool) (list *types.TokenList, err error) {
-	return p.db.ListTokens(filter, sorting, sortDesc, cursor, count, backward)
+// ListTokens loads a list of tokens from the local database.
+// A callback for legacy extension is provided to the loader.
+func (p *Proxy) ListTokens(filter *types.TokenFilter, sorting sorting.TokenSorting, sortDesc bool, cursor types.Cursor, count int, backward bool) (*types.TokenList, error) {
+	return p.db.ListTokens(filter, sorting, sortDesc, cursor, count, backward, p.shared.ExtendLegacyToken)
 }
 
 func (p *Proxy) GetTokenJsonMetadata(uri string) (*types.JsonMetadata, error) {
