@@ -17,8 +17,9 @@ func ImageHandler(log logger.Logger, resolver func(path string) (string, error))
 		defer func() {
 			if r := recover(); r != nil {
 				log.Errorf("Panic in ImageHandler handler; %s", r)
+
 				w.WriteHeader(500)
-				_, err := w.Write([]byte("Request handling failed"))
+				_, err := w.Write([]byte("Request handling failed, invalid image data received."))
 				if err != nil {
 					log.Errorf("could not write response; %s", err.Error())
 				}
@@ -27,9 +28,9 @@ func ImageHandler(log logger.Logger, resolver func(path string) (string, error))
 
 		uri, err := resolver(req.URL.Path)
 		if err != nil {
-			log.Errorf("token image request handling failed; %s", err)
+			log.Errorf("Token image request handling failed; %s", err)
 			w.WriteHeader(500)
-			_, _ = w.Write([]byte("Request handling failed: " + err.Error()))
+			_, _ = w.Write([]byte("Request handling failed, invalid image URL: " + err.Error()))
 			return
 		}
 

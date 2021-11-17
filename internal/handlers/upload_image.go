@@ -22,7 +22,7 @@ func UploadImageHandler(log logger.Logger, process uploadProcessor) http.Handler
 			if r := recover(); r != nil {
 				log.Errorf("Panic in UploadImageHandler handler; %v", r)
 				w.WriteHeader(500)
-				fmt.Fprintf(w, "Request handling failed; %v", r)
+				fmt.Fprintf(w, "Request handling failed, could not upload; %v", r)
 			}
 		}()
 
@@ -76,7 +76,7 @@ func processImageUpload(req *http.Request, process uploadProcessor, log logger.L
 	return 200, response
 }
 
-func StoreUserAvatar(identity common.Address, image types.Image, req *http.Request) (string, error) {
+func StoreUserAvatar(identity common.Address, image types.Image, _ *http.Request) (string, error) {
 	err := repository.R().UploadUserAvatar(identity, image)
 	if err != nil {
 		return "", fmt.Errorf("user avatar upload failed; %s", err)
@@ -84,7 +84,7 @@ func StoreUserAvatar(identity common.Address, image types.Image, req *http.Reque
 	return "OK", nil
 }
 
-func StoreUserBanner(identity common.Address, image types.Image, req *http.Request) (string, error) {
+func StoreUserBanner(identity common.Address, image types.Image, _ *http.Request) (string, error) {
 	err := repository.R().UploadUserBanner(identity, image)
 	if err != nil {
 		return "", fmt.Errorf("user banner upload failed; %s", err)
