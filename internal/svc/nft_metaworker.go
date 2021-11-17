@@ -169,7 +169,7 @@ func (mwt *nftMetadataWorkerThread) update(tok *types.Token) error {
 		log.Errorf("failed metadata update on %s/%s; %s", tok.Contract.String(), tok.TokenId.String(), err.Error())
 		return err
 	}
-	log.Infof("NFT %s/%s metadata updated [%s]", tok.Contract.String(), tok.TokenId.String(), tok.Name)
+	log.Debugf("NFT %s/%s metadata updated [%s]", tok.Contract.String(), tok.TokenId.String(), tok.Name)
 	return nil
 }
 
@@ -201,7 +201,7 @@ func (mwt *nftMetadataWorkerThread) tryLegacyUpdate(tok *types.Token) {
 		log.Errorf("failed metadata update on %s/%s; %s", tok.Contract.String(), tok.TokenId.String(), err.Error())
 		return
 	}
-	log.Infof("NFT %s/%s metadata updated [%s]", tok.Contract.String(), tok.TokenId.String(), tok.Name)
+	log.Debugf("NFT %s/%s metadata updated [%s]", tok.Contract.String(), tok.TokenId.String(), tok.Name)
 }
 
 // handleTokenMetaUpdateFailure updates the token Metadata update schedule on failure.

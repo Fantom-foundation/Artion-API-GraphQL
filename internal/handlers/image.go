@@ -34,7 +34,7 @@ func ImageHandler(log logger.Logger, resolver func(path string) (string, error))
 			return
 		}
 
-		log.Debugf("loading %s", uri)
+		log.Infof("loading image %s", uri)
 		image, err := repository.R().GetImageThumbnail(uri)
 		if err != nil {
 			log.Errorf("unable to get image; %s", err)
