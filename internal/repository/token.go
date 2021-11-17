@@ -20,6 +20,12 @@ func (p *Proxy) Token(contract *common.Address, tokenId *hexutil.Big) (*types.To
 	key.WriteString(tokenId.String())
 
 	token, err, _ := p.callGroup.Do(key.String(), func() (interface{}, error) {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Criticalf("recovered from panic in token loading")
+			}
+		}()
+
 		// load the token locally
 		t, e := p.db.GetToken(contract, (*big.Int)(tokenId))
 		if e != nil {
@@ -33,6 +39,11 @@ func (p *Proxy) Token(contract *common.Address, tokenId *hexutil.Big) (*types.To
 		return t, nil
 	})
 	return token.(*types.Token), err
+}
+
+// TokenKnown checks if the given token exists i the database.
+func (p *Proxy) TokenKnown(contract *common.Address, tokenId *big.Int) bool {
+	return p.db.TokenKnown(contract, tokenId)
 }
 
 // StoreToken puts the given token into the persistent storage.

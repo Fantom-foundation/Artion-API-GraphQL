@@ -59,14 +59,7 @@ func erc721TokenMinted(evt *eth.Log, lo *logObserver) {
 // erc721TokenMustExist ensures ERC-721 token existence in the local database.
 func erc721TokenMustExist(contract *common.Address, tokenID *big.Int, blk *eth.Header, evt *eth.Log, lo *logObserver) {
 	log.Debugf("checking %s / #%d", contract.String(), tokenID.Uint64())
-	tok, err := repo.Token(contract, (*hexutil.Big)(tokenID))
-	if err != nil {
-		log.Errorf("can not get token %s / #%d; %s", contract.String(), tokenID.Uint64(), err.Error())
-		return
-	}
-
-	// token found
-	if tok != nil {
+	if repo.TokenKnown(contract, tokenID) {
 		log.Debugf("found token %s / #%d", contract.String(), tokenID.Uint64())
 		return
 	}
@@ -79,7 +72,7 @@ func erc721TokenMustExist(contract *common.Address, tokenID *big.Int, blk *eth.H
 	}
 
 	// make the token
-	tok = types.NewToken(contract, tokenID, uri, int64(blk.Time), evt.BlockNumber, evt.Index)
+	tok := types.NewToken(contract, tokenID, uri, int64(blk.Time), evt.BlockNumber, evt.Index)
 	log.Infof("ERC-721 token %s found at %s block %d", tok.TokenId.String(), tok.Contract.String(), evt.BlockNumber)
 
 	// add details

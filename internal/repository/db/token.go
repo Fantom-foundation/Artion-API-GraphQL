@@ -141,6 +141,21 @@ func (db *MongoDbBridge) GetToken(contract *common.Address, tokenId *big.Int) (t
 	return &row, err
 }
 
+// TokenKnown checks if the given token exists i the database.
+func (db *MongoDbBridge) TokenKnown(contract *common.Address, tokenId *big.Int) bool {
+	col := db.client.Database(db.dbName).Collection(coTokens)
+
+	res := col.FindOne(
+		context.Background(),
+		bson.D{{Key: fieldId, Value: types.TokenID(contract, tokenId)}},
+		options.FindOne().SetProjection(bson.D{{Key: fieldId, Value: 1}}),
+	)
+	if res.Err() != nil {
+		return false
+	}
+	return true
+}
+
 // StoreToken inserts new NFT token or updates existing token in persistent database.
 func (db *MongoDbBridge) StoreToken(token *types.Token) error {
 	if token == nil {
