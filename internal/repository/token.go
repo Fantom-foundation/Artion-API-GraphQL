@@ -213,6 +213,7 @@ func (p *Proxy) GetImageThumbnail(imgUri string) (*types.Image, error) {
 			return nil, fmt.Errorf("image %s not found", imgUri)
 		}
 
+		log.Infof("loaded %s of type %s", imgUri, image.Type.Mimetype())
 		thumb, err := createThumbnail(*image)
 		if err != nil {
 			return nil, fmt.Errorf("thumbnail creation failed; %s", err)
