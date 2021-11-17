@@ -105,6 +105,10 @@ func addERC1155Token(adr *common.Address, tokenID *big.Int, creator *common.Addr
 
 	log.Infof("ERC-1155 token #%s found at %s", tok.TokenId.String(), tok.Contract.String())
 
+	if err := repo.TokenLikesViewsRefresh(tok); err != nil {
+		log.Errorf("could not load token views/likes %s/%s; %s", tok.TokenId.String(), tok.Contract.String(), err)
+	}
+
 	// write token to the persistent storage
 	if err := repo.StoreToken(tok); err != nil {
 		log.Errorf("could not store token %s at %s; %s", tok.TokenId.String(), tok.Contract.String(), err.Error())

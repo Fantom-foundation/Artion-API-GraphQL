@@ -116,7 +116,7 @@ func (mu *nftMetadataUpdater) run() {
 func (mu *nftMetadataUpdater) scheduleMetadataRefreshSet() {
 	defer func() {
 		if p := recover(); p != nil {
-			log.Errorf("could not collect refresh set; ", p)
+			log.Errorf("could not collect metadata refresh set; ", p)
 		}
 	}()
 
@@ -127,14 +127,14 @@ func (mu *nftMetadataUpdater) scheduleMetadataRefreshSet() {
 	}
 
 	// log data
-	log.Infof("loaded %d tokens in refresh set", len(rs))
+	log.Infof("loaded %d tokens in metadata refresh set", len(rs))
 
 	// push the refresh set into the refresh queue
 	// please note we don't wait for tokens to be stored
 	for _, nft := range rs {
 		select {
 		case mu.refreshQueue <- nft:
-			log.Debugf("scheduled refresh on %s/%s", nft.Contract.String(), nft.TokenId.String())
+			log.Debugf("scheduled metadata refresh on %s/%s", nft.Contract.String(), nft.TokenId.String())
 		default:
 		}
 	}

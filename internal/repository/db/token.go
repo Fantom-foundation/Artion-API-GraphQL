@@ -116,6 +116,15 @@ const (
 	// fiTokenCategories is the column storing categories ids of the token.
 	fiTokenCategories = "categories"
 
+	// fiTokenCachedLikes is the column storing amount of likes synced from shared db.
+	fiTokenCachedLikes = "likes"
+
+	// fiTokenCachedViews is the column storing amount of views synced from shared db.
+	fiTokenCachedViews = "views"
+
+	// fiTokenLikesUpdate is the column storing time of last CachedLikes/CachedViews update.
+	fiTokenLikesUpdate = "likes_update"
+
 	// fiTokenMetadataUpdate is the column storing the time
 	// of the metadata update schedule of the NFT token.
 	fiTokenMetadataUpdate = "meta_update"
@@ -594,6 +603,49 @@ func (db *MongoDbBridge) getTokenPrice(t *types.Token) (tokenPrice int64, priceV
 	}
 
 	return
+}
+
+// TokenLikesViewsStore updates tokens views/likes from shared database.
+func (db *MongoDbBridge) TokenLikesViewsStore(t *types.Token) error {
+	return db.UpdateToken(&t.Contract, t.TokenId.ToInt(), bson.D{
+		bson.E{Key: fiTokenCachedLikes, Value: t.CachedLikes},
+		bson.E{Key: fiTokenCachedViews, Value: t.CachedViews},
+		bson.E{Key: fiTokenLikesUpdate, Value: t.LikesUpdate},
+	})
+}
+
+// TokenLikesViewsRefreshSet pulls s set of tokens scheduled to be their views/likes updated.
+func (db *MongoDbBridge) TokenLikesViewsRefreshSet(setSize int64) ([]*types.Token, error) {
+	list := make([]*types.Token, setSize)
+	col := db.client.Database(db.dbName).Collection(coTokens)
+
+	// load the set from database
+	cur, err := col.Find(
+		context.Background(),
+		bson.D{{Key: fiTokenIsActive, Value: true}},
+		options.Find().SetSort(bson.D{{Key: fiTokenLikesUpdate, Value: 1}}).SetLimit(setSize),
+	)
+	if err != nil {
+		log.Errorf("can not pull likes/views refresh set; %s", err.Error())
+		return nil, err
+	}
+	defer func() {
+		if err := cur.Close(context.Background()); err != nil {
+			log.Errorf("can not close cursor; %s", err.Error())
+		}
+	}()
+
+	var i int
+	for cur.Next(context.Background()) {
+		var row types.Token
+		if err := cur.Decode(&row); err != nil {
+			log.Errorf("can not decode Token; %s", err.Error())
+			return nil, err
+		}
+		list[i] = &row
+		i++
+	}
+	return list[:i], nil
 }
 
 func (db *MongoDbBridge) ListTokens(
