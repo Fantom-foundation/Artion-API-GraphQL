@@ -188,7 +188,7 @@ func (mwt *nftMetadataWorkerThread) tryLegacyUpdate(tok *types.Token) {
 
 	// does this token make a sense?
 	tok.IsActive = tok.Name != "" || tok.Description != "" || tok.ImageURI != ""
-	log.Noticef("token %s / %s updated from legacy DB [%s]", tok.Contract.String(), tok.TokenId.String(), tok.Name)
+	log.Warningf("token %s / %s updated from legacy DB [%s]", tok.Contract.String(), tok.TokenId.String(), tok.Name)
 
 	// update the token in persistent storage
 	if err := repo.UpdateTokenMetadata(tok); err != nil {
