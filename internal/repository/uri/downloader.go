@@ -11,12 +11,13 @@ import (
 	ipfsapi "github.com/ipfs/go-ipfs-api"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
 
 // ipfsRequestTimeout represents the timeout applied to IPFS requests.
-const ipfsRequestTimeout = 3 * time.Second
+const ipfsRequestTimeout = 60 * time.Second
 
 type Downloader struct {
 	ipfsShell        *ipfsapi.Shell
@@ -90,6 +91,15 @@ func (d *Downloader) getFromUri(uri string) (data []byte, mimetype string, err e
 	return nil, "", errors.New("Unexpected URI scheme for " + uri)
 }
 
+// unescapeIPFSUri decodes URL escaped address.
+func unescapeIPFSUri(uri string) string {
+	iUri, err := url.QueryUnescape(uri)
+	if err != nil {
+		return "/ipfs/" + uri
+	}
+	return "/ipfs/" + iUri
+}
+
 // getIpfsUri try to obtain IPFS URI from the URI - returns empty string for non-ipfs uri
 // This function is responsible for IPFS URI detection, unification and for conversion
 // of known IPFS HTTP gateways URI into IPFS URI.
@@ -100,15 +110,16 @@ func (d *Downloader) getIpfsUri(uri string) string {
 	if strings.HasPrefix(uri, "ipfs://") {
 		return "/ipfs/" + uri[7:]
 	}
+
 	if d.skipHttpGateways {
 		if strings.HasPrefix(uri, "https://gateway.pinata.cloud/ipfs/") {
-			return "/ipfs/" + uri[34:]
+			return "/ipfs/" + unescapeIPFSUri(uri[34:])
 		}
 		if strings.HasPrefix(uri, "https://ipfs.io/ipfs/") {
-			return "/ipfs/" + uri[21:]
+			return "/ipfs/" + unescapeIPFSUri(uri[21:])
 		}
 		if idx := strings.Index(uri, ".mypinata.cloud/ipfs/"); idx > 8 && idx < 30 {
-			return "/ipfs/" + uri[idx+21:]
+			return "/ipfs/" + unescapeIPFSUri(uri[idx+21:])
 		}
 	}
 	return ""

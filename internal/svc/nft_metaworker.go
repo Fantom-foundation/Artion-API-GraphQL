@@ -4,8 +4,12 @@ package svc
 import (
 	"artion-api-graphql/internal/types"
 	"strings"
+	"sync"
 	"time"
 )
+
+// nftMetadataWorkerThreads is the number of threads working on NFT metadata updates.
+const nftMetadataWorkerThreads = 10
 
 // nftMetadataWorker represents a service responsible for processing NFT token metadata
 // update queue from the metadata updater service.
@@ -13,18 +17,31 @@ type nftMetadataWorker struct {
 	// mgr represents the Manager instance
 	mgr *Manager
 
+	// workers is the list of work threads
+	workers []*nftMetadataWorkerThread
+
+	// wg is the wait group keeping eye on worker threads
+	wg *sync.WaitGroup
+}
+
+// nftMetadataWorkerThread represents a thread working on NFT metadata updates.
+type nftMetadataWorkerThread struct {
+	// inTokens represents the channel receiving tokens to be updated.
+	inTokens chan *types.Token
+
 	// sigStop represents the signal for closing the router
 	sigStop chan bool
 
-	// inTokens represents the channel receiving tokens to be updated.
-	inTokens chan *types.Token
+	// wg is the wait group keeping eye on worker threads
+	wg *sync.WaitGroup
 }
 
 // newNFTMetadataUpdater creates a new instance of the NFT metadata worker service.
 func newNFTMetadataWorker(mgr *Manager) *nftMetadataWorker {
 	return &nftMetadataWorker{
 		mgr:     mgr,
-		sigStop: make(chan bool, 1),
+		workers: make([]*nftMetadataWorkerThread, nftMetadataWorkerThreads),
+		wg:      new(sync.WaitGroup),
 	}
 }
 
@@ -35,8 +52,14 @@ func (mw *nftMetadataWorker) name() string {
 
 // init initializes the block scanner and registers it with the manager.
 func (mw *nftMetadataWorker) init() {
-	// connect queues
-	mw.inTokens = mw.mgr.nftMetaUpdater.outTokens
+	// prep the threads
+	for i := 0; i < nftMetadataWorkerThreads; i++ {
+		mw.workers[i] = &nftMetadataWorkerThread{
+			inTokens: mw.mgr.nftMetaUpdater.outTokens,
+			sigStop:  make(chan bool, 1),
+			wg:       mw.wg,
+		}
+	}
 
 	// add the updater to the manager
 	mw.mgr.add(mw)
@@ -44,28 +67,41 @@ func (mw *nftMetadataWorker) init() {
 
 // close signals the block observer to terminate
 func (mw *nftMetadataWorker) close() {
-	mw.sigStop <- true
+	for i := 0; i < nftMetadataWorkerThreads; i++ {
+		mw.workers[i].sigStop <- true
+	}
+}
+
+// run start the work threads
+func (mw *nftMetadataWorker) run() {
+	for i := 0; i < nftMetadataWorkerThreads; i++ {
+		mw.wg.Add(1)
+		go mw.workers[i].run()
+	}
+
+	mw.wg.Wait()
+	mw.mgr.closed(mw)
 }
 
 // run processes incoming NFT metadata update requests from the
 // incoming queue.
-func (mw *nftMetadataWorker) run() {
+func (mwt *nftMetadataWorkerThread) run() {
 	defer func() {
-		mw.mgr.closed(mw)
+		mwt.wg.Done()
 	}()
 
 	for {
 		// pull next token
 		select {
-		case <-mw.sigStop:
+		case <-mwt.sigStop:
 			return
-		case tok, ok := <-mw.inTokens:
+		case tok, ok := <-mwt.inTokens:
 			if !ok {
 				return
 			}
 
 			// process the token metadata update
-			if err := mw.update(tok); err != nil {
+			if err := mwt.update(tok); err != nil {
 				log.Errorf("NFT update failed; %s", err.Error())
 			}
 		}
@@ -73,7 +109,7 @@ func (mw *nftMetadataWorker) run() {
 }
 
 // update the given NFT metadata from external metadata source.
-func (mw *nftMetadataWorker) update(tok *types.Token) error {
+func (mwt *nftMetadataWorkerThread) update(tok *types.Token) error {
 	// get metadata
 	if tok.Uri == "" {
 		log.Infof("token %s/%s metadata URI not available", tok.Contract.String(), tok.TokenId.String())
@@ -131,6 +167,7 @@ func (mw *nftMetadataWorker) update(tok *types.Token) error {
 	return nil
 }
 
+// handleTokenMetaUpdateFailure updates the token Metadata update schedule on failure.
 func handleTokenMetaUpdateFailure(tok *types.Token) {
 	tok.ScheduleMetaUpdateOnFailure()
 	if e := repo.UpdateTokenMetadataRefreshSchedule(tok); e != nil {
@@ -142,6 +179,7 @@ func handleTokenMetaUpdateFailure(tok *types.Token) {
 		time.Time(tok.MetaUpdate).Format(time.Stamp))
 }
 
+// updateTokenCategoriesFromCollection loads list of categories of a token from legacy collection setup.
 func updateTokenCategoriesFromCollection(tok *types.Token) {
 	lc, err := repo.GetLegacyCollection(tok.Contract)
 	if err != nil {
