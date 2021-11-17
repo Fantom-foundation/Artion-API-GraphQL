@@ -628,11 +628,12 @@ func (db *MongoDbBridge) ListTokens(
 			if row.IsActive == false {
 				t, err := extend(&row)
 				if err != nil {
-					list.Collection = append(list.Collection, &row)
 					continue
 				}
 
-				list.Collection = append(list.Collection, t)
+				if t.IsActive {
+					list.Collection = append(list.Collection, t)
+				}
 				continue
 			}
 
