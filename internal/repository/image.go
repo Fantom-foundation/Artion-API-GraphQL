@@ -24,6 +24,7 @@ func createThumbnail(input types.Image) (output types.Image, err error) {
 		if err != nil {
 			return types.Image{}, err
 		}
+		return input, nil
 	}
 
 	// simple image frame nail
