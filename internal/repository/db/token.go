@@ -689,11 +689,6 @@ func (db *MongoDbBridge) ListTokens(
 				log.Errorf("can not decode the token in list [%s]; %s", ld.Current.String(), err.Error())
 				return nil, err
 			}
-
-			// do we need to extend?
-			if row.IsActive == false {
-				continue
-			}
 			list.Collection = append(list.Collection, &row)
 		} else {
 			// skip the last row and set HasNext only
