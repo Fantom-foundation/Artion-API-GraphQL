@@ -11,17 +11,18 @@ import (
 
 // Offer represents offer to buy given token from any current owner.
 type Offer struct {
-	Contract     common.Address `bson:"contract"`
-	TokenId      hexutil.Big    `bson:"token"`
-	ProposedBy   common.Address `bson:"proposer"`
-	Quantity     hexutil.Big    `bson:"qty"`
-	PayToken     common.Address `bson:"pay_token"`
-	UnitPrice    hexutil.Big    `bson:"price"`
-	UnifiedPrice int64          `bson:"uprice"`
-	Created      Time           `bson:"created"`
-	Deadline     Time           `bson:"deadline"`
-	Closed       *Time          `bson:"closed"`
-	OrdinalIndex int64          `bson:"index"`
+	Contract     common.Address   `bson:"contract"`
+	TokenId      hexutil.Big      `bson:"token"`
+	ProposedBy   common.Address   `bson:"proposer"`
+	Owners       []common.Address `bson:"owners"`
+	Quantity     hexutil.Big      `bson:"qty"`
+	PayToken     common.Address   `bson:"pay_token"`
+	UnitPrice    hexutil.Big      `bson:"price"`
+	UnifiedPrice int64            `bson:"uprice"`
+	Created      Time             `bson:"created"`
+	Deadline     Time             `bson:"deadline"`
+	Closed       *Time            `bson:"closed"`
+	OrdinalIndex int64            `bson:"index"`
 }
 
 // OfferID generates unique offer ID for the given contract, token, and owner.

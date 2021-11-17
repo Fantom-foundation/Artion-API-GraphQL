@@ -186,7 +186,7 @@ func (t *Token) Offers(args struct{ PaginationInput }) (con *OfferConnection, er
 	if err != nil {
 		return nil, err
 	}
-	list, err := repository.R().ListOffers(&t.Contract, &t.TokenId, nil, cursor, count, backward)
+	list, err := repository.R().ListOffers(&t.Contract, &t.TokenId, nil, nil, cursor, count, backward)
 	if err != nil {
 		return nil, err
 	}

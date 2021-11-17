@@ -39,6 +39,9 @@ type User {
     # Past activities on tokens (trades, listing created, auction bid, etc.)
     activities(filter: ActivityFilter, first: Int, after: Cursor, last: Int, before: Cursor): ActivityConnection!
 
+    # Current offers which can be accepted by the user
+    offers(first: Int, after: Cursor, last: Int, before: Cursor): OfferConnection!
+
     # Current offers proposed by the user
     myOffers(first: Int, after: Cursor, last: Int, before: Cursor): OfferConnection!
 }

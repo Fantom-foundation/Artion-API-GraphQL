@@ -14,7 +14,7 @@ type Query {
     categories: [Category!]!
 
     # Get collection by address.
-    collection(contract: Address!): Collection!
+    collection(contract: Address!): Collection
 
     # List collections (all, search name or filter mintable by given user).
     collections(search: String, mintableBy: Address, first: Int, after: Cursor, last: Int, before: Cursor): CollectionConnection!
