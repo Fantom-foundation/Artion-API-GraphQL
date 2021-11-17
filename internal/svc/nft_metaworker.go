@@ -175,6 +175,12 @@ func (mwt *nftMetadataWorkerThread) update(tok *types.Token) error {
 
 // tryLegacyUpdate tries to load critical details of the given NFT metadata from legacy source.
 func (mwt *nftMetadataWorkerThread) tryLegacyUpdate(tok *types.Token) {
+	// if we already know the name and image, we skip this
+	if tok.Name != "" && tok.ImageURI != "" {
+		log.Warningf("skipping legacy update of %s / %s", tok.Contract.String(), tok.TokenId.String())
+		return
+	}
+
 	t, err := repo.ExtendLegacyToken(tok)
 	if err != nil {
 		log.Errorf("could not extend %s / %s from legacy; %s", tok.Contract.String(), tok.TokenId.String(), err.Error())

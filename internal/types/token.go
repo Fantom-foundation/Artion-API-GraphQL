@@ -112,12 +112,12 @@ func (t *Token) ID() primitive.ObjectID {
 // ScheduleMetaUpdateOnFailure sets new metadata update time after failed attempt.
 // Every failure makes the next delay longer since we expect the failure to happen again.
 func (t *Token) ScheduleMetaUpdateOnFailure() {
-	t.MetaUpdate = Time(time.Now().Add(time.Duration(int64(2*t.MetaFailures)+rand.Int63n(10)) * TokenDefaultMetadataUpdateDelay))
+	t.MetaUpdate = Time(time.Now().Add(time.Duration(rand.Int63n(5*int64(t.MetaFailures+1))*int64(time.Minute)) + TokenDefaultMetadataUpdateDelay))
 	t.MetaFailures++
 }
 
 // ScheduleMetaUpdateOnSuccess sets new metadata update time successful metadata update.
 func (t *Token) ScheduleMetaUpdateOnSuccess() {
-	t.MetaUpdate = Time(time.Now().Add(time.Duration(int64(TokenSuccessMetadataUpdateDelay) + rand.Int63n(24*7*int64(time.Hour)))))
+	t.MetaUpdate = Time(time.Now().Add(time.Duration(rand.Int63n(24*7*int64(time.Hour))) + TokenSuccessMetadataUpdateDelay))
 	t.MetaFailures = 0
 }
