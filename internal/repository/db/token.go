@@ -706,7 +706,9 @@ func (db *MongoDbBridge) ListTokens(
 }
 
 func tokenFilterToBson(f *types.TokenFilter) bson.D {
-	filter := bson.D{}
+	filter := bson.D{
+		{Key: fiTokenIsActive, Value: true},
+	}
 	if f == nil {
 		return filter
 	}
