@@ -149,7 +149,7 @@ func (p *Proxy) GetImage(imgUri string) (*types.Image, error) {
 		return p.uri.GetImage(imgUri)
 	})
 	if err != nil {
-		log.Errorf("image can not be loaded from %s", imgUri)
+		log.Errorf("image can not be loaded from %s; %s", imgUri, err.Error())
 		return nil, err
 	}
 	if nil == data {
