@@ -118,6 +118,6 @@ func (t *Token) ScheduleMetaUpdateOnFailure() {
 
 // ScheduleMetaUpdateOnSuccess sets new metadata update time successful metadata update.
 func (t *Token) ScheduleMetaUpdateOnSuccess() {
-	t.MetaUpdate = Time(time.Now().Add(time.Duration(int64(TokenSuccessMetadataUpdateDelay) + rand.Int63n(24*7))))
+	t.MetaUpdate = Time(time.Now().Add(time.Duration(int64(TokenSuccessMetadataUpdateDelay) + rand.Int63n(24*7*int64(time.Hour)))))
 	t.MetaFailures = 0
 }
