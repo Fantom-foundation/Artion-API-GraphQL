@@ -148,12 +148,14 @@ func (p *Proxy) GetImage(imgUri string) (*types.Image, error) {
 	data, err, _ := p.callGroup.Do(key.String(), func() (interface{}, error) {
 		return p.uri.GetImage(imgUri)
 	})
-
+	if err != nil {
+		log.Errorf("image can not be loaded from %s", imgUri)
+		return nil, err
+	}
 	if nil == data {
 		log.Errorf("image not found at %s", imgUri)
 		return nil, fmt.Errorf("image not found at given URI")
 	}
-
 	return data.(*types.Image), err
 }
 
@@ -165,17 +167,16 @@ func (p *Proxy) GetImageThumbnail(imgUri string) (*types.Image, error) {
 
 	data, err, _ := p.callGroup.Do(key.String(), func() (interface{}, error) {
 		image, err := p.GetImage(imgUri)
-		if err != nil || image == nil {
-			return nil, fmt.Errorf("getImage failed; %s", err)
+		if err != nil {
+			return nil, fmt.Errorf("image loading failed for %s; %s", imgUri, err)
 		}
-
 		if nil == image {
-			return nil, fmt.Errorf("image not found")
+			return nil, fmt.Errorf("image %s not found", imgUri)
 		}
 
 		thumb, err := createThumbnail(*image)
 		if err != nil {
-			return nil, fmt.Errorf("createThumbnail failed; %s", err)
+			return nil, fmt.Errorf("thumbnail creation failed; %s", err)
 		}
 		return &thumb, nil
 	})

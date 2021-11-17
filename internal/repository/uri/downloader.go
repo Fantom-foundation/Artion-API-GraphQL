@@ -161,7 +161,7 @@ func (d *Downloader) getFromIpfsGateway(uri string) (data []byte, mimetype strin
 // getFromHttp downloads the file from HTTP.
 func (d *Downloader) getFromHttp(uri string) (data []byte, mimetype string, err error) {
 	client := http.DefaultClient
-	client.Timeout = 15 * time.Second
+	client.Timeout = 20 * time.Second
 
 	resp, err := client.Get(uri)
 	if err != nil {
