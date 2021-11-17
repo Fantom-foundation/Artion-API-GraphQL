@@ -28,6 +28,9 @@ const (
 	// fiOfferProposer is the name of the DB column of the offer creator address.
 	fiOfferProposer = "proposer"
 
+	// fiOfferProposer is the name of the DB column of the offer creator address.
+	fiOfferOwners = "owners"
+
 	// fiOfferClosed is the name of the DB column of the offer having been closed date/time.
 	fiOfferClosed = "closed"
 
@@ -67,9 +70,15 @@ func (db *MongoDbBridge) GetOffer(contract *common.Address, tokenID *big.Int, pr
 }
 
 // StoreOffer adds the provided offer into the database.
-func (db *MongoDbBridge) StoreOffer(offer *types.Offer) error {
+func (db *MongoDbBridge) StoreOffer(offer *types.Offer) (err error) {
 	if offer == nil {
 		return fmt.Errorf("no value to store")
+	}
+
+	// get receivers of the offer
+	offer.Owners, err = db.GetTokenOwners(offer.Contract, offer.TokenId)
+	if err != nil {
+		return fmt.Errorf("unable to load owners for offer %s/%s; %s", offer.Contract.String(), offer.TokenId.String(), err)
 	}
 
 	// get the collection
@@ -92,6 +101,24 @@ func (db *MongoDbBridge) StoreOffer(offer *types.Offer) error {
 		return err
 	}
 	return nil
+}
+
+// UpdateOffersOwners updates token owners in offers for given token
+func (db *MongoDbBridge) UpdateOffersOwners(contract common.Address, tokenID hexutil.Big) (err error) {
+	owners, err := db.GetTokenOwners(contract, tokenID)
+	if err != nil {
+		return err
+	}
+	col := db.client.Database(db.dbName).Collection(coOffers)
+	_, err = col.UpdateMany(context.Background(), bson.D{
+		{Key: fiOfferContract, Value: contract},
+		{Key: fiOfferTokenId, Value: tokenID},
+	}, bson.D{
+		{Key: "$set", Value: bson.D{
+			{Key: fiOfferOwners, Value: owners},
+		}},
+	})
+	return err
 }
 
 // OpenOfferUntil provides the latest active offer date/time if any.
@@ -164,7 +191,7 @@ func (db *MongoDbBridge) MaxOfferPrice(contract *common.Address, tokenID *big.In
 	return
 }
 
-func (db *MongoDbBridge) ListOffers(contract *common.Address, tokenId *hexutil.Big, creator *common.Address, cursor types.Cursor, count int, backward bool) (out *types.OfferList, err error) {
+func (db *MongoDbBridge) ListOffers(contract *common.Address, tokenId *hexutil.Big, creator *common.Address, owner *common.Address, cursor types.Cursor, count int, backward bool) (out *types.OfferList, err error) {
 	filter := bson.D{}
 	if contract != nil {
 		filter = append(filter, primitive.E{Key: fiOfferContract, Value: contract.String()})
@@ -174,6 +201,9 @@ func (db *MongoDbBridge) ListOffers(contract *common.Address, tokenId *hexutil.B
 	}
 	if creator != nil {
 		filter = append(filter, primitive.E{Key: fiOfferProposer, Value: creator.String()})
+	}
+	if owner != nil {
+		filter = append(filter, primitive.E{Key: fiOfferOwners, Value: bson.D{{Key: "$all", Value: primitive.A{owner.String()}}}})
 	}
 	return db.listOffers(filter, cursor, count, backward)
 }

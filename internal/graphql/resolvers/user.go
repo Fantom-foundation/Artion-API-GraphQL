@@ -206,12 +206,24 @@ func (user User) Activities(args struct {
 	return NewActivityConnection(list)
 }
 
+func (user User) Offers(args struct{ PaginationInput }) (con *OfferConnection, err error) {
+	cursor, count, backward, err := args.ToRepositoryInput()
+	if err != nil {
+		return nil, err
+	}
+	list, err := repository.R().ListOffers(nil, nil, nil, &user.Address, cursor, count, backward)
+	if err != nil {
+		return nil, err
+	}
+	return NewOfferConnection(list)
+}
+
 func (user User) MyOffers(args struct{ PaginationInput }) (con *OfferConnection, err error) {
 	cursor, count, backward, err := args.ToRepositoryInput()
 	if err != nil {
 		return nil, err
 	}
-	list, err := repository.R().ListOffers(nil, nil, &user.Address, cursor, count, backward)
+	list, err := repository.R().ListOffers(nil, nil, &user.Address, nil, cursor, count, backward)
 	if err != nil {
 		return nil, err
 	}

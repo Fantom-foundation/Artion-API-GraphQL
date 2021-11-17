@@ -70,6 +70,13 @@ func (db *MongoDbBridge) StoreOwnership(to *types.Ownership) error {
 	}
 	if rs.UpsertedCount > 0 {
 		log.Debugf("token %s / #%s ownership updated to %s", to.Contract.String(), to.TokenId.String(), to.Owner.String())
+
+		err = db.UpdateOffersOwners(to.Contract, to.TokenId)
+		if err != nil {
+			log.Errorf("failed to update offers owners for %s/%s; %s",
+				to.Contract.String(), to.TokenId.String(), err.Error())
+			return err
+		}
 	}
 	return nil
 }
@@ -96,6 +103,13 @@ func (db *MongoDbBridge) DeleteOwnership(to *types.Ownership) error {
 
 	if dr.DeletedCount > 0 {
 		log.Debugf("token %s / #%s ownership by %s deleted", to.Contract.String(), to.TokenId.String(), to.Owner.String())
+
+		err = db.UpdateOffersOwners(to.Contract, to.TokenId)
+		if err != nil {
+			log.Errorf("failed to update offers owners for %s/%s; %s",
+				to.Contract.String(), to.TokenId.String(), err.Error())
+			return err
+		}
 	}
 	return nil
 }
@@ -109,6 +123,34 @@ func (db *MongoDbBridge) IsOwnerOf(contract common.Address, tokenId hexutil.Big,
 	col := db.client.Database(db.dbName).Collection(coTokenOwnerships)
 	count, err := db.getTotalCount(col, filter)
 	return count > 0, err
+}
+
+// GetTokenOwners provides list of owners of given token
+func (db *MongoDbBridge) GetTokenOwners(contract common.Address, tokenId hexutil.Big) ([]common.Address, error) {
+	col := db.client.Database(db.dbName).Collection(coTokenOwnerships)
+	ctx := context.Background()
+	var list []common.Address
+
+	ld, err := col.Find(ctx, bson.D{
+		{Key: fiOwnershipContract, Value: contract.String()},
+		{Key: fiOwnershipTokenId, Value: tokenId.String()},
+	})
+	defer func() {
+		err = ld.Close(ctx)
+		if err != nil {
+			log.Errorf("error closing all token owners cursor; %s", err.Error())
+		}
+	}()
+
+	for ld.Next(ctx) {
+		var ownership types.Ownership
+		if err = ld.Decode(&ownership); err != nil {
+			log.Errorf("can not decode ownerships in list; %s", err.Error())
+			return nil, err
+		}
+		list = append(list, ownership.Owner)
+	}
+	return list, nil
 }
 
 func (db *MongoDbBridge) ListOwnerships(contract *common.Address, tokenId *hexutil.Big, owner *common.Address, cursor types.Cursor, count int, backward bool) (out *types.OwnershipList, err error) {
