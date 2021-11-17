@@ -603,7 +603,6 @@ func (db *MongoDbBridge) ListTokens(
 	cursor types.Cursor,
 	count int,
 	backward bool,
-	extend func(*types.Token) (*types.Token, error),
 ) (out *types.TokenList, err error) {
 	var list types.TokenList
 	col := db.client.Database(db.dbName).Collection(coTokens)
@@ -641,17 +640,8 @@ func (db *MongoDbBridge) ListTokens(
 
 			// do we need to extend?
 			if row.IsActive == false {
-				t, err := extend(&row)
-				if err != nil {
-					continue
-				}
-
-				if t.IsActive {
-					list.Collection = append(list.Collection, t)
-				}
 				continue
 			}
-
 			list.Collection = append(list.Collection, &row)
 		} else {
 			// skip the last row and set HasNext only

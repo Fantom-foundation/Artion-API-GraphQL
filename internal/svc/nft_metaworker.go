@@ -113,6 +113,7 @@ func (mwt *nftMetadataWorkerThread) update(tok *types.Token) error {
 	// get metadata
 	if tok.Uri == "" {
 		log.Infof("token %s/%s metadata URI not available", tok.Contract.String(), tok.TokenId.String())
+		mwt.tryLegacyUpdate(tok)
 		return nil
 	}
 
@@ -121,6 +122,8 @@ func (mwt *nftMetadataWorkerThread) update(tok *types.Token) error {
 	md, err := repo.GetTokenJsonMetadata(tok.Uri)
 	if err != nil {
 		log.Errorf("NFT metadata [%s] failed on %s/%s; %s", tok.Uri, tok.Contract.String(), tok.TokenId.String(), err.Error())
+		mwt.tryLegacyUpdate(tok)
+
 		handleTokenMetaUpdateFailure(tok)
 		return err
 	}
@@ -130,6 +133,8 @@ func (mwt *nftMetadataWorkerThread) update(tok *types.Token) error {
 		img, err := repo.GetImage(*md.Image)
 		if err != nil {
 			log.Errorf("NFT image [%s] failed on %s/%s; %s", md.Image, tok.Contract.String(), tok.TokenId.String(), err.Error())
+			mwt.tryLegacyUpdate(tok)
+
 			handleTokenMetaUpdateFailure(tok)
 			return err
 		}
@@ -139,6 +144,7 @@ func (mwt *nftMetadataWorkerThread) update(tok *types.Token) error {
 
 	// update the data
 	tok.ScheduleMetaUpdateOnSuccess()
+
 	tok.Name = strings.TrimSpace(md.Name)
 	if md.Description != nil {
 		tok.Description = strings.TrimSpace(*md.Description)
@@ -165,6 +171,30 @@ func (mwt *nftMetadataWorkerThread) update(tok *types.Token) error {
 	}
 	log.Infof("NFT %s/%s metadata updated [%s]", tok.Contract.String(), tok.TokenId.String(), tok.Name)
 	return nil
+}
+
+// tryLegacyUpdate tries to load critical details of the given NFT metadata from legacy source.
+func (mwt *nftMetadataWorkerThread) tryLegacyUpdate(tok *types.Token) {
+	t, err := repo.ExtendLegacyToken(tok)
+	if err != nil {
+		log.Errorf("could not extend %s / %s from legacy; %s", tok.Contract.String(), tok.TokenId.String(), err.Error())
+		return
+	}
+
+	if t == nil {
+		log.Errorf("not found legacy extension of %s / %s", tok.Contract.String(), tok.TokenId.String())
+		return
+	}
+
+	// does this token make a sense?
+	tok.IsActive = tok.Name != "" || tok.Description != "" || tok.ImageURI != ""
+
+	// update the token in persistent storage
+	if err := repo.UpdateTokenMetadata(tok); err != nil {
+		log.Errorf("failed metadata update on %s/%s; %s", tok.Contract.String(), tok.TokenId.String(), err.Error())
+		return
+	}
+	log.Infof("NFT %s/%s metadata updated [%s]", tok.Contract.String(), tok.TokenId.String(), tok.Name)
 }
 
 // handleTokenMetaUpdateFailure updates the token Metadata update schedule on failure.

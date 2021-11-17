@@ -36,11 +36,6 @@ func (p *Proxy) Token(contract *common.Address, tokenId *hexutil.Big) (*types.To
 			log.Warningf("token %s / %s not found", contract.String(), tokenId.String())
 			return nil, nil
 		}
-
-		// the token may not have been fully parsed yet
-		if t.IsActive == false {
-			return p.shared.ExtendLegacyToken(t)
-		}
 		return t, nil
 	})
 	if err != nil {
@@ -51,6 +46,11 @@ func (p *Proxy) Token(contract *common.Address, tokenId *hexutil.Big) (*types.To
 	}
 
 	return token.(*types.Token), err
+}
+
+// ExtendLegacyToken tries to load token metadata details from the shared legacy database.
+func (p *Proxy) ExtendLegacyToken(token *types.Token) (*types.Token, error) {
+	return p.shared.ExtendLegacyToken(token)
 }
 
 // TokenKnown checks if the given token exists i the database.
@@ -137,7 +137,7 @@ func (p *Proxy) TokenMarkSold(contract *common.Address, tokenID *big.Int, price 
 // ListTokens loads a list of tokens from the local database.
 // A callback for legacy extension is provided to the loader.
 func (p *Proxy) ListTokens(filter *types.TokenFilter, sorting sorting.TokenSorting, sortDesc bool, cursor types.Cursor, count int, backward bool) (*types.TokenList, error) {
-	return p.db.ListTokens(filter, sorting, sortDesc, cursor, count, backward, p.shared.ExtendLegacyToken)
+	return p.db.ListTokens(filter, sorting, sortDesc, cursor, count, backward)
 }
 
 func (p *Proxy) GetTokenJsonMetadata(uri string) (*types.JsonMetadata, error) {

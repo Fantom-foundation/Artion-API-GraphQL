@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"math/big"
+	"math/rand"
 	"time"
 )
 
@@ -41,25 +42,25 @@ type Token struct {
 	HasOfferUntil   *Time          `bson:"offer_until"`
 	HasBids         bool           `bson:"has_bid"`
 
-	LastTrade       *Time          `bson:"last_trade"`
-	LastListing     *Time          `bson:"last_list"` // last creation of listing
-	LastOffer       *Time          `bson:"last_offer"`
-	LastAuction     *Time          `bson:"last_auction"`
-	LastBid         *Time          `bson:"last_bid"`
-	AmountLastTrade TokenPrice     `bson:"amo_trade"`
-	AmountLastOffer TokenPrice     `bson:"amo_offer"`
-	AmountLastBid   TokenPrice     `bson:"amo_bid"`
-	AmountLastList  TokenPrice     `bson:"amo_list"`
-	ReservePrice    TokenPrice     `bson:"reserve"`
-	MinListPrice    TokenPrice     `bson:"min_list"`
-	MinListValid    *Time          `bson:"min_list_valid"` // validity of MinListPrice until
-	MaxOfferPrice   TokenPrice     `bson:"max_offer"`
-	MaxOfferValid   *Time          `bson:"max_offer_valid"` // validity of MaxOfferPrice until
+	LastTrade       *Time      `bson:"last_trade"`
+	LastListing     *Time      `bson:"last_list"` // last creation of listing
+	LastOffer       *Time      `bson:"last_offer"`
+	LastAuction     *Time      `bson:"last_auction"`
+	LastBid         *Time      `bson:"last_bid"`
+	AmountLastTrade TokenPrice `bson:"amo_trade"`
+	AmountLastOffer TokenPrice `bson:"amo_offer"`
+	AmountLastBid   TokenPrice `bson:"amo_bid"`
+	AmountLastList  TokenPrice `bson:"amo_list"`
+	ReservePrice    TokenPrice `bson:"reserve"`
+	MinListPrice    TokenPrice `bson:"min_list"`
+	MinListValid    *Time      `bson:"min_list_valid"` // validity of MinListPrice until
+	MaxOfferPrice   TokenPrice `bson:"max_offer"`
+	MaxOfferValid   *Time      `bson:"max_offer_valid"` // validity of MaxOfferPrice until
 
-	AmountPrice     int64          `bson:"price"` // in USD
-	PriceValid      *Time          `bson:"price_valid"` // validity of AmountPrice until
+	AmountPrice int64 `bson:"price"`       // in USD
+	PriceValid  *Time `bson:"price_valid"` // validity of AmountPrice until
 
-	Categories      []int32        `bson:"categories"`
+	Categories []int32 `bson:"categories"`
 
 	// metadata refresh helpers
 	MetaUpdate   Time  `bson:"meta_update"`
@@ -111,12 +112,12 @@ func (t *Token) ID() primitive.ObjectID {
 // ScheduleMetaUpdateOnFailure sets new metadata update time after failed attempt.
 // Every failure makes the next delay longer since we expect the failure to happen again.
 func (t *Token) ScheduleMetaUpdateOnFailure() {
-	t.MetaUpdate = Time(time.Now().Add(time.Duration(2*t.MetaFailures+1) * TokenDefaultMetadataUpdateDelay))
+	t.MetaUpdate = Time(time.Now().Add(time.Duration(int64(2*t.MetaFailures)+rand.Int63n(10)) * TokenDefaultMetadataUpdateDelay))
 	t.MetaFailures++
 }
 
 // ScheduleMetaUpdateOnSuccess sets new metadata update time successful metadata update.
 func (t *Token) ScheduleMetaUpdateOnSuccess() {
-	t.MetaUpdate = Time(time.Now().Add(TokenSuccessMetadataUpdateDelay))
+	t.MetaUpdate = Time(time.Now().Add(time.Duration(int64(TokenSuccessMetadataUpdateDelay) + rand.Int63n(24*7))))
 	t.MetaFailures = 0
 }
