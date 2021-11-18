@@ -30,26 +30,26 @@ type Collection {
     # Royalty - fee in percents (with decimals)
     royalty: String!
 
-    # Social: Discord
-    discord: String!
-
     # Social: E-mail
     email: String!
-
-    # Social: Telegram
-    telegram: String!
 
     # Social: Site URL
     siteUrl: String!
 
+    # Social: Discord
+    discord: String!
+
+    # Social: Telegram
+    telegram: String!
+
     # Social: Medium handle
-    mediumHandle: String!
+    medium: String!
 
     # Social: Twitter handle
-    twitterHandle: String!
+    twitter: String!
 
     # Social: Instagram handle
-    instagramHandle: String!
+    instagram: String!
 
     # canMint checks if the given user address can create new tokens on the collection
     canMint(user:Address!, fee: BigInt): Boolean!

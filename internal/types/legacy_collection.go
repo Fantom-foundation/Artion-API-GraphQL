@@ -17,13 +17,13 @@ type LegacyCollection struct {
 	Owner           *common.Address `bson:"owner"`
 	FeeRecipient    *common.Address `bson:"feeRecipient"`
 	RoyaltyValue    json.Number     `bson:"royalty"` // percents of fee (mostly int32, but sometime float)
-	Discord         string          `bson:"discord"`
 	Email           string          `bson:"email"`
-	Telegram        string          `bson:"telegram"`
 	SiteUrl         string          `bson:"siteUrl"`
-	MediumHandle    string          `bson:"mediumHandle"`
-	TwitterHandle   string          `bson:"twitterHandle"`
-	InstagramHandle string          `bson:"instagramHandle"`
+	DiscordUrl      string          `bson:"discord"`
+	TelegramUrl     string          `bson:"telegram"`
+	MediumUrl       string          `bson:"mediumHandle"`
+	TwitterUrl      string          `bson:"twitterHandle"`
+	Instagram       string          `bson:"instagramHandle"`
 	IsAppropriate   bool            `bson:"isAppropriate"` // is reviewed and royalties registered on chain
 	IsInternal      bool            `bson:"isInternal"` // is created using factory contract?
 	IsOwnerOnly     bool            `bson:"isOwnerble"` // is only Owner allowed to mint?
@@ -85,21 +85,21 @@ func (app CollectionApplication) ToCollection(image string, owner *common.Addres
 		Name:            app.Name,
 		Description:     app.Description,
 		CategoriesStr:   categoriesStr,
-		Image:           image,
-		Owner:           owner,
-		FeeRecipient:    &app.FeeRecipient,
-		RoyaltyValue:    app.Royalty,
-		Discord:         app.Discord,
-		Email:           app.Email,
-		Telegram:        app.Telegram,
-		SiteUrl:         app.SiteUrl,
-		MediumHandle:    app.MediumHandle,
-		TwitterHandle:   app.TwitterHandle,
-		InstagramHandle: app.InstagramHandle,
-		IsAppropriate:   false,
-		IsInternal:      false,
-		IsOwnerOnly:     false,
-		IsVerified:      false,
-		IsReviewed:      false,
+		Image:         image,
+		Owner:         owner,
+		FeeRecipient:  &app.FeeRecipient,
+		RoyaltyValue:  app.Royalty,
+		Email:         app.Email,
+		SiteUrl:       app.SiteUrl,
+		DiscordUrl:    app.Discord,
+		TelegramUrl:   app.Telegram,
+		MediumUrl:     app.MediumHandle,
+		TwitterUrl:    app.TwitterHandle,
+		Instagram:     app.InstagramHandle,
+		IsAppropriate: false,
+		IsInternal:    false,
+		IsOwnerOnly:   false,
+		IsVerified:    false,
+		IsReviewed:    false,
 	}
 }
