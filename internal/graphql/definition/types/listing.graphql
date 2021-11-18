@@ -3,6 +3,9 @@ type Listing {
     # The seller of the item
     owner: Address!
 
+    # The seller of the item
+    ownerUser: User!
+
     # Address of the token contract
     contract: Address!
 

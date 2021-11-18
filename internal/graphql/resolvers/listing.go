@@ -13,6 +13,10 @@ func (l Listing) Token() (*Token, error) {
 	return NewToken(&l.Contract, &l.TokenId)
 }
 
+func (l Listing) OwnerUser() (User, error) {
+	return getUserByAddress(l.Owner)
+}
+
 type ListingEdge struct {
 	Node *Listing
 }

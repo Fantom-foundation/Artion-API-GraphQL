@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
+	"strings"
 )
 
 // Collection represents a resolvable collection of NFT tokens.
@@ -112,6 +113,73 @@ func (t *Collection) Categories() ([]int32, error) {
 // Royalty returns percents of royalty fee as a string value.
 func (t *Collection) Royalty() string {
 	return (*types.LegacyCollection)(t).RoyaltyValue.String()
+}
+
+func (t *Collection) Discord() string {
+	if idx := strings.Index(t.DiscordUrl, "discord.gg/"); idx != -1 {
+		return "https://discord.gg/" + t.DiscordUrl[idx + 11:]
+	}
+	if t.DiscordUrl != "" {
+		return "https://discord.gg/" + t.DiscordUrl
+	}
+	return ""
+}
+
+func (t *Collection) Site() string {
+	if strings.HasPrefix(t.SiteUrl, "https://") || strings.HasPrefix(t.SiteUrl, "http://") {
+		return t.SiteUrl
+	}
+	if t.SiteUrl != "" {
+		return "https://" + t.SiteUrl
+	}
+	return ""
+}
+
+func (t *Collection) Telegram() string {
+	if idx := strings.Index(t.TelegramUrl, "t.me/"); idx != -1 {
+		return "https://t.me/" + t.TelegramUrl[idx + 5:]
+	}
+	if strings.HasPrefix(t.TelegramUrl, "@") && len(t.TelegramUrl) > 1 {
+		return "https://t.me/" + t.TelegramUrl[1:]
+	}
+	if t.TelegramUrl != "" {
+		return "https://t.me/" + t.TelegramUrl
+	}
+	return ""
+}
+
+func (t *Collection) Twitter() string {
+	if idx := strings.Index(t.TwitterUrl, "twitter.com/"); idx != -1 {
+		return "https://twitter.com/" + t.TwitterUrl[idx + 12:]
+	}
+	if strings.HasPrefix(t.TwitterUrl, "@") {
+		return "https://twitter.com/" + t.TwitterUrl[1:]
+	}
+	if t.TwitterUrl != "" {
+		return "https://twitter.com/" + t.TwitterUrl
+	}
+	return ""
+}
+
+func (t *Collection) Medium() string {
+	if strings.HasPrefix(t.MediumUrl, "https://") || strings.HasPrefix(t.MediumUrl, "http://") {
+		return t.MediumUrl
+	}
+	if strings.HasPrefix(t.MediumUrl, "@") {
+		return "https://medium.com/" + t.MediumUrl
+	}
+	if t.MediumUrl != "" {
+		return "https://medium.com/@" + t.MediumUrl
+	}
+	return ""
+}
+
+func (t *Collection) OwnerUser() (*User, error) {
+	return getUserByAddressPtr(t.Owner)
+}
+
+func (t *Collection) FeeRecipientUser() (*User, error) {
+	return getUserByAddressPtr(t.FeeRecipient)
 }
 
 // CanMint resolves the minting privilege for the given user by address.

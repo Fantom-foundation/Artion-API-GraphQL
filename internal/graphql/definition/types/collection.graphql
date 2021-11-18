@@ -18,32 +18,38 @@ type Collection {
     # Owner of the collection
     owner: Address
 
+    # Owner of the collection
+    ownerUser: User
+
     # Recipient of royalty transfer fee
     feeRecipient: Address
+
+    # Recipient of royalty transfer fee
+    feeRecipientUser: User
 
     # Royalty - fee in percents (with decimals)
     royalty: String!
 
-    # Social: Discord
-    discord: String!
-
     # Social: E-mail
     email: String!
 
-    # Social: Telegram
+    # Social: Site URL
+    site: String!
+
+    # Social: Discord URL
+    discord: String!
+
+    # Social: Telegram URL
     telegram: String!
 
-    # Social: Site URL
-    siteUrl: String!
+    # Social: Medium URL
+    medium: String!
 
-    # Social: Medium handle
-    mediumHandle: String!
+    # Social: Twitter URL
+    twitter: String!
 
-    # Social: Twitter handle
-    twitterHandle: String!
-
-    # Social: Instagram handle
-    instagramHandle: String!
+    # Social: Instagram URL
+    instagram: String!
 
     # canMint checks if the given user address can create new tokens on the collection
     canMint(user:Address!, fee: BigInt): Boolean!

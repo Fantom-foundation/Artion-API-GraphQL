@@ -23,6 +23,10 @@ func (o Offer) Token() (*Token, error) {
 	return NewToken(&o.Contract, &o.TokenId)
 }
 
+func (o Offer) ProposedByUser() (User, error) {
+	return getUserByAddress(o.ProposedBy)
+}
+
 func (edge OfferEdge) Cursor() (types.Cursor, error) {
 	return sorting.OfferSortingNone.GetCursor((*types.Offer)(edge.Node))
 }
