@@ -95,7 +95,7 @@ func auctionCreated(evt *eth.Log, lo *logObserver) {
 		return
 	}
 
-	log.Infof("added new auction of %s/%s started by %s", auction.Contract.String(), auction.TokenId.String(), auction.Owner.String())
+	log.Infof("added new auction of %s/%s started by %s at %s", auction.Contract.String(), auction.TokenId.String(), auction.Owner.String(), evt.TxHash)
 }
 
 // auctionStartTimeUpdated processes auction start time update event log.
