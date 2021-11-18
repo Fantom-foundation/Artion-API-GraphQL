@@ -69,7 +69,7 @@ func (rs *RootResolver) TextSearch(args struct {
 	offset = offset + len(tokens)
 	for i, u := range users {
 		list[offset+i] = &TextSearchEdge{
-			User: (*User)(u),
+			User: &User{Address: u.Address, dbUser: u},
 		}
 	}
 	return list, nil
