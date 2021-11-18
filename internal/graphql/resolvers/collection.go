@@ -125,6 +125,16 @@ func (t *Collection) Discord() string {
 	return ""
 }
 
+func (t *Collection) Site() string {
+	if strings.HasPrefix(t.SiteUrl, "https://") || strings.HasPrefix(t.SiteUrl, "http://") {
+		return t.SiteUrl
+	}
+	if t.SiteUrl != "" {
+		return "https://" + t.SiteUrl
+	}
+	return ""
+}
+
 func (t *Collection) Telegram() string {
 	if idx := strings.Index(t.TelegramUrl, "t.me/"); idx != -1 {
 		return "https://t.me/" + t.TelegramUrl[idx + 5:]

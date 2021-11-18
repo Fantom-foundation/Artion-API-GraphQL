@@ -34,21 +34,21 @@ type Collection {
     email: String!
 
     # Social: Site URL
-    siteUrl: String!
+    site: String!
 
-    # Social: Discord
+    # Social: Discord URL
     discord: String!
 
-    # Social: Telegram
+    # Social: Telegram URL
     telegram: String!
 
-    # Social: Medium handle
+    # Social: Medium URL
     medium: String!
 
-    # Social: Twitter handle
+    # Social: Twitter URL
     twitter: String!
 
-    # Social: Instagram handle
+    # Social: Instagram URL
     instagram: String!
 
     # canMint checks if the given user address can create new tokens on the collection
