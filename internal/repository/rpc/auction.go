@@ -5,7 +5,6 @@ package rpc
 import (
 	"artion-api-graphql/internal/types"
 	"context"
-	"fmt"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -31,13 +30,16 @@ func (o *Opera) ExtendAuctionDetailAt(au *types.Auction, block *big.Int) error {
 		return o.ExtendAuctionV1DetailAt(au, block)
 	}
 
+	// copy the owner
+	au.Owner = res.Owner
+
 	// make sure we have what we came for
 	if nil == res.ReservePrice || nil == res.StartTime || nil == res.EndTime {
-		return fmt.Errorf("missing mandatory field on auction %s/%s", au.Contract.String(), au.TokenId.String())
+		log.Warningf("missing mandatory field on auction %s/%s", au.Contract.String(), au.TokenId.String())
+		return nil
 	}
 
 	// transfer values
-	au.Owner = res.Owner
 	au.ReservePrice = (hexutil.Big)(*res.ReservePrice)
 	au.MinimalBid = (hexutil.Big)(*res.MinBid)
 
@@ -71,13 +73,16 @@ func (o *Opera) ExtendAuctionV1DetailAt(au *types.Auction, _ *big.Int) error {
 		return err
 	}
 
+	// copy the owner
+	au.Owner = res.Owner
+
 	// make sure we have what we came for
 	if nil == res.ReservePrice || nil == res.StartTime || nil == res.EndTime {
-		return fmt.Errorf("missing mandatory field on auction %s/%s", au.Contract.String(), au.TokenId.String())
+		log.Warningf("missing mandatory field on auction %s/%s", au.Contract.String(), au.TokenId.String())
+		return nil
 	}
 
 	// transfer values
-	au.Owner = res.Owner
 	au.ReservePrice = (hexutil.Big)(*res.ReservePrice)
 	au.MinimalBid = (hexutil.Big)(*res.ReservePrice)
 

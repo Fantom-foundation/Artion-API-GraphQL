@@ -74,6 +74,7 @@ func auctionBidPlaced(evt *eth.Log, lo *logObserver) {
 
 	// log activity
 	activity := types.Activity{
+		Transaction:  evt.TxHash,
 		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
 		Time:         bid.Placed,
 		ActType:      types.EvtAuctionBid,
@@ -93,7 +94,7 @@ func auctionBidPlaced(evt *eth.Log, lo *logObserver) {
 	log.Infof("added new bid on auction %s/%s by %s", bid.Contract.String(), bid.TokenId.String(), bid.Bidder.String())
 
 	// notify subscribers
-	event := types.Event{ Type: "AUCTION_BID", Auction: auction }
+	event := types.Event{Type: "AUCTION_BID", Auction: auction}
 	subscriptionManager := GetSubscriptionsManager()
 	subscriptionManager.PublishAuctionEvent(event)
 	subscriptionManager.PublishUserEvent(auction.Owner, event)
@@ -132,7 +133,7 @@ func auctionBidWithdrawn(evt *eth.Log, _ *logObserver) {
 		log.Errorf("auction %s/%s not found; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
 		return
 	}
-	
+
 	auction.LastBid = nil
 	auction.LastBidder = nil
 	auction.LastBidPlaced = nil
@@ -149,6 +150,7 @@ func auctionBidWithdrawn(evt *eth.Log, _ *logObserver) {
 		return
 	}
 	activity := types.Activity{
+		Transaction:  evt.TxHash,
 		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
 		Time:         types.Time(time.Unix(int64(blk.Time), 0)),
 		ActType:      types.EvtAuctionBidWithdrawn,
@@ -163,7 +165,7 @@ func auctionBidWithdrawn(evt *eth.Log, _ *logObserver) {
 	}
 
 	// notify subscribers
-	event := types.Event{ Type: "AUCTION_BID_WITHDRAW", Auction: auction }
+	event := types.Event{Type: "AUCTION_BID_WITHDRAW", Auction: auction}
 	subscriptionManager := GetSubscriptionsManager()
 	subscriptionManager.PublishAuctionEvent(event)
 	subscriptionManager.PublishUserEvent(auction.Owner, event)

@@ -59,6 +59,7 @@ func marketOfferCreated(evt *eth.Log, lo *logObserver) {
 
 	// log activity
 	activity := types.Activity{
+		Transaction:  evt.TxHash,
 		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
 		Time:         offer.Created,
 		ActType:      types.EvtOfferCreated,
@@ -79,7 +80,7 @@ func marketOfferCreated(evt *eth.Log, lo *logObserver) {
 	log.Infof("added new offer of %s/%s proposed by %s", offer.Contract.String(), offer.TokenId.String(), offer.ProposedBy.String())
 
 	// notify subscribers (will be skipped for tokens owned by 100 or more owners)
-	event := types.Event{ Type: "OFFER_CREATED", Offer: &offer }
+	event := types.Event{Type: "OFFER_CREATED", Offer: &offer}
 	subscriptionManager := GetSubscriptionsManager()
 	owners, err := repo.ListOwnerships(&offer.Contract, &offer.TokenId, nil, "", 100, false)
 	if err != nil {
@@ -132,6 +133,7 @@ func marketOfferCanceled(evt *eth.Log, _ *logObserver) {
 
 	// log activity
 	activity := types.Activity{
+		Transaction:  evt.TxHash,
 		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
 		Time:         *offer.Closed,
 		ActType:      types.EvtOfferCancelled,
@@ -172,6 +174,7 @@ func marketCloseOfferWithSale(evt *eth.Log, offer *types.Offer, blk *eth.Header,
 
 	// log activity
 	activity := types.Activity{
+		Transaction:  evt.TxHash,
 		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
 		Time:         *offer.Closed,
 		ActType:      types.EvtOfferSold,

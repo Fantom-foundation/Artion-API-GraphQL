@@ -60,6 +60,7 @@ func marketNFTListed(evt *eth.Log, lo *logObserver) {
 
 	// log activity
 	activity := types.Activity{
+		Transaction:  evt.TxHash,
 		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
 		Time:         lst.Created,
 		ActType:      types.EvtListingCreated,
@@ -132,6 +133,7 @@ func marketNFTUpdated(evt *eth.Log, lo *logObserver) {
 
 	// log activity
 	activity := types.Activity{
+		Transaction:  evt.TxHash,
 		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
 		Time:         *lst.LastUpdate,
 		ActType:      types.EvtListingUpdated,
@@ -191,6 +193,7 @@ func marketNFTUnlisted(evt *eth.Log, _ *logObserver) {
 
 	// log activity
 	activity := types.Activity{
+		Transaction:  evt.TxHash,
 		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
 		Time:         *lst.Closed,
 		ActType:      types.EvtListingCancelled,
@@ -270,6 +273,7 @@ func marketCloseListingWithSale(evt *eth.Log, lst *types.Listing, blk *eth.Heade
 
 	// log activity
 	activity := types.Activity{
+		Transaction:  evt.TxHash,
 		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
 		Time:         *lst.Closed,
 		ActType:      types.EvtListingSold,

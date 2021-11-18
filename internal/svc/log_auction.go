@@ -76,6 +76,7 @@ func auctionCreated(evt *eth.Log, lo *logObserver) {
 
 	// log activity
 	activity := types.Activity{
+		Transaction:  evt.TxHash,
 		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
 		Time:         auction.Created,
 		ActType:      types.EvtAuctionCreated,
@@ -159,6 +160,7 @@ func auctionTimeBoundaryUpdated(evt *eth.Log, lo *logObserver, update func(*type
 		return
 	}
 	activity := types.Activity{
+		Transaction:  evt.TxHash,
 		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
 		Time:         types.Time(time.Unix(int64(blk.Time), 0)),
 		ActType:      types.EvtAuctionUpdated,
@@ -222,6 +224,7 @@ func auctionReserveUpdated(evt *eth.Log, lo *logObserver) {
 		return
 	}
 	activity := types.Activity{
+		Transaction:  evt.TxHash,
 		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
 		Time:         types.Time(time.Unix(int64(blk.Time), 0)),
 		ActType:      types.EvtAuctionUpdated,
@@ -289,6 +292,7 @@ func auctionCanceled(evt *eth.Log, _ *logObserver) {
 
 	// log activity
 	activity := types.Activity{
+		Transaction:  evt.TxHash,
 		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
 		Time:         ts,
 		ActType:      types.EvtAuctionCancelled,
@@ -332,6 +336,7 @@ func auctionResolved(evt *eth.Log, lo *logObserver) {
 	finishAuction(
 		&contract,
 		tokenID,
+		nil,
 		&winner,
 		winAmount,
 		&payToken,
@@ -353,6 +358,7 @@ func auctionResolvedV2(evt *eth.Log, lo *logObserver) {
 	contract := common.BytesToAddress(evt.Topics[1].Bytes())
 	tokenID := new(big.Int).SetBytes(evt.Topics[2].Bytes())
 	winner := common.BytesToAddress(evt.Topics[3].Bytes())
+	owner := common.BytesToAddress(evt.Data[:32])
 	winAmount := new(big.Int).SetBytes(evt.Data[64:96])
 	payToken := common.BytesToAddress(evt.Data[32:64])
 
@@ -360,6 +366,7 @@ func auctionResolvedV2(evt *eth.Log, lo *logObserver) {
 	finishAuction(
 		&contract,
 		tokenID,
+		&owner,
 		&winner,
 		winAmount,
 		&payToken,
@@ -369,7 +376,7 @@ func auctionResolvedV2(evt *eth.Log, lo *logObserver) {
 }
 
 // finishAuction finalises auction on the given NFT token.
-func finishAuction(contract *common.Address, tokenID *big.Int, winner *common.Address, amount *big.Int, payToken *common.Address, evt *eth.Log, lo *logObserver) {
+func finishAuction(contract *common.Address, tokenID *big.Int, owner *common.Address, winner *common.Address, amount *big.Int, payToken *common.Address, evt *eth.Log, lo *logObserver) {
 	blk, err := repo.GetHeader(evt.BlockNumber)
 	if err != nil {
 		log.Errorf("could not get header #%d, %s", evt.BlockNumber, err.Error())
@@ -381,6 +388,11 @@ func finishAuction(contract *common.Address, tokenID *big.Int, winner *common.Ad
 	if auction == nil {
 		log.Errorf("resolved auction %s/%s not found; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
 		return
+	}
+
+	// owner of the auction
+	if owner == nil {
+		owner = &auction.Owner
 	}
 
 	when := types.Time(time.Unix(int64(blk.Time), 0))
@@ -408,13 +420,14 @@ func finishAuction(contract *common.Address, tokenID *big.Int, winner *common.Ad
 
 	// log activity
 	activity := types.Activity{
+		Transaction:  evt.TxHash,
 		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
 		Time:         when,
 		ActType:      types.EvtAuctionResolved,
 		Contract:     auction.Contract,
 		TokenId:      auction.TokenId,
 		Quantity:     &auction.Quantity,
-		From:         auction.Owner,
+		From:         *owner,
 		To:           winner,
 		UnitPrice:    auction.WinningBid,
 		UnifiedPrice: price.Usd,
