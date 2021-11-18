@@ -56,7 +56,7 @@ func auctionCreated(evt *eth.Log, lo *logObserver) {
 
 	// if auction owner is not known, find them by the transaction sender
 	if 0 == bytes.Compare(auction.Owner.Bytes(), zeroAddress.Bytes()) || 0 == bytes.Compare(auction.PayToken.Bytes(), zeroAddress.Bytes()) {
-		log.Warningf("loading transaction detail at block #%d, trx #%d", evt.BlockNumber, evt.TxIndex)
+		log.Warningf("parsing trx at #%d / #%d: %s", evt.BlockNumber, evt.TxIndex, evt.TxHash.String())
 		extendAuctionFromTransaction(&auction, evt.BlockHash, evt.TxIndex)
 	}
 
