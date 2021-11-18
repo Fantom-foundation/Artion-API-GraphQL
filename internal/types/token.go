@@ -62,9 +62,9 @@ type Token struct {
 
 	Categories []int32 `bson:"categories"`
 
-	CachedLikes     int64          `bson:"likes"`
-	CachedViews     int64          `bson:"views"`
-	LikesUpdate     Time           `bson:"likes_update"` // last update of CachedLikes and CachedViews
+	CachedLikes int64 `bson:"likes"`
+	CachedViews int64 `bson:"views"`
+	LikesUpdate Time  `bson:"likes_update"` // last update of CachedLikes and CachedViews
 
 	// metadata refresh helpers
 	MetaUpdate   Time  `bson:"meta_update"`
@@ -116,12 +116,12 @@ func (t *Token) ID() primitive.ObjectID {
 // ScheduleMetaUpdateOnFailure sets new metadata update time after failed attempt.
 // Every failure makes the next delay longer since we expect the failure to happen again.
 func (t *Token) ScheduleMetaUpdateOnFailure() {
-	t.MetaUpdate = Time(time.Now().Add(time.Duration(rand.Int63n(5*int64(t.MetaFailures+1))*int64(time.Minute)) + TokenDefaultMetadataUpdateDelay))
+	t.MetaUpdate = Time(time.Now().Add(time.Duration((rand.Int63n(60)+int64(t.MetaFailures))*int64(t.MetaFailures)*int64(time.Minute)) + TokenDefaultMetadataUpdateDelay))
 	t.MetaFailures++
 }
 
 // ScheduleMetaUpdateOnSuccess sets new metadata update time successful metadata update.
 func (t *Token) ScheduleMetaUpdateOnSuccess() {
-	t.MetaUpdate = Time(time.Now().Add(time.Duration(rand.Int63n(24*7*int64(time.Hour))) + TokenSuccessMetadataUpdateDelay))
+	t.MetaUpdate = Time(time.Now().Add(time.Duration(rand.Int63n(24*7)*int64(time.Hour)) + TokenSuccessMetadataUpdateDelay))
 	t.MetaFailures = 0
 }
