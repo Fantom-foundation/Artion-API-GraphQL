@@ -55,7 +55,7 @@ func auctionCreated(evt *eth.Log, lo *logObserver) {
 	}
 
 	// if auction owner is not known, find them by the transaction sender
-	if 0 == bytes.Compare(auction.Owner.Bytes(), zeroAddress.Bytes()) {
+	if 0 == bytes.Compare(auction.Owner.Bytes(), zeroAddress.Bytes()) || 0 == bytes.Compare(auction.PayToken.Bytes(), zeroAddress.Bytes()) {
 		extendAuctionFromTransaction(&auction, evt.BlockHash, evt.TxIndex)
 	}
 
@@ -124,6 +124,7 @@ func extendAuctionFromTransaction(auction *types.Auction, blkHash common.Hash, t
 	}
 
 	auction.Owner = sender
+	auction.PayToken = common.BytesToAddress(data[68:100])
 	auction.ReservePrice = (hexutil.Big)(*new(big.Int).SetBytes(data[100:132]))
 	auction.StartTime = types.Time(time.Unix(new(big.Int).SetBytes(data[132:164]).Int64(), 0))
 	auction.EndTime = types.Time(time.Unix(new(big.Int).SetBytes(data[164:]).Int64(), 0))
