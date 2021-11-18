@@ -112,7 +112,7 @@ func extendAuctionFromTransaction(auction *types.Auction, blkHash common.Hash, t
 
 	// we expect 4 bytes for func call + 6 params of 32 bytes = 196 bytes
 	if len(data) != 196 {
-		log.Criticalf("invalid transaction call at %s / %d", blkHash.String(), txIndex)
+		log.Criticalf("invalid transaction call at %s / %d; expected 196 bytes, loaded %d bytes", blkHash.String(), txIndex, len(data))
 		return
 	}
 
