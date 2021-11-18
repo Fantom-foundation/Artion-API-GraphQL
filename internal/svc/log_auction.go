@@ -57,7 +57,7 @@ func auctionCreated(evt *eth.Log, lo *logObserver) {
 	// if auction owner is not known, find them by the transaction sender
 	if 0 == bytes.Compare(auction.Owner.Bytes(), zeroAddress.Bytes()) || 0 == bytes.Compare(auction.PayToken.Bytes(), zeroAddress.Bytes()) {
 		log.Warningf("parsing trx at #%d / #%d: %s", evt.BlockNumber, evt.TxIndex, evt.TxHash.String())
-		extendAuctionFromTransaction(&auction, evt.BlockHash, evt.TxIndex)
+		extendAuctionFromTransaction(&auction, evt.TxHash)
 	}
 
 	// zero pay token means native FTM (an option on older auctions)
@@ -113,20 +113,20 @@ func auctionCreated(evt *eth.Log, lo *logObserver) {
 }
 
 // extendAuctionFromTransaction tries to use transaction data to populate missing auction details.
-func extendAuctionFromTransaction(auction *types.Auction, blkHash common.Hash, txIndex uint) {
+func extendAuctionFromTransaction(auction *types.Auction, tx common.Hash) {
 	// collect transaction data
-	sender, _, data := repo.MustTransactionData(blkHash, txIndex)
+	sender, _, data := repo.MustTransactionData(tx)
 
 	// we expect 4 bytes for func call + 6 params of 32 bytes = 196 bytes
 	if len(data) != 196 {
-		log.Criticalf("invalid transaction call at %s / %d; expected 196 bytes, loaded %d bytes", blkHash.String(), txIndex, len(data))
+		log.Criticalf("invalid call at %s; expected 196 bytes, loaded %d bytes", tx.String(), len(data))
 		return
 	}
 
 	// is this the right function call?
 	// createAuction(address _nftAddress, uint256 _tokenId, address _payToken, uint256 _reservePrice, uint256 _startTimestamp, uint256 _endTimestamp)
 	if 0 != bytes.Compare(data[:4], hexutils.HexToBytes("14ec4106")) {
-		log.Criticalf("invalid function call at %s / %d", blkHash.String(), txIndex)
+		log.Criticalf("invalid function call at %s", tx.String())
 		return
 	}
 

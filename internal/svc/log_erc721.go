@@ -80,7 +80,7 @@ func erc721TokenMustExist(contract *common.Address, tokenID *big.Int, blk *eth.H
 	log.Infof("ERC-721 token %s found at %s block %d", tok.TokenId.String(), tok.Contract.String(), evt.BlockNumber)
 
 	// add details
-	tok.CreatedBy = repo.MustTransactionSender(evt.BlockHash, evt.TxIndex)
+	tok.CreatedBy = repo.MustTransactionSender(evt.TxHash)
 
 	if err := repo.TokenLikesViewsRefresh(tok); err != nil {
 		log.Errorf("could not load token views/likes %s/%s; %s", tok.TokenId.String(), tok.Contract.String(), err)
