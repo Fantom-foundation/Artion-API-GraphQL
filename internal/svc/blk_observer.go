@@ -37,10 +37,10 @@ type blkObserver struct {
 // newBlkObserver creates a new instance of the block observer service.
 func newBlkObserver(mgr *Manager) *blkObserver {
 	return &blkObserver{
-		mgr:               mgr,
-		sigStop:           make(chan bool, 1),
-		outEvents:         make(chan eth.Log, logEventQueueCapacity),
-		topics:            nil,
+		mgr:       mgr,
+		sigStop:   make(chan bool, 1),
+		outEvents: make(chan eth.Log, logEventQueueCapacity),
+		topics:    nil,
 	}
 }
 
@@ -90,6 +90,8 @@ func (bo *blkObserver) close() {
 // process an incoming block header by investigating its events.
 func (bo *blkObserver) process(hdr *eth.Header) {
 	// pull events for the block
+	log.Noticef("loading #%d: %s", hdr.Number, hdr.Hash().String())
+
 	logs, err := repo.BlockLogs(hdr.Number, bo.topics)
 	if err != nil {
 		log.Errorf("block #%d event logs not available; %s", hdr.Number.Uint64(), err.Error())
