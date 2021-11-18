@@ -56,24 +56,20 @@ func (rs *RootResolver) TextSearch(args struct {
 	for i, c := range collections {
 		list[i] = &TextSearchEdge{
 			Collection: (*Collection)(c),
-			Token:      nil,
 		}
 	}
 
 	offset := len(collections)
 	for i, t := range tokens {
 		list[offset+i] = &TextSearchEdge{
-			Collection: nil,
-			Token:      (*Token)(t),
+			Token: (*Token)(t),
 		}
 	}
 
 	offset = offset + len(tokens)
 	for i, u := range users {
 		list[offset+i] = &TextSearchEdge{
-			Collection: nil,
-			Token:      nil,
-			User:       (*User)(u),
+			User: (*User)(u),
 		}
 	}
 	return list, nil

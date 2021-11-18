@@ -52,7 +52,7 @@ type Query {
     # Estimate platform fee and gas needed for token minting.
     estimateMintFeeGas(user: Address!, contract: Address!, tokenUri: String!): MintFeeGas!
 
-    # Search collections and tokens for the given phrase and return paginated list of relevant results.
+    # Search collections, tokens, and users for the given phrase and return list of relevant results.
     textSearch(phrase: String!, maxLength: Int = 15): [TextSearchEdge]!
 }
 
