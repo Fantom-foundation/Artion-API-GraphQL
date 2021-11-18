@@ -23,6 +23,7 @@ type LegacyCollection struct {
 	SiteUrl         string          `bson:"siteUrl"`
 	MediumHandle    string          `bson:"mediumHandle"`
 	TwitterHandle   string          `bson:"twitterHandle"`
+	InstagramHandle string          `bson:"instagramHandle"`
 	IsAppropriate   bool            `bson:"isAppropriate"` // is reviewed and royalties registered on chain
 	IsInternal      bool            `bson:"isInternal"` // is created using factory contract?
 	IsOwnerOnly     bool            `bson:"isOwnerble"` // is only Owner allowed to mint?
@@ -49,18 +50,19 @@ func (lc LegacyCollection) CategoriesAsInt() ([]int32, error) {
 
 // CollectionApplication is input for new LegacyCollection registration
 type CollectionApplication struct {
-	Contract      common.Address `json:"contract"`
-	Name          string         `json:"name"`
-	Description   string         `json:"description"`
-	Royalty       json.Number    `json:"royalty"` // percents of fee
-	FeeRecipient  common.Address `json:"feeRecipient"`
-	Categories    []int32        `bson:"categories"`
-	Discord       string         `bson:"discord"`
-	Email         string         `bson:"email"`
-	Telegram      string         `bson:"telegram"`
-	SiteUrl       string         `bson:"siteUrl"`
-	MediumHandle  string         `bson:"mediumHandle"`
-	TwitterHandle string         `bson:"twitterHandle"`
+	Contract        common.Address `json:"contract"`
+	Name            string         `json:"name"`
+	Description     string         `json:"description"`
+	Royalty         json.Number    `json:"royalty"` // percents of fee
+	FeeRecipient    common.Address `json:"feeRecipient"`
+	Categories      []int32        `bson:"categories"`
+	Discord         string         `bson:"discord"`
+	Email           string         `bson:"email"`
+	Telegram        string         `bson:"telegram"`
+	SiteUrl         string         `bson:"siteUrl"`
+	MediumHandle    string         `bson:"mediumHandle"`
+	TwitterHandle   string         `bson:"twitterHandle"`
+	InstagramHandle string         `bson:"instagramHandle"`
 }
 
 // DecodeCollectionApplication parses the collection registration application JSON.
@@ -76,27 +78,28 @@ func DecodeCollectionApplication(data []byte) (*CollectionApplication, error) {
 func (app CollectionApplication) ToCollection(image string, owner *common.Address) LegacyCollection {
 	categoriesStr := make([]string, len(app.Categories))
 	for i, categoryId := range app.Categories {
-		categoriesStr[i] = string(categoryId)
+		categoriesStr[i] = strconv.Itoa(int(categoryId))
 	}
 	return LegacyCollection{
-		Address:       app.Contract,
-		Name:          app.Name,
-		Description:   app.Description,
-		CategoriesStr: categoriesStr,
-		Image:         image,
-		Owner:         owner,
-		FeeRecipient:  &app.FeeRecipient,
-		RoyaltyValue:  app.Royalty,
-		Discord:       app.Discord,
-		Email:         app.Email,
-		Telegram:      app.Telegram,
-		SiteUrl:       app.SiteUrl,
-		MediumHandle:  app.MediumHandle,
-		TwitterHandle: app.TwitterHandle,
-		IsAppropriate: false,
-		IsInternal:    false,
-		IsOwnerOnly:   false,
-		IsVerified:    false,
-		IsReviewed:    false,
+		Address:         app.Contract,
+		Name:            app.Name,
+		Description:     app.Description,
+		CategoriesStr:   categoriesStr,
+		Image:           image,
+		Owner:           owner,
+		FeeRecipient:    &app.FeeRecipient,
+		RoyaltyValue:    app.Royalty,
+		Discord:         app.Discord,
+		Email:           app.Email,
+		Telegram:        app.Telegram,
+		SiteUrl:         app.SiteUrl,
+		MediumHandle:    app.MediumHandle,
+		TwitterHandle:   app.TwitterHandle,
+		InstagramHandle: app.InstagramHandle,
+		IsAppropriate:   false,
+		IsInternal:      false,
+		IsOwnerOnly:     false,
+		IsVerified:      false,
+		IsReviewed:      false,
 	}
 }

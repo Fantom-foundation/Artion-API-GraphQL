@@ -31,6 +31,7 @@ const (
 	fiLegacyCollectionSiteUrl = "siteUrl"
 	fiLegacyCollectionMediumHandle = "mediumHandle"
 	fiLegacyCollectionTwitterHandle = "twitterHandle"
+	fiLegacyCollectionInstagramHandle = "instagramHandle"
 	fiLegacyCollectionIsAppropriate = "isAppropriate"
 	fiLegacyCollectionIsInternal  = "isInternal"
 	fiLegacyCollectionIsOwnerOnly = "isOwnerble"
@@ -79,6 +80,7 @@ func (sdb *SharedMongoDbBridge) InsertLegacyCollection(c types.LegacyCollection)
 			{Key: fiLegacyCollectionSiteUrl, Value: c.SiteUrl},
 			{Key: fiLegacyCollectionMediumHandle, Value: c.MediumHandle},
 			{Key: fiLegacyCollectionTwitterHandle, Value: c.TwitterHandle},
+			{Key: fiLegacyCollectionInstagramHandle, Value: c.InstagramHandle},
 			{Key: fiLegacyCollectionIsAppropriate, Value: c.IsAppropriate},
 			{Key: fiLegacyCollectionIsInternal, Value: c.IsInternal},
 			{Key: fiLegacyCollectionIsOwnerOnly, Value: c.IsOwnerOnly},
