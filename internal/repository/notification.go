@@ -53,8 +53,8 @@ func (p *Proxy) SendEmailNotificationBySendGrid(no *types.Notification, nt *type
 
 	// assign recipient
 	recipient := nt.Recipient
-	if recipient == nil && nil != user.Email && strings.TrimSpace(*user.Email) != "" {
-		recipient = user.Email
+	if recipient == nil && nil != user.EmailAddress && strings.TrimSpace(*user.EmailAddress) != "" {
+		recipient = user.EmailAddress
 	}
 
 	// any email set on User
@@ -118,7 +118,7 @@ func dynamicTemplateData(no *types.Notification, usr *types.User, ship *types.Sh
 	if usr != nil {
 		list["account"] = usr.Address.String()
 		list["address"] = usr.Address.String()
-		list["email"] = *usr.Email
+		list["email"] = *usr.EmailAddress
 		list["alias"] = ""
 
 		if nil != usr.Username {

@@ -705,14 +705,24 @@ func (db *MongoDbBridge) ListTokens(
 	return &list, nil
 }
 
+// tokenFilterToBson creates a BSON representation of the provided token filter.
 func tokenFilterToBson(f *types.TokenFilter) bson.D {
-	filter := bson.D{
-		{Key: fiTokenIsActive, Value: true},
-	}
+	// return default filter BSON if nothing set
 	if f == nil {
-		return filter
+		return bson.D{
+			{Key: fiTokenIsActive, Value: true},
+		}
 	}
 
+	// make new filter
+	filter := bson.D{}
+
+	// include inactive tokens?
+	if false == f.IncludeInactive {
+		filter = append(filter, bson.E{Key: fiTokenIsActive, Value: true})
+	}
+
+	// regular expression search
 	if f.Search != nil {
 		filter = append(filter, bson.E{Key: fiTokenName, Value: primitive.Regex{
 			Pattern: *f.Search,
@@ -721,7 +731,6 @@ func tokenFilterToBson(f *types.TokenFilter) bson.D {
 	}
 
 	now := types.Time(time.Now().UTC())
-
 	if f.HasListing != nil {
 		if *f.HasListing {
 			filter = filterAddDateTimeLimit(filter, fiTokenHasListingSince, "$lte", now)

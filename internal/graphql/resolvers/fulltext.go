@@ -18,6 +18,7 @@ const (
 type TextSearchEdge struct {
 	Collection *Collection
 	Token      *Token
+	User       *User
 }
 
 // TextSearch executes fulltext search on data subset using Mongo text index.
@@ -45,8 +46,13 @@ func (rs *RootResolver) TextSearch(args struct {
 		return nil, err
 	}
 
+	users, err := repository.R().TextSearchUser(args.Phrase, args.MaxLength)
+	if err != nil {
+		return nil, err
+	}
+
 	// make the output list
-	list := make([]*TextSearchEdge, len(collections)+len(tokens))
+	list := make([]*TextSearchEdge, len(collections)+len(tokens)+len(users))
 	for i, c := range collections {
 		list[i] = &TextSearchEdge{
 			Collection: (*Collection)(c),
@@ -59,6 +65,15 @@ func (rs *RootResolver) TextSearch(args struct {
 		list[offset+i] = &TextSearchEdge{
 			Collection: nil,
 			Token:      (*Token)(t),
+		}
+	}
+
+	offset = offset + len(tokens)
+	for i, u := range users {
+		list[offset+i] = &TextSearchEdge{
+			Collection: nil,
+			Token:      nil,
+			User:       (*User)(u),
 		}
 	}
 	return list, nil

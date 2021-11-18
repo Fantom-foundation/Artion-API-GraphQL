@@ -13,11 +13,11 @@ import (
 
 type Follow types.Follow
 
-func (f Follow) FollowerUser() (User, error) {
+func (f Follow) FollowerUser() (*User, error) {
 	return getUserByAddress(f.Follower)
 }
 
-func (f Follow) FollowedUser() (User, error) {
+func (f Follow) FollowedUser() (*User, error) {
 	return getUserByAddress(f.Followed)
 }
 

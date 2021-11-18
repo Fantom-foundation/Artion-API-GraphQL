@@ -63,10 +63,12 @@ func (a Authenticator) verifySignedChallenge(challenge string, address common.Ad
 	if err != nil {
 		return fmt.Errorf("nonce verification failed; %s", err)
 	}
+
 	signature, err := hexutil.Decode(signatureHex)
 	if err != nil {
 		return fmt.Errorf("signature hex decoding failed; %s", err)
 	}
+
 	ok, err := verifySignature(challenge, address, signature)
 	if err != nil || !ok {
 		return fmt.Errorf("signature verification failed; %s", err)

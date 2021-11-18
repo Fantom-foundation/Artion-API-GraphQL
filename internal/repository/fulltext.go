@@ -12,3 +12,8 @@ func (p *Proxy) TextSearchToken(phrase string, limit int32) ([]*types.Token, err
 func (p *Proxy) TextSearchCollection(phrase string, limit int32) ([]*types.LegacyCollection, error) {
 	return p.shared.TextSearchLegacyCollection(phrase, limit)
 }
+
+// TextSearchUser tries to search for user profiles relevant to the given textual phrase.
+func (p *Proxy) TextSearchUser(phrase string, limit int32) ([]*types.User, error) {
+	return p.shared.TextSearchUser(phrase, limit)
+}

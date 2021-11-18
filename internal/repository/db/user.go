@@ -71,7 +71,7 @@ func (sdb *SharedMongoDbBridge) StoreUser(User *types.User) error {
 		bson.D{
 			{Key: "$set", Value: bson.D{
 				{Key: fiUserUsername, Value: User.Username},
-				{Key: fiUserEmail, Value: User.Email},
+				{Key: fiUserEmail, Value: User.EmailAddress},
 				{Key: fiUserBio, Value: User.Bio},
 				{Key: fiUserUpdated, Value: types.Time(time.Now())},
 			}},

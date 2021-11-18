@@ -8,14 +8,14 @@ import (
 
 // User represents user account/profile.
 type User struct {
-	Id       primitive.ObjectID `bson:"_id"`
-	Address  common.Address `bson:"address"`
-	Username *string        `bson:"alias"`
-	Email    *string        `bson:"email"`
-	Bio      *string        `bson:"bio"`
-	Avatar   *string        `bson:"imageHash"`
-	Banner   *string        `bson:"bannerHash"`
-	Bundles  []string       `bson:"bundleIDs"`
-	Created  Time           `bson:"createdAt"`
-	Updated  Time           `bson:"updatedAt"`
+	Id           primitive.ObjectID `bson:"_id"`
+	Address      common.Address     `bson:"address"`
+	Username     *string            `bson:"alias"`
+	EmailAddress *string            `bson:"email"`
+	Bio          *string            `bson:"bio"`
+	Avatar       *string            `bson:"imageHash"`
+	Banner       *string            `bson:"bannerHash"`
+	Bundles      []string           `bson:"bundleIDs"`
+	Created      Time               `bson:"createdAt"`
+	Updated      Time               `bson:"updatedAt"`
 }

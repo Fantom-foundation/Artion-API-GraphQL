@@ -77,3 +77,38 @@ func (sdb *SharedMongoDbBridge) TextSearchLegacyCollection(phrase string, limit 
 
 	return list, nil
 }
+
+// TextSearchUser uses existing text index to search legacy collection list to get relevant collections.
+func (sdb *SharedMongoDbBridge) TextSearchUser(phrase string, limit int32) ([]*types.User, error) {
+	col := sdb.client.Database(sdb.dbName).Collection(coUsers)
+
+	// execute the search
+	cur, err := col.Find(context.Background(), bson.D{
+		{Key: "$text", Value: bson.D{
+			{Key: "$search", Value: phrase},
+			{Key: "$caseSensitive", Value: false},
+			{Key: "$diacriticSensitive", Value: false},
+		}},
+	}, options.Find().SetLimit(int64(limit)))
+	if err != nil {
+		log.Errorf("fulltext search %s failed; %s", phrase, err.Error())
+		return nil, err
+	}
+
+	defer closeFindCursor("legacy users text search", cur)
+
+	// load data
+	list := make([]*types.User, 0)
+	for cur.Next(context.Background()) {
+		var row types.User
+
+		if err := cur.Decode(&row); err != nil {
+			log.Errorf("could not decode user; %s", err.Error())
+			return nil, err
+		}
+
+		list = append(list, &row)
+	}
+
+	return list, nil
+}

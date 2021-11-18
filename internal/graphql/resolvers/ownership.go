@@ -13,10 +13,8 @@ func (o Ownership) Token() (*Token, error) {
 	return NewToken(&o.Contract, &o.TokenId)
 }
 
-func (o Ownership) OwnerUser() (User, error) {
-	return User{
-		Address: o.Owner,
-	}, nil
+func (o Ownership) OwnerUser() (*User, error) {
+	return getUserByAddress(o.Owner)
 }
 
 type OwnershipEdge struct {
