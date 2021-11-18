@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	eth "github.com/ethereum/go-ethereum/core/types"
+	"github.com/status-im/keycard-go/hexutils"
 	"math/big"
 	"time"
 )
@@ -55,7 +56,7 @@ func auctionCreated(evt *eth.Log, lo *logObserver) {
 
 	// if auction owner is not known, find them by the transaction sender
 	if 0 == bytes.Compare(auction.Owner.Bytes(), zeroAddress.Bytes()) {
-		auction.Owner = repo.MustTransactionSender(evt.BlockHash, evt.TxIndex)
+		extendAuctionFromTransaction(&auction, evt.BlockHash, evt.TxIndex)
 	}
 
 	// clear previous bids for the token
@@ -102,6 +103,32 @@ func auctionCreated(evt *eth.Log, lo *logObserver) {
 	}
 
 	log.Infof("added new auction of %s/%s started by %s at %s", auction.Contract.String(), auction.TokenId.String(), auction.Owner.String(), evt.TxHash)
+}
+
+// extendAuctionFromTransaction tries to use transaction data to populate missing auction details.
+func extendAuctionFromTransaction(auction *types.Auction, blkHash common.Hash, txIndex uint) {
+	// collect transaction data
+	sender, _, data := repo.MustTransactionData(blkHash, txIndex)
+
+	// we expect 4 bytes for func call + 6 params of 32 bytes = 196 bytes
+	if len(data) != 196 {
+		log.Criticalf("invalid transaction call at %s / %d", blkHash.String(), txIndex)
+		return
+	}
+
+	// is this the right function call?
+	// createAuction(address _nftAddress, uint256 _tokenId, address _payToken, uint256 _reservePrice, uint256 _startTimestamp, uint256 _endTimestamp)
+	if 0 != bytes.Compare(data[:4], hexutils.HexToBytes("14ec4106")) {
+		log.Criticalf("invalid function call at %s / %d", blkHash.String(), txIndex)
+		return
+	}
+
+	auction.Owner = sender
+	auction.ReservePrice = (hexutil.Big)(*new(big.Int).SetBytes(data[100:132]))
+	auction.StartTime = types.Time(time.Unix(new(big.Int).SetBytes(data[132:164]).Int64(), 0))
+	auction.EndTime = types.Time(time.Unix(new(big.Int).SetBytes(data[164:]).Int64(), 0))
+
+	log.Infof("auction %s / %s updated from trx", auction.Contract.String(), auction.TokenId.String())
 }
 
 // auctionStartTimeUpdated processes auction start time update event log.
