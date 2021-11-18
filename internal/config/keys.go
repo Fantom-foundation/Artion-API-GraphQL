@@ -6,8 +6,8 @@ const (
 	configFileName = "apiserver"
 
 	// configuration options
-	keyAppName                  = "app_name"
-	keyConfigFilePath           = "cfg"
+	keyAppName        = "app_name"
+	keyConfigFilePath = "cfg"
 
 	// server related keys
 	keyBindAddress      = "server.bind"
@@ -29,7 +29,7 @@ const (
 	keyLachesisUrl = "node.url"
 
 	// IPFS node connection related options
-	keyIpfsUrl = "ipfs.url"
+	keyIpfsUrl          = "ipfs.url"
 	keySkipHttpGateways = "ipfs.skip_http_gateways"
 
 	// off-chain database related options
@@ -45,5 +45,8 @@ const (
 
 	// authentication related options
 	keyAuthBearerSecret = "auth.bearer_secret"
-	keyAuthNonceSecret = "auth.nonce_secret"
+	keyAuthNonceSecret  = "auth.nonce_secret"
+
+	// mandatory contracts
+	keyWrappedFTM = "contracts.wftm"
 )

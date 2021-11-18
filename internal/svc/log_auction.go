@@ -130,6 +130,12 @@ func extendAuctionFromTransaction(auction *types.Auction, blkHash common.Hash, t
 	auction.EndTime = types.Time(time.Unix(new(big.Int).SetBytes(data[164:]).Int64(), 0))
 
 	log.Infof("auction %s / %s updated from trx", auction.Contract.String(), auction.TokenId.String())
+
+	// zero pay token means native FTM (an option on older auctions)
+	if 0 == bytes.Compare(auction.PayToken.Bytes(), zeroAddress.Bytes()) {
+		auction.PayToken = cfg.Contracts.WrappedFTM
+		log.Infof("using wFTM %s instead of native pay token", auction.PayToken)
+	}
 }
 
 // auctionStartTimeUpdated processes auction start time update event log.

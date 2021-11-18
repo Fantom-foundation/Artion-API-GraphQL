@@ -3,6 +3,7 @@ package config
 
 import (
 	"crypto/ecdsa"
+	"github.com/ethereum/go-ethereum/common"
 	"time"
 )
 
@@ -40,6 +41,9 @@ type Config struct {
 
 	// Notifications provides configuration for notification providers
 	Notifications NotificationProviders `mapstructure:"notification"`
+
+	// Contracts provides addresses of mandatory contracts
+	Contracts Contracts `mapstructure:"contracts"`
 }
 
 // Server represents the GraphQL server configuration
@@ -112,4 +116,9 @@ type NotificationProviders struct {
 type SendGridEmailProvider struct {
 	ApiAddress string `mapstructure:"domain"`
 	ApiKey     string `mapstructure:"key"`
+}
+
+// Contracts provides addresses of mandatory contracts
+type Contracts struct {
+	WrappedFTM common.Address `mapstructure:"wftm"`
 }

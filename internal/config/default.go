@@ -66,6 +66,9 @@ const (
 
 	// defAuthNonceSecret holds the default nonce secret
 	defAuthNonceSecret = "0xABCDEF"
+
+	// defWrappedFTMContract is the default address of the wFTM contract
+	defWrappedFTMContract = "0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83"
 )
 
 // defCorsAllowOrigins holds CORS default allowed origins.
@@ -104,4 +107,7 @@ func applyDefaults(cfg *viper.Viper) {
 	// auth
 	cfg.SetDefault(keyAuthBearerSecret, defAuthBearerSecret)
 	cfg.SetDefault(keyAuthNonceSecret, defAuthNonceSecret)
+
+	// contracts
+	cfg.SetDefault(keyWrappedFTM, defWrappedFTMContract)
 }
