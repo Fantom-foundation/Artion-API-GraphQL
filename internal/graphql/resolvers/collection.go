@@ -114,6 +114,14 @@ func (t *Collection) Royalty() string {
 	return (*types.LegacyCollection)(t).RoyaltyValue.String()
 }
 
+func (t *Collection) OwnerUser() (*User, error) {
+	return getUserByAddressPtr(t.Owner)
+}
+
+func (t *Collection) FeeRecipientUser() (*User, error) {
+	return getUserByAddressPtr(t.FeeRecipient)
+}
+
 // CanMint resolves the minting privilege for the given user by address.
 func (t *Collection) CanMint(args struct {
 	User common.Address

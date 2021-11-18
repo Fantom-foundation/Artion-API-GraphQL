@@ -18,8 +18,14 @@ type Collection {
     # Owner of the collection
     owner: Address
 
+    # Owner of the collection
+    ownerUser: User
+
     # Recipient of royalty transfer fee
     feeRecipient: Address
+
+    # Recipient of royalty transfer fee
+    feeRecipientUser: User
 
     # Royalty - fee in percents (with decimals)
     royalty: String!

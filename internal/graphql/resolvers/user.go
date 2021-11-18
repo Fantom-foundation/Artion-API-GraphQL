@@ -242,6 +242,18 @@ func getUserByAddress(address common.Address) (user User, err error) {
 	}
 }
 
+func getUserByAddressPtr(address *common.Address) (user *User, err error) {
+	if address == nil {
+		return nil, nil
+	}
+	dbUser, err := repository.R().GetUser(*address)
+	if err != nil {
+		return nil, err
+	} else {
+		return &User{Address: *address, dbUser: dbUser}, nil
+	}
+}
+
 func (rs *RootResolver) User(args struct{ Address common.Address }) (user User, err error) {
 	return getUserByAddress(args.Address)
 }

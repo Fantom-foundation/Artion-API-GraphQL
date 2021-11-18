@@ -59,6 +59,14 @@ func (activity Activity) Token() (*Token, error) {
 	return NewToken(&activity.Contract, &activity.TokenId)
 }
 
+func (activity Activity) FromUser() (User, error) {
+	return getUserByAddress(activity.From)
+}
+
+func (activity Activity) ToUser() (*User, error) {
+	return getUserByAddressPtr(activity.To)
+}
+
 func ActivityTypeToString(t types.ActivityType) string {
 	switch t {
 	case types.EvtListingCreated:

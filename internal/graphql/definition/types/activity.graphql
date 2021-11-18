@@ -24,7 +24,9 @@ type Activity {
     tokenId: BigInt!
     quantity: BigInt
     from: Address!
+    fromUser: User!
     to: Address
+    toUser: User
     payToken: Address
     unitPrice: BigInt
     startTime: Time

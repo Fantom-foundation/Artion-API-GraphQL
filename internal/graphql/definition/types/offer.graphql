@@ -12,6 +12,9 @@ type Offer {
     # The buyer
     proposedBy: Address!
 
+    # The buyer
+    proposedByUser: User!
+
     # The offered amount (only this exact amount can be sold)
     quantity: BigInt!
 
