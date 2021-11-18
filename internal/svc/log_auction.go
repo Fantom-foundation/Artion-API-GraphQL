@@ -60,6 +60,12 @@ func auctionCreated(evt *eth.Log, lo *logObserver) {
 		extendAuctionFromTransaction(&auction, evt.BlockHash, evt.TxIndex)
 	}
 
+	// zero pay token means native FTM (an option on older auctions)
+	if 0 == bytes.Compare(auction.PayToken.Bytes(), zeroAddress.Bytes()) {
+		auction.PayToken = cfg.Contracts.WrappedFTM
+		log.Infof("using wFTM %s instead of native pay token", auction.PayToken)
+	}
+
 	// clear previous bids for the token
 	if err := repo.ClearAuctionBids(&auction.Contract, (*big.Int)(&auction.TokenId)); err != nil {
 		log.Errorf("could not clear auction bids; %s", err.Error())
@@ -129,12 +135,6 @@ func extendAuctionFromTransaction(auction *types.Auction, blkHash common.Hash, t
 	auction.ReservePrice = (hexutil.Big)(*new(big.Int).SetBytes(data[100:132]))
 	auction.StartTime = types.Time(time.Unix(new(big.Int).SetBytes(data[132:164]).Int64(), 0))
 	auction.EndTime = types.Time(time.Unix(new(big.Int).SetBytes(data[164:]).Int64(), 0))
-
-	// zero pay token means native FTM (an option on older auctions)
-	if 0 == bytes.Compare(auction.PayToken.Bytes(), zeroAddress.Bytes()) {
-		auction.PayToken = cfg.Contracts.WrappedFTM
-		log.Infof("using wFTM %s instead of native pay token", auction.PayToken)
-	}
 }
 
 // auctionStartTimeUpdated processes auction start time update event log.

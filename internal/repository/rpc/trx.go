@@ -34,10 +34,13 @@ func (o *Opera) MustTransactionData(block common.Hash, txIndex uint) (common.Add
 		log.Errorf("transaction detail unknown; %s", err.Error())
 		return common.Address{}, common.Address{}, make([]byte, 0)
 	}
+
 	from, err := o.ftm.TransactionSender(context.Background(), trx, block, txIndex)
 	if err != nil {
 		log.Errorf("transaction sender unknown; %s", err.Error())
 		return common.Address{}, common.Address{}, make([]byte, 0)
 	}
+
+	log.Noticef("loaded trx %s / %d [%s] from %s to %s; with %d input bytes", block.String(), txIndex, trx.Hash().String(), from.String(), trx.To().String(), len(trx.Data()))
 	return from, *trx.To(), trx.Data()
 }
