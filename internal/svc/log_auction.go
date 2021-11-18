@@ -3,6 +3,7 @@ package svc
 
 import (
 	"artion-api-graphql/internal/types"
+	"bytes"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	eth "github.com/ethereum/go-ethereum/core/types"
@@ -50,6 +51,11 @@ func auctionCreated(evt *eth.Log, lo *logObserver) {
 	// extend the auction with details pulled from the contract
 	if err := repo.ExtendAuctionDetailAt(&auction, new(big.Int).SetUint64(evt.BlockNumber)); err != nil {
 		log.Errorf("failed to load extended auction details; %s", err.Error())
+	}
+
+	// if auction owner is not known, find them by the transaction sender
+	if 0 == bytes.Compare(auction.Owner.Bytes(), zeroAddress.Bytes()) {
+		auction.Owner = repo.MustTransactionSender(evt.BlockHash, evt.TxIndex)
 	}
 
 	// clear previous bids for the token
