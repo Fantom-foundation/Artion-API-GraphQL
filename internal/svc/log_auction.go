@@ -62,8 +62,8 @@ func auctionCreated(evt *eth.Log, lo *logObserver) {
 
 	// zero pay token means native FTM (an option on older auctions)
 	if 0 == bytes.Compare(auction.PayToken.Bytes(), zeroAddress.Bytes()) {
-		auction.PayToken = cfg.Contracts.WrappedFTM
-		log.Infof("using wFTM %s instead of native pay token", auction.PayToken)
+		copy(auction.PayToken[:], cfg.Contracts.WrappedFTM[:])
+		log.Infof("using wFTM %s instead of native pay token", auction.PayToken.String())
 	}
 
 	// clear previous bids for the token
