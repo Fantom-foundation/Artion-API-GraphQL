@@ -8,13 +8,13 @@ import (
 
 const (
 	// nftMetadataUpdaterQueueCapacity is the capacity of NFT metadata updater queue.
-	nftMetadataUpdaterQueueCapacity = 25000
+	nftMetadataUpdaterQueueCapacity = 10000
 
 	// nftMetadataRefreshTick is the tick used to pull NFT metadata refresh candidates.
-	nftMetadataRefreshTick = 10 * time.Second
+	nftMetadataRefreshTick = 15 * time.Second
 
 	// nftMetadataRefreshSetSize is the max size of metadata refresh set pulled at once.
-	nftMetadataRefreshSetSize = 50
+	nftMetadataRefreshSetSize = 100
 )
 
 // nftMetadataUpdater represents a service responsible for periodic update of NFT token metadata
