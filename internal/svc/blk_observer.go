@@ -90,8 +90,6 @@ func (bo *blkObserver) close() {
 // process an incoming block header by investigating its events.
 func (bo *blkObserver) process(hdr *eth.Header) {
 	// pull events for the block
-	log.Noticef("loading #%d: %s", hdr.Number, hdr.Hash().String())
-
 	logs, err := repo.BlockLogs(hdr.Number, bo.topics)
 	if err != nil {
 		log.Errorf("block #%d event logs not available; %s", hdr.Number.Uint64(), err.Error())
