@@ -368,7 +368,8 @@ func auctionResolved(evt *eth.Log, lo *logObserver) {
 	contract := common.BytesToAddress(evt.Topics[1].Bytes())
 	tokenID := new(big.Int).SetBytes(evt.Topics[2].Bytes())
 	winner := common.BytesToAddress(evt.Topics[3].Bytes())
-	winAmount := new(big.Int).SetBytes(evt.Data[32:64])
+	tokenPrice := new(big.Int).SetBytes(evt.Data[32:64])
+	winAmount := new(big.Int).SetBytes(evt.Data[64:])
 	payToken := common.BytesToAddress(evt.Data[:32])
 
 	// finish the auction
@@ -378,6 +379,7 @@ func auctionResolved(evt *eth.Log, lo *logObserver) {
 		nil,
 		&winner,
 		winAmount,
+		tokenPrice,
 		&payToken,
 		evt,
 		lo,
@@ -398,7 +400,8 @@ func auctionResolvedV2(evt *eth.Log, lo *logObserver) {
 	tokenID := new(big.Int).SetBytes(evt.Topics[2].Bytes())
 	winner := common.BytesToAddress(evt.Topics[3].Bytes())
 	owner := common.BytesToAddress(evt.Data[:32])
-	winAmount := new(big.Int).SetBytes(evt.Data[64:96])
+	tokenPrice := new(big.Int).SetBytes(evt.Data[64:96])
+	winAmount := new(big.Int).SetBytes(evt.Data[96:])
 	payToken := common.BytesToAddress(evt.Data[32:64])
 
 	// finish the auction
@@ -408,6 +411,7 @@ func auctionResolvedV2(evt *eth.Log, lo *logObserver) {
 		&owner,
 		&winner,
 		winAmount,
+		tokenPrice,
 		&payToken,
 		evt,
 		lo,
@@ -415,7 +419,7 @@ func auctionResolvedV2(evt *eth.Log, lo *logObserver) {
 }
 
 // finishAuction finalises auction on the given NFT token.
-func finishAuction(contract *common.Address, tokenID *big.Int, owner *common.Address, winner *common.Address, amount *big.Int, payToken *common.Address, evt *eth.Log, lo *logObserver) {
+func finishAuction(contract *common.Address, tokenID *big.Int, owner *common.Address, winner *common.Address, amount *big.Int, tokenPrice *big.Int, payToken *common.Address, evt *eth.Log, _ *logObserver) {
 	blk, err := repo.GetHeader(evt.BlockNumber)
 	if err != nil {
 		log.Errorf("could not get header #%d, %s", evt.BlockNumber, err.Error())
@@ -445,7 +449,8 @@ func finishAuction(contract *common.Address, tokenID *big.Int, owner *common.Add
 		log.Errorf("could not store auction; %s", err.Error())
 	}
 
-	price := repo.GetUnifiedPriceAt(lo.marketplace, payToken, new(big.Int).SetUint64(evt.BlockNumber), amount)
+	// what's the unified price the NFT was sold for
+	price := repo.CalculateUnifiedPrice(payToken, amount, tokenPrice)
 
 	// mark the token as sold
 	if err := repo.TokenMarkSold(

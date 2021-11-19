@@ -13,42 +13,52 @@ import (
 // Price come in 18 decimals, to preserve 6 decimals we remove 12 decimals.
 var tokenPriceDecimalsCorrection = big.NewInt(1_000_000_000_000)
 
-// GetUnifiedPriceAt converts token price in pay-tokens to value in unified units for storing in database.
-func (p *Proxy) GetUnifiedPriceAt(marketplace *common.Address, payToken *common.Address, block *big.Int, val *big.Int) (out types.TokenPrice) {
-	out = types.TokenPrice{
+// CalculateUnifiedPrice calculates the unified price for the given params.
+func (p *Proxy) CalculateUnifiedPrice(payToken *common.Address, amount *big.Int, unitPrice *big.Int) types.TokenPrice {
+	// prep the struct
+	out := types.TokenPrice{
 		Usd:      0,
-		Amount:   hexutil.Big(*val),
+		Amount:   hexutil.Big(*amount),
 		PayToken: *payToken,
-	}
-
-	// get price of 1 whole payToken in USD in 18-decimals fixed point
-	unit, err := p.rpc.GetPayTokenPrice(marketplace, payToken, block)
-	if err != nil {
-		log.Warningf("unable to get price of pay token %s; %s", payToken.String(), err.Error())
-		return
 	}
 
 	// get amount of pay-token decimals
 	decimals, err := p.getPayTokenDecimals(payToken)
 	if err != nil {
 		log.Warningf("unable to get decimals of pay token %s; %s", payToken.String(), err.Error())
-		return
+		return out
 	}
 
 	// calculate price for val wei in USD in 6-decimals fixed point
 	// val and unit is in 18-decimals, product is in 36 decimals - we need to remove 30 decimals to get 6-decimals
 	// val is D-decimals, unit 18-decimals, product is D+18 decimals - to get 6-decimals we need to remove D+12
-	out.Usd = mulTeenPower(new(big.Int).Mul(val, unit), -(decimals + 12)).Int64()
-
+	out.Usd = mulTeenPower(new(big.Int).Mul(amount, unitPrice), -(decimals + 12)).Int64()
 	if out.Usd < 0 {
-		log.Warningf("GetUnifiedPriceAt overflow - val: %s unit: %s decimals: %d", val.String(), unit.String(), decimals)
+		log.Warningf("GetUnifiedPriceAt overflow - val: %s unit: %s decimals: %d", amount.String(), unitPrice.String(), decimals)
+		out.Usd = 0
 	}
-	return
+	return out
+}
+
+// GetUnifiedPriceAt converts token price in pay-tokens to value in unified units for storing in database.
+func (p *Proxy) GetUnifiedPriceAt(marketplace *common.Address, payToken *common.Address, block *big.Int, amount *big.Int) types.TokenPrice {
+	// get price of 1 whole payToken in USD in 18-decimals fixed point
+	unit, err := p.rpc.GetPayTokenPrice(marketplace, payToken, block)
+	if err != nil {
+		log.Warningf("unable to get price of pay token %s; %s", payToken.String(), err.Error())
+		return types.TokenPrice{
+			Usd:      0,
+			Amount:   hexutil.Big(*amount),
+			PayToken: *payToken,
+		}
+	}
+
+	return p.CalculateUnifiedPrice(payToken, amount, unit)
 }
 
 // GetUnifiedUnitPrice obtains price of pay-token in unified units (USD with 6 decimals) for storing in database.
 func (p *Proxy) GetUnifiedUnitPrice(payToken *common.Address) (uint64, error) {
-	price, err, _ := p.callGroup.Do("GetUnifiedUnitPrice" + payToken.String(), func() (interface{}, error) {
+	price, err, _ := p.callGroup.Do("GetUnifiedUnitPrice"+payToken.String(), func() (interface{}, error) {
 		// get price of 1 whole payToken in USD in 18-decimals fixed point
 		unit, err := p.rpc.GetPayTokenPrice(nil, payToken, nil)
 		if err != nil {
@@ -62,21 +72,23 @@ func (p *Proxy) GetUnifiedUnitPrice(payToken *common.Address) (uint64, error) {
 	return price.(uint64), err
 }
 
+// mulTeenPower adjusts the given number by the given number of decimals.
 func mulTeenPower(num *big.Int, decimals int32) *big.Int {
-	teen := big.NewInt(10)
+	if 0 == decimals {
+		return num
+	}
+
 	if decimals > 0 {
-		for i := int32(0); i < decimals; i++ {
-			num.Mul(num, teen)
-		}
+		teen := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(decimals)), nil)
+		num.Mul(num, teen)
 	} else {
-		for i := decimals; i < int32(0); i++ {
-			num.Div(num, teen)
-		}
+		teen := new(big.Int).Exp(big.NewInt(10), big.NewInt(-int64(decimals)), nil)
+		num.Div(num, teen)
 	}
 	return num
 }
 
-// ListPayTokens provides list of tokens allowed for market payments
+// ListPayTokens provides list of tokens allowed for market payments.
 func (p *Proxy) ListPayTokens() ([]types.PayToken, error) {
 	tokens, err, _ := p.callGroup.Do("ListPayTokens", func() (interface{}, error) {
 		return p.cache.ListPayTokens(p.rpc.ListPayTokens)
@@ -84,13 +96,14 @@ func (p *Proxy) ListPayTokens() ([]types.PayToken, error) {
 	return tokens.([]types.PayToken), err
 }
 
+// getPayTokenDecimals provides the number of decimals of the given pay token.
 func (p *Proxy) getPayTokenDecimals(address *common.Address) (int32, error) {
 	list, err := p.ListPayTokens() // cached
 	if err != nil {
 		return 0, err
 	}
 	for _, payToken := range list {
-		if bytes.Equal(payToken.Contract.Bytes(), address.Bytes()) {
+		if 0 == bytes.Compare(payToken.Contract.Bytes(), address.Bytes()) {
 			return payToken.Decimals, nil
 		}
 	}
