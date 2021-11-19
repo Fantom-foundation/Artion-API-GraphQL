@@ -36,6 +36,9 @@ type Token {
     # Recipient of the royalty fee (typically token minter)
     feeRecipient: Address
 
+    # Recipient of the royalty fee (typically token minter)
+    feeRecipientUser: User
+
     # Whether is the item listed for sale. (Buy now)
     hasListing: Boolean!
 

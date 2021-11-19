@@ -157,6 +157,10 @@ func (t *Token) Collection() (*Collection, error) {
 	return NewCollection(&t.Contract)
 }
 
+func (t *Token) FeeRecipientUser() (*User, error) {
+	return getUserByAddressPtr(t.FeeRecipient)
+}
+
 func (t *Token) Ownerships(args struct{ PaginationInput }) (con *OwnershipConnection, err error) {
 	cursor, count, backward, err := args.ToRepositoryInput()
 	if err != nil {
