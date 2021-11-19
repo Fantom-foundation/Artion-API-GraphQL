@@ -26,6 +26,7 @@ func erc1155TokenTransfer(evt *eth.Log, lo *logObserver) {
 	from := common.BytesToAddress(evt.Topics[2].Bytes())
 	to := common.BytesToAddress(evt.Topics[3].Bytes())
 	tokenId := new(big.Int).SetBytes(evt.Data[:32])
+	amount := new(big.Int).SetBytes(evt.Data[32:64])
 
 	// add recipient ownership record; we can do it first even for new tokens
 	if err := repo.StoreOwnership(&types.Ownership{
@@ -41,22 +42,31 @@ func erc1155TokenTransfer(evt *eth.Log, lo *logObserver) {
 
 	// make sure we know the token
 	// if this is a mint call (the sender is zero), we just add the NFT record
-	if 0 == bytes.Compare(zeroAddress.Bytes(), from.Bytes()) {
+	if bytes.Equal(zeroAddress.Bytes(), from.Bytes()) {
 		addERC1155Token(&evt.Address, tokenId, &to, evt, lo)
+	} else {
+		// if it's not a mint, we need to update sender's ownership balance as well
+		if err := repo.StoreOwnership(&types.Ownership{
+			Contract: evt.Address,
+			TokenId:  hexutil.Big(*tokenId),
+			Owner:    to,
+			Qty:      balanceOf(&evt.Address, tokenId, &from, evt.BlockNumber, lo),
+			Updated:  types.Time(time.Now()),
+		}); err != nil {
+			log.Errorf("failed to update sender ownership at %s/%d; %s",
+				evt.Address.String(), tokenId.Uint64(), err.Error())
+		}
+	}
+
+	// get the block header
+	blk, err := repo.GetHeader(evt.BlockNumber)
+	if err != nil {
+		log.Errorf("can not load event header #%d; %s", evt.BlockNumber, err.Error())
 		return
 	}
 
-	// if it's not a mint, we need to update sender's ownership balance as well
-	if err := repo.StoreOwnership(&types.Ownership{
-		Contract: evt.Address,
-		TokenId:  hexutil.Big(*tokenId),
-		Owner:    to,
-		Qty:      balanceOf(&evt.Address, tokenId, &from, evt.BlockNumber, lo),
-		Updated:  types.Time(time.Now()),
-	}); err != nil {
-		log.Errorf("failed to update sender ownership at %s/%d; %s",
-			evt.Address.String(), tokenId.Uint64(), err.Error())
-	}
+	// log transfer activity
+	logTokenTransferActivity(evt, blk, hexutil.Big(*tokenId), amount, from, to)
 }
 
 // balanceOf returns the balance of a token for the given owner on the given block.

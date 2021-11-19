@@ -95,6 +95,12 @@ func ActivityTypeToString(t types.ActivityType) string {
 		return "AUCTION_RESOLVED"
 	case types.EvtAuctionUpdated:
 		return "AUCTION_UPDATED"
+	case types.EvtTransfer:
+		return "TRANSFER"
+	case types.EvtMint:
+		return "MINT"
+	case types.EvtBurn:
+		return "BURN"
 	}
 	return "UNKNOWN"
 }
@@ -127,6 +133,12 @@ func ActivityTypeFromString(t string) types.ActivityType {
 		return types.EvtAuctionResolved
 	case "AUCTION_UPDATED":
 		return types.EvtAuctionUpdated
+	case "TRANSFER":
+		return types.EvtTransfer
+	case "MINT":
+		return types.EvtMint
+	case "BURN":
+		return types.EvtBurn
 	}
 	return types.EvtUnknown
 }

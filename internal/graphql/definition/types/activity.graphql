@@ -14,6 +14,9 @@ enum ActivityType {
     AUCTION_CANCELLED
     AUCTION_RESOLVED
     AUCTION_UPDATED
+    TRANSFER
+    MINT
+    BURN
 }
 
 # Activity represents an event that happened on a market-sellable NFT token.

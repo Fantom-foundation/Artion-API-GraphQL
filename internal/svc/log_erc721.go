@@ -122,7 +122,7 @@ func erc721TokenTransfer(evt *eth.Log, lo *logObserver) {
 	log.Debugf("erc721 %s / %s transfer %s -> %s", evt.Address.String(), tokenID.String(), from.String(), to.String())
 
 	// this may be a mint; if so, we have that one covered already
-	if 0 == bytes.Compare(zeroAddress.Bytes(), from.Bytes()) {
+	if bytes.Equal(zeroAddress.Bytes(), from.Bytes()) {
 		erc721TokenMustExist(&evt.Address, (*big.Int)(&tokenID), blk, evt, lo)
 	}
 
@@ -134,18 +134,21 @@ func erc721TokenTransfer(evt *eth.Log, lo *logObserver) {
 	}
 
 	// is this a token burn event?
-	if 0 == bytes.Compare(to.Bytes(), zeroAddress.Bytes()) {
+	if bytes.Equal(zeroAddress.Bytes(), to.Bytes()) {
 		if err := registerERC721TokenBurn(evt.Address, tokenID, from, blk.Time); err != nil {
 			log.Errorf("could not add ERC-721 NFT burn; %s", err.Error())
 		}
-		return
+	} else {
+		// now we can add the new owner
+		if err := updateERC721Owner(evt.Address, tokenID, to, 1, blk.Time); err != nil {
+			log.Errorf("could not add ERC-721 NFT ownership; %s", err.Error())
+			return
+		}
 	}
 
-	// now we can add the new owner
-	if err := updateERC721Owner(evt.Address, tokenID, to, 1, blk.Time); err != nil {
-		log.Errorf("could not add ERC-721 NFT ownership; %s", err.Error())
-		return
-	}
+	// log transfer activity
+	qty := big.NewInt(1) // 1 for every ERC-721 transfer
+	logTokenTransferActivity(evt, blk, tokenID, qty, from, to)
 }
 
 // queueMetadataUpdate pushes NFT into the metadata processing queue.
@@ -197,4 +200,29 @@ func registerERC721TokenBurn(contract common.Address, tokenID hexutil.Big, owner
 		Originator: nil,
 	})
 	return nil
+}
+
+// logTokenTransferActivity inserts transfer/mint/burn record into activities
+func logTokenTransferActivity(evt *eth.Log, blk *eth.Header, tokenID hexutil.Big, qty *big.Int, from common.Address, to common.Address) {
+	actType := types.EvtTransfer
+	if bytes.Equal(zeroAddress.Bytes(), from.Bytes()) {
+		actType = types.EvtMint
+	}
+	if bytes.Equal(zeroAddress.Bytes(), to.Bytes()) {
+		actType = types.EvtBurn
+	}
+	activity := types.Activity{
+		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
+		Time:         types.Time(time.Unix(int64(blk.Time), 0)),
+		ActType:      actType,
+		Contract:     evt.Address,
+		TokenId:      tokenID,
+		Quantity:     (*hexutil.Big)(qty),
+		From:         from,
+		To:           &to,
+	}
+	if err := repo.StoreActivity(&activity); err != nil {
+		log.Errorf("could not store transfer activity; %s", err.Error())
+		return
+	}
 }

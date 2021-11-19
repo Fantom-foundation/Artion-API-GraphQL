@@ -24,6 +24,9 @@ const (
 	EvtAuctionCancelled                        // 11
 	EvtAuctionResolved                         // 12
 	EvtAuctionUpdated                          // 13
+	EvtTransfer                                // 14
+	EvtMint                                    // 15
+	EvtBurn                                    // 16
 )
 
 // Activity represents marketplace related events on tokens - when they are sold etc.
