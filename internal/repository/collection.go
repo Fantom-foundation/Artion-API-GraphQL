@@ -3,6 +3,7 @@ package repository
 
 import (
 	"artion-api-graphql/internal/types"
+	"bytes"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"math/big"
@@ -81,8 +82,17 @@ func (p *Proxy) CanRegisterCollection(contract *common.Address, user *common.Add
 		return fmt.Errorf("the contract is not ERC-721")
 	}
 
-	// TODO check contract validity
-	// is user the collection minter?
+	owner := p.rpc.CollectionOwner(contract)
+	if owner != nil {
+		if ! bytes.Equal(user.Bytes(), owner.Bytes()) {
+			return fmt.Errorf("the contract is owned by somebody else")
+		}
+	}
+
+	err := p.rpc.Erc721CheckMarketplaceIsApprovedForAll(contract)
+	if err != nil {
+		return fmt.Errorf("the ApprovedForAll check failed; %s", err)
+	}
 
 	return nil
 }
