@@ -24,6 +24,9 @@ type Pinner struct {
 
 // New provides new Pinner instance.
 func New(cfg *config.Config) *Pinner {
+	if cfg.Ipfs.GatewayBearer == "" {
+		panic("unable to init Pinner - Pinata bearer token not configured")
+	}
 	return &Pinner{
 		pinataBearer: cfg.Ipfs.GatewayBearer,
 	}
