@@ -75,3 +75,27 @@ func (o *Opera) SupportsInterface(adr *common.Address, in string) bool {
 	// we expect 32 bytes 0x0000000000000000000000000000000000000000000000000000000000000001 for TRUE
 	return len(data) == 32 && data[0] == 0 && data[31] > 0
 }
+
+// CollectionOwner tries to get the owner of the given collection.
+// The call uses public owner access, if available and returns nil if the owner is not known.
+// Solidity: function owner() view returns(address)
+func (o *Opera) CollectionOwner(contract *common.Address) *common.Address {
+	data, err := o.ftm.CallContract(context.Background(), ethereum.CallMsg{
+		From: common.Address{},
+		To:   contract,
+		Data: hexutils.HexToBytes("8da5cb5b"),
+	}, nil)
+	if err != nil {
+		log.Warningf("owner of %s not available; %s", contract.String(), err.Error())
+		return nil
+	}
+
+	// we expect 32 bytes of address in return
+	if len(data) != 32 {
+		log.Warningf("owner of %s not loaded; %d bytes given, expected 32 bytes", contract.String(), len(data))
+		return nil
+	}
+
+	owner := common.BytesToAddress(data)
+	return &owner
+}

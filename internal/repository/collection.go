@@ -70,8 +70,13 @@ func (p *Proxy) CanMint(contract *common.Address, user *common.Address, fee *big
 	return p.rpc.CanMintErc1155(contract, user, fee)
 }
 
+// CollectionOwner tries to get the owner of the given collection.
+func (p *Proxy) CollectionOwner(contract *common.Address) *common.Address {
+	return p.rpc.CollectionOwner(contract)
+}
 
-func (p *Proxy) CanRegisterCollection(contract *common.Address, user *common.Address) (error) {
+// CanRegisterCollection checks if the given collection can be registered.
+func (p *Proxy) CanRegisterCollection(contract *common.Address, user *common.Address) error {
 	if !p.IsErc721Contract(contract) {
 		return fmt.Errorf("the contract is not ERC-721")
 	}
