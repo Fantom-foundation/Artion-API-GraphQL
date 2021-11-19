@@ -21,6 +21,9 @@ const defaultMintingTestTokenUrl = "https://minter.artion.io/default/access/mint
 // defaultMintingTestFee is the default fee we try on minting test (10 FTM).
 var defaultMintingTestFee = hexutil.MustDecodeBig("0x8AC7230489E80000")
 
+// exampleAddress is random address for trivial "any address" check
+var exampleAddress = common.HexToAddress("0x881d953652933937186BDf0680eD3c3c8a0162Ab")
+
 // Erc721StartingBlockNumber provides the first important block number for the ERC-721 contract.
 // We try to get the first Transfer() event on the contract,
 // anything before it is irrelevant for this API.
@@ -123,4 +126,23 @@ func (o *Opera) Erc721TokenUri(contract *common.Address, tokenId *big.Int) (stri
 		*abi.ConvertType(res[0], new(string)).(*string),
 		"{id}",
 		fmt.Sprintf("%064x", tokenId), -1), nil
+}
+
+// Erc721CheckMarketplaceIsApprovedForAll checks if the marketplace contract is allowed to manipulate with any tokens in the collection.
+func (o *Opera) Erc721CheckMarketplaceIsApprovedForAll(contract *common.Address) error {
+	// instantiate contract
+	erc, err := contracts.NewErc721(*contract, o.ftm)
+	if err != nil {
+		return err
+	}
+	// check if the marketplace is approved to manipulate with tokens of "any" random address
+	// (actually only this random one - best afford)
+	isApproved, err := erc.IsApprovedForAll(nil, exampleAddress, *o.marketplaceAddress)
+	if err != nil {
+		return err
+	}
+	if ! isApproved {
+		return fmt.Errorf("the marketplace contract (%s) is not ApprovedForAll in the collection", o.marketplaceAddress.String())
+	}
+	return nil
 }

@@ -61,6 +61,8 @@ type Opera struct {
 	auctionV1Contract *contracts.FantomAuctionV1
 	tokenRegistryContract *contracts.FantomTokenRegistry
 	rngFeedContract *contracts.RandomNumberOracle
+
+	marketplaceAddress *common.Address
 }
 
 // RegisterContract adds a new contract address to the RPC provider.
@@ -85,6 +87,7 @@ func (o *Opera) RegisterContract(ct string, addr *common.Address) (err error) {
 		}
 
 	case "market":
+		o.marketplaceAddress = addr
 		o.marketplace, err = contracts.NewFantomMarketplace(*addr, o.ftm)
 		if err == nil {
 			log.Noticef("loaded %s contract at %s", ct, addr.String())
