@@ -78,6 +78,9 @@ type Token {
     # Offered price for selling the token
     offeredPrice: TokenPrice
 
+    # Price of the last trade (finished auction/listing/offer)
+    lastTradePrice: TokenPrice
+
     # How much times was the token viewed.
     views: BigInt!
 

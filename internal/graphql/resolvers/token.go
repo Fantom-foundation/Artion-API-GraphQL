@@ -254,6 +254,13 @@ func (t *Token) OfferedPrice() (*types.TokenPrice, error) {
 	return &t.MaxOfferPrice, nil
 }
 
+func (t *Token) LastTradePrice() (*types.TokenPrice, error) {
+	if t.AmountLastTrade.Amount.ToInt().Uint64() == 0 {
+		return nil, nil
+	}
+	return &t.AmountLastTrade, nil
+}
+
 func (t *Token) PriceHistory(args struct {
 	From types.Time
 	To   types.Time
