@@ -24,6 +24,9 @@ func TestJsonDecode(t *testing.T) {
 	meta, err = DecodeJsonMetadata([]byte(data))
 	g.Expect(err).To(gomega.BeNil())
 	g.Expect(meta.Name).To(gomega.Equal("tst"))
+	g.Expect(*meta.Properties.Royalty).To(gomega.Equal("0"))
+	g.Expect(*meta.Properties.Symbol).To(gomega.Equal("tst"))
+	g.Expect(*meta.Properties.IpRights).To(gomega.Equal("https://artion2.mypinata.cloud/def"))
 
 	data = "{\"name\":\"tst\",\"image\":\"https://artion2.mypinata.cloud/abc\",\"description\":\"aaa\",\"properties\":{\"symbol\":\"tst\",\"address\":\"\",\"royalty\":\"0\",\"IP_Rights\":\"\",\"collection\":\"Collection\"}}"
 	meta, err = DecodeJsonMetadata([]byte(data))

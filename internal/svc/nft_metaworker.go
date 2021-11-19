@@ -161,6 +161,10 @@ func (mwt *nftMetadataWorkerThread) update(tok *types.Token) {
 
 	updateTokenCategoriesFromCollection(tok)
 
+	if tok.Royalty == nil {
+		updateTokenRoyalty(tok)
+	}
+
 	// does this token make a sense?
 	tok.IsActive = tok.Name != "" || tok.Description != "" || tok.ImageURI != ""
 
@@ -227,5 +231,16 @@ func updateTokenCategoriesFromCollection(tok *types.Token) {
 		if err != nil {
 			log.Errorf("failed to decode categories for token contract %s; %s", tok.Contract.String(), err.Error())
 		}
+	}
+}
+
+// updateTokenRoyalty loads token royalty and fee recipient
+func updateTokenRoyalty(tok *types.Token) {
+	royalty, recipient, err := repo.GetTokenRoyalty(tok.Contract, tok.TokenId.ToInt())
+	if err != nil {
+		log.Errorf("failed to load token royalty from marketplace; %s", err)
+	} else if royalty != 0 {
+		tok.Royalty = &royalty
+		tok.FeeRecipient = &recipient
 	}
 }

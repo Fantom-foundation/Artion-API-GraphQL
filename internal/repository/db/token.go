@@ -116,6 +116,12 @@ const (
 	// fiTokenCategories is the column storing categories ids of the token.
 	fiTokenCategories = "categories"
 
+	// fiTokenRoyalty is the column storing token royalty.
+	fiTokenRoyalty = "royalty"
+
+	// fiTokenFeeRecipient is the column storing recipient of the royalty.
+	fiTokenFeeRecipient = "fee_recipient"
+
 	// fiTokenCachedLikes is the column storing amount of likes synced from shared db.
 	fiTokenCachedLikes = "likes"
 
@@ -234,6 +240,8 @@ func (db *MongoDbBridge) UpdateTokenMetadata(nft *types.Token) error {
 		{Key: fiTokenIpRights, Value: nft.IpRights},
 		{Key: fiTokenSymbol, Value: nft.Symbol},
 		{Key: fiTokenCategories, Value: nft.Categories},
+		{Key: fiTokenRoyalty, Value: nft.Royalty},
+		{Key: fiTokenFeeRecipient, Value: nft.FeeRecipient},
 		{Key: fiTokenMetadataUpdate, Value: nft.MetaUpdate},
 		{Key: fiTokenMetadataUpdateFailures, Value: nft.MetaFailures},
 		{Key: fiTokenIsActive, Value: nft.IsActive},

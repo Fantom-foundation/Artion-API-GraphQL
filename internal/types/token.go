@@ -26,6 +26,7 @@ type Token struct {
 	Contract        common.Address `bson:"contract"`
 	TokenId         hexutil.Big    `bson:"token"`
 	IsActive        bool           `bson:"is_active"`
+	OrdinalIndex    int64          `bson:"index"`
 	Uri             string         `bson:"uri"`
 	Name            string         `bson:"name"`
 	Description     string         `bson:"desc"`
@@ -33,9 +34,12 @@ type Token struct {
 	IpRights        string         `bson:"ip_rights"`
 	ImageURI        string         `bson:"image"`
 	ImageType       ImageType      `bson:"image_type"`
-	OrdinalIndex    int64          `bson:"index"`
 	Created         Time           `bson:"created"`
 	CreatedBy       common.Address `bson:"created_by"`
+
+	Royalty      *int32          `bson:"royalty"` // percents with 2 decimals
+	FeeRecipient *common.Address `bson:"fee_recipient"`
+
 	HasListingSince *Time          `bson:"listed_since"` // earliest start of listing
 	HasAuctionSince *Time          `bson:"auction_since"`
 	HasAuctionUntil *Time          `bson:"auction_until"`

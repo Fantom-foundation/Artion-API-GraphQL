@@ -226,3 +226,22 @@ func (p *Proxy) GetImageThumbnail(imgUri string) (*types.Image, error) {
 func (p *Proxy) UploadTokenData(metadata types.JsonMetadata, image types.Image) (uri string, err error) {
 	return p.pinner.PinTokenData(metadata, image)
 }
+
+type royaltyRecipient struct {
+	royalty uint16
+	recipient common.Address
+}
+
+// GetTokenRoyalty provides fee for token minter when the token is sold and its recipient (royalty has 2 decimals)
+func (p *Proxy) GetTokenRoyalty(contract common.Address, tokenId *big.Int) (royalty int32, recipient common.Address, err error) {
+	var key strings.Builder
+	key.WriteString("GetTokenRoyalty")
+	key.WriteString(contract.String())
+	key.WriteString(tokenId.String())
+
+	rr, err, _ := p.callGroup.Do(key.String(), func() (interface{}, error) {
+		royalty, recipient, err := p.rpc.GetTokenRoyalty(contract, tokenId)
+		return royaltyRecipient{royalty,recipient}, err
+	})
+	return int32(rr.(royaltyRecipient).royalty), rr.(royaltyRecipient).recipient, err
+}

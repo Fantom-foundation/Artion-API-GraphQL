@@ -30,6 +30,12 @@ type Token {
     # Time when was the token created on chain.
     created: Time!
 
+    # Fee for token minter in percents of trade with 2 decimals
+    royalty: Int
+
+    # Recipient of the royalty fee (typically token minter)
+    feeRecipient: Address
+
     # Whether is the item listed for sale. (Buy now)
     hasListing: Boolean!
 
