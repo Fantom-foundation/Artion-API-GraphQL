@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"time"
 )
@@ -22,16 +23,25 @@ func UploadImageHandler(log logger.Logger, process uploadProcessor) http.Handler
 			if r := recover(); r != nil {
 				log.Errorf("Panic in UploadImageHandler handler; %v", r)
 				w.WriteHeader(500)
-				fmt.Fprintf(w, "Request handling failed, could not upload; %v", r)
+
+				_, err := fmt.Fprintf(w, "Request handling failed, could not upload; %v", r)
+				if err != nil {
+					log.Errorf("could not write HTTP content; %s", err.Error())
+				}
 			}
 		}()
 
 		statusCode, response := processImageUpload(req, process, log)
+
 		w.WriteHeader(statusCode)
-		w.Write([]byte(response))
+		_, err := w.Write([]byte(response))
+		if err != nil {
+			log.Errorf("could not write HTTP response; %s", err.Error())
+		}
 	})
 }
 
+// processImageUpload handles image upload request and provides appropriate output response.
 func processImageUpload(req *http.Request, process uploadProcessor, log logger.Logger) (statusCode int, response string) {
 	identity, err := auth.GetIdentityOrErr(req.Context())
 	if err != nil {
@@ -44,7 +54,13 @@ func processImageUpload(req *http.Request, process uploadProcessor, log logger.L
 	}
 
 	file, _, err := req.FormFile("file")
-	defer file.Close()
+	defer func(file multipart.File) {
+		err := file.Close()
+		if err != nil {
+			log.Errorf("could not close form file; %s", err.Error())
+		}
+	}(file)
+	
 	if err != nil {
 		return 500, "Unable to parse multipart/form-data file \"file\""
 	}
@@ -76,6 +92,7 @@ func processImageUpload(req *http.Request, process uploadProcessor, log logger.L
 	return 200, response
 }
 
+// StoreUserAvatar sends an avatar image to backed repository.
 func StoreUserAvatar(identity common.Address, image types.Image, _ *http.Request) (string, error) {
 	err := repository.R().UploadUserAvatar(identity, image)
 	if err != nil {
@@ -84,6 +101,7 @@ func StoreUserAvatar(identity common.Address, image types.Image, _ *http.Request
 	return "OK", nil
 }
 
+// StoreUserBanner sends an user banner to the backend repository.
 func StoreUserBanner(identity common.Address, image types.Image, _ *http.Request) (string, error) {
 	err := repository.R().UploadUserBanner(identity, image)
 	if err != nil {
@@ -92,6 +110,7 @@ func StoreUserBanner(identity common.Address, image types.Image, _ *http.Request
 	return "OK", nil
 }
 
+// StoreToken validates and finalizes NFT metadata structure and sends it for uploading.
 func StoreToken(identity common.Address, image types.Image, req *http.Request) (string, error) {
 	metadataJson := req.FormValue("metadata")
 	if metadataJson == "" {
@@ -108,6 +127,7 @@ func StoreToken(identity common.Address, image types.Image, req *http.Request) (
 	// override author address
 	metadata.Properties.Address = identity.String()
 	metadata.Properties.Recipient = identity.String()
+
 	// override createdAt
 	metadata.Properties.CreatedAt = time.Now().UTC().Format(time.RFC3339)
 
@@ -118,22 +138,27 @@ func StoreToken(identity common.Address, image types.Image, req *http.Request) (
 	return uri, nil
 }
 
+// StoreCollection validates NFT collection metadata and sends the validated data to backend repository.
 func StoreCollection(identity common.Address, image types.Image, req *http.Request) (string, error) {
 	applicationJson := req.FormValue("data")
 	if applicationJson == "" {
 		return "", fmt.Errorf("no collection registration application sent")
 	}
+
 	app, err := types.DecodeCollectionApplication([]byte(applicationJson))
 	if err != nil {
 		return "", fmt.Errorf("failed to parse collection registration application json; %s", err)
 	}
+
 	err = repository.R().CanRegisterCollection(&app.Contract, &identity)
 	if err != nil {
 		return "", err
 	}
+
 	err = repository.R().UploadCollectionApplication(*app, image, identity)
 	if err != nil {
 		return "", fmt.Errorf("collection upload failed; %s", err)
 	}
+
 	return "OK", nil
 }
