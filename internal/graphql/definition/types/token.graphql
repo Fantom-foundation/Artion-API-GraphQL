@@ -18,10 +18,10 @@ type Token {
     # URL of IP document
     ipRights: String!
 
-    # URL of the token image
+    # URL of the token image (IPFS-HTTP proxy for IPFS uris)
     image: String
 
-    # URL of the token image on the resizing proxy
+    # URL of the resized token image (on the API server)
     imageThumb: String
 
     # MIME type of the token image

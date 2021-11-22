@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
+	"strings"
 	"time"
 )
 
@@ -81,6 +82,10 @@ func NewTokenConnection(list *types.TokenList, sorting sorting.TokenSorting) (co
 func (t *Token) Image() *string {
 	if t.ImageURI == "" {
 		return nil
+	}
+	if strings.HasPrefix(t.ImageURI, "ipfs://") {
+		uri := "https://artion.mypinata.cloud/ipfs/" + t.ImageURI[7:]
+		return &uri
 	}
 	return &t.ImageURI
 }
