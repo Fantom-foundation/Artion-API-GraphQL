@@ -156,6 +156,8 @@ func marketCloseOfferWithSale(evt *eth.Log, offer *types.Offer, blk *eth.Header,
 	offer.Closed = (*types.Time)(&up)
 	offer.PayToken = common.BytesToAddress(evt.Data[64:96])
 	offer.UnitPrice = hexutil.Big(*new(big.Int).SetBytes(evt.Data[128:]))
+	tokenPrice := repo.GetUnifiedPriceAt(lo.marketplace, &offer.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&offer.UnitPrice))
+	offer.UnifiedPrice = tokenPrice.Usd
 
 	// store the listing into database
 	if err := repo.StoreOffer(offer); err != nil {
@@ -166,7 +168,7 @@ func marketCloseOfferWithSale(evt *eth.Log, offer *types.Offer, blk *eth.Header,
 	if err := repo.TokenMarkSold(
 		&offer.Contract,
 		(*big.Int)(&offer.TokenId),
-		repo.GetUnifiedPriceAt(lo.marketplace, &offer.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&offer.UnitPrice)),
+		&tokenPrice,
 		&up,
 	); err != nil {
 		log.Errorf("could not mark token as sold; %s", err.Error())
@@ -182,6 +184,9 @@ func marketCloseOfferWithSale(evt *eth.Log, offer *types.Offer, blk *eth.Header,
 		TokenId:      offer.TokenId,
 		From:         *seller,
 		To:           &offer.ProposedBy,
+		PayToken:     &offer.PayToken,
+		UnitPrice:    &offer.UnitPrice,
+		UnifiedPrice: tokenPrice.Usd,
 	}
 	if err := repo.StoreActivity(&activity); err != nil {
 		log.Errorf("could not store offer activity; %s", err.Error())

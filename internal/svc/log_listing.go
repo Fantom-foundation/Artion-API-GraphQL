@@ -266,7 +266,7 @@ func marketCloseListingWithSale(evt *eth.Log, lst *types.Listing, blk *eth.Heade
 	if err := repo.TokenMarkSold(
 		&lst.Contract,
 		(*big.Int)(&lst.TokenId),
-		tokenPrice,
+		&tokenPrice,
 		&up,
 	); err != nil {
 		log.Errorf("could not mark token as sold; %s", err.Error())

@@ -457,7 +457,7 @@ func finishAuction(contract *common.Address, tokenID *big.Int, owner *common.Add
 	if err := repo.TokenMarkSold(
 		&auction.Contract,
 		(*big.Int)(&auction.TokenId),
-		price,
+		&price,
 		(*time.Time)(&when),
 	); err != nil {
 		log.Errorf("could not mark token as sold; %s", err.Error())

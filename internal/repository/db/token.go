@@ -434,8 +434,8 @@ func (db *MongoDbBridge) TokenMarkUnBid(contract *common.Address, tokenID *big.I
 	})
 }
 
-// TokenMarkSold marks the given NFT as sold for the given price.
-func (db *MongoDbBridge) TokenMarkSold(contract *common.Address, tokenID *big.Int, price types.TokenPrice, ts *time.Time) error {
+// TokenMarkSold marks the given NFT as transferred OR sold on a listing/offer/auction for the given price.
+func (db *MongoDbBridge) TokenMarkSold(contract *common.Address, tokenID *big.Int, price *types.TokenPrice, tradeTime *time.Time) error {
 	t, err := db.GetToken(contract, tokenID)
 	if err != nil {
 		log.Errorf("unable to load token %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
@@ -451,12 +451,15 @@ func (db *MongoDbBridge) TokenMarkSold(contract *common.Address, tokenID *big.In
 	t.MinListPrice, t.MinListValid = db.MinListingPrice(contract, tokenID)
 	t.MaxOfferPrice, t.MaxOfferValid = db.MaxOfferPrice(contract, tokenID)
 	t.HasOfferUntil = db.OpenOfferUntil(contract, tokenID)
-	t.AmountLastTrade = price
+	if price != nil { // is this trade? (not free transfer only)
+		t.LastTrade = (*types.Time)(tradeTime)
+		t.AmountLastTrade = *price
+	}
 	t.HasBids = false
 	t.AmountPrice, t.PriceValid = db.getTokenPrice(t)
 
 	return db.UpdateToken(contract, tokenID, bson.D{
-		{Key: fiTokenLastTrade, Value: *ts},
+		{Key: fiTokenLastTrade, Value: t.LastTrade},
 		{Key: fiTokenHasListingSince, Value: t.HasListingSince},
 		{Key: fiTokenMinListPrice, Value: t.MinListPrice},
 		{Key: fiTokenMinListValid, Value: t.MinListValid},

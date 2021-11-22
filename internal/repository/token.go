@@ -156,9 +156,9 @@ func (p *Proxy) TokenMarkUnBid(contract *common.Address, tokenID *big.Int) error
 	return p.db.TokenMarkUnBid(contract, tokenID)
 }
 
-// TokenMarkSold marks the given NFT as sold on a listing/offer/auction for the given price.
-func (p *Proxy) TokenMarkSold(contract *common.Address, tokenID *big.Int, price types.TokenPrice, ts *time.Time) error {
-	return p.db.TokenMarkSold(contract, tokenID, price, ts)
+// TokenMarkSold marks the given NFT as transferred OR sold on a listing/offer/auction for the given price.
+func (p *Proxy) TokenMarkSold(contract *common.Address, tokenID *big.Int, price *types.TokenPrice, tradeTime *time.Time) error {
+	return p.db.TokenMarkSold(contract, tokenID, price, tradeTime)
 }
 
 // ListTokens loads a list of tokens from the local database.

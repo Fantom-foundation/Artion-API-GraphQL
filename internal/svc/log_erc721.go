@@ -244,4 +244,14 @@ func setAuctionsListingsActive(contract *common.Address, tokenID *big.Int, from 
 	if err := repository.R().SetAuctionActive(contract, tokenID, to, true); err != nil {
 		log.Errorf("unable to update auction active status on ownership change; %s", err.Error())
 	}
+
+	// update the token price after listings/auction changes
+	if err := repo.TokenMarkSold(
+		contract,
+		tokenID,
+		nil,
+		nil,
+	); err != nil {
+		log.Errorf("could not update token price; %s", err.Error())
+	}
 }
