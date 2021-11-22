@@ -22,7 +22,7 @@ type ListingEdge struct {
 }
 
 func (edge ListingEdge) Cursor() (types.Cursor, error) {
-	return sorting.ListingSortingNone.GetCursor((*types.Listing)(edge.Node))
+	return sorting.ListingSortingCreated.GetCursor((*types.Listing)(edge.Node))
 }
 
 type ListingConnection struct {

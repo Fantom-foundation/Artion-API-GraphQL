@@ -218,7 +218,7 @@ func (db *MongoDbBridge) listOffers(filter bson.D, cursor types.Cursor, count in
 		return nil, err
 	}
 
-	ld, err := db.findPaginated(col, filter, cursor, count, sorting.OfferSortingNone, backward)
+	ld, err := db.findPaginated(col, filter, cursor, count, sorting.OfferSortingCreated, !backward)
 	if err != nil {
 		log.Errorf("error loading Offers list; %s", err.Error())
 		return nil, err

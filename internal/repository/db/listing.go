@@ -236,7 +236,7 @@ func (db *MongoDbBridge) listListings(filter bson.D, cursor types.Cursor, count 
 		return nil, err
 	}
 
-	ld, err := db.findPaginated(col, filter, cursor, count, sorting.ListingSortingNone, backward)
+	ld, err := db.findPaginated(col, filter, cursor, count, sorting.ListingSortingCreated, !backward)
 	if err != nil {
 		log.Errorf("error loading listings list; %s", err.Error())
 		return nil, err

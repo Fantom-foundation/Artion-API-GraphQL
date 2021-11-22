@@ -29,6 +29,9 @@ type Listing {
 
     # When was the item sold or unlisted
     closed: Time
+
+    # Is the listing creator owner of the token yet?
+    isActive: Boolean!
 }
 
 type ListingEdge {

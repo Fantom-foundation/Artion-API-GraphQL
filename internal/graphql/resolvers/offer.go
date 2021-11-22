@@ -28,7 +28,7 @@ func (o Offer) ProposedByUser() (User, error) {
 }
 
 func (edge OfferEdge) Cursor() (types.Cursor, error) {
-	return sorting.OfferSortingNone.GetCursor((*types.Offer)(edge.Node))
+	return sorting.OfferSortingCreated.GetCursor((*types.Offer)(edge.Node))
 }
 
 func NewOfferConnection(list *types.OfferList) (con *OfferConnection, err error) {
