@@ -36,6 +36,9 @@ type Token {
     # Recipient of the royalty fee (typically token minter)
     feeRecipient: Address
 
+    # Recipient of the royalty fee (typically token minter)
+    feeRecipientUser: User
+
     # Whether is the item listed for sale. (Buy now)
     hasListing: Boolean!
 
@@ -74,6 +77,9 @@ type Token {
 
     # Offered price for selling the token
     offeredPrice: TokenPrice
+
+    # Price of the last trade (finished auction/listing/offer)
+    lastTradePrice: TokenPrice
 
     # How much times was the token viewed.
     views: BigInt!

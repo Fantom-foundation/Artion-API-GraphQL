@@ -157,6 +157,10 @@ func (t *Token) Collection() (*Collection, error) {
 	return NewCollection(&t.Contract)
 }
 
+func (t *Token) FeeRecipientUser() (*User, error) {
+	return getUserByAddressPtr(t.FeeRecipient)
+}
+
 func (t *Token) Ownerships(args struct{ PaginationInput }) (con *OwnershipConnection, err error) {
 	cursor, count, backward, err := args.ToRepositoryInput()
 	if err != nil {
@@ -248,6 +252,13 @@ func (t *Token) OfferedPrice() (*types.TokenPrice, error) {
 		return nil, nil
 	}
 	return &t.MaxOfferPrice, nil
+}
+
+func (t *Token) LastTradePrice() (*types.TokenPrice, error) {
+	if t.AmountLastTrade.Amount.ToInt().Uint64() == 0 {
+		return nil, nil
+	}
+	return &t.AmountLastTrade, nil
 }
 
 func (t *Token) PriceHistory(args struct {

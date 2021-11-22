@@ -582,6 +582,7 @@ func (db *MongoDbBridge) TokenPriceRefresh(t *types.Token) error {
 	return db.UpdateToken(&t.Contract, t.TokenId.ToInt(), updates)
 }
 
+// getTokenPrice aggregates price fields in the token struct and provides price for tokens sorting
 func (db *MongoDbBridge) getTokenPrice(t *types.Token) (tokenPrice int64, priceValidUntil *types.Time) {
 	now := time.Now()
 
@@ -608,6 +609,12 @@ func (db *MongoDbBridge) getTokenPrice(t *types.Token) (tokenPrice int64, priceV
 				priceValidUntil = t.MinListValid
 			}
 		}
+	}
+
+	// no listing or auction? use last trade price
+	if tokenPrice == 0 {
+		tokenPrice = t.AmountLastTrade.Usd
+		priceValidUntil = nil
 	}
 
 	return

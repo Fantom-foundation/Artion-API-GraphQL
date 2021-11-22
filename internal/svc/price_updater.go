@@ -95,7 +95,7 @@ func (mu *priceUpdater) schedulePriceRefreshSet() {
 
 	rs, err := repo.TokenPriceRefreshSet(priceRefreshSetSize)
 	if err != nil {
-		log.Errorf("metadata refresh set not available; %s", err.Error())
+		log.Errorf("price refresh set not available; %s", err.Error())
 		return
 	}
 
