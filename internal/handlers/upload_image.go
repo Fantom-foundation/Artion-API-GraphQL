@@ -48,22 +48,22 @@ func processImageUpload(req *http.Request, process uploadProcessor, log logger.L
 		return 401, "Unauthorized"
 	}
 
-	err = req.ParseMultipartForm(10 * 1024 * 1024) // max 10MB
+	err = req.ParseMultipartForm(cfg.Server.MaxParserMemory)
 	if err != nil {
 		return 500, "Unable to parse multipart/form-data"
 	}
 
 	file, _, err := req.FormFile("file")
+	if err != nil {
+		return 500, "Unable to parse multipart/form-data file \"file\""
+	}
+
 	defer func(file multipart.File) {
 		err := file.Close()
 		if err != nil {
 			log.Errorf("could not close form file; %s", err.Error())
 		}
 	}(file)
-	
-	if err != nil {
-		return 500, "Unable to parse multipart/form-data file \"file\""
-	}
 
 	buf := new(bytes.Buffer)
 	if _, err := io.Copy(buf, file); err != nil {

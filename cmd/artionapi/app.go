@@ -44,6 +44,7 @@ func (app *apiServer) init() {
 	app.log = logger.New(app.cfg)
 
 	// make sure to pass logger and config to internals
+	handlers.SetConfig(app.cfg)
 	repository.SetConfig(app.cfg)
 	repository.SetLogger(app.log)
 	resolvers.SetConfig(app.cfg)

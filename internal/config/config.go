@@ -55,6 +55,7 @@ type Server struct {
 	IdleTimeout     int64    `mapstructure:"idle_timeout"`
 	HeaderTimeout   int64    `mapstructure:"header_timeout"`
 	ResolverTimeout int64    `mapstructure:"resolver_timeout"`
+	MaxParserMemory int64    `mapstructure:"mem_max"`
 }
 
 // Log represents the logger configuration

@@ -22,6 +22,7 @@ const (
 	defIdleTimeout     = 1
 	defHeaderTimeout   = 1
 	defResolverTimeout = 30
+	defMaxParserMemory = int64(10 * 1024 * 1024) // 10MB
 
 	// defLoggingLevel holds default Logging level
 	// See `godoc.org/github.com/op/go-logging` for the full format specification
@@ -94,12 +95,13 @@ func applyDefaults(cfg *viper.Viper) {
 	cfg.SetDefault(keyCacheEvictionTime, defCacheEvictionTime)
 	cfg.SetDefault(keyCacheMaxSize, defCacheMaxSize)
 
-	// server timeouts
+	// server related
 	cfg.SetDefault(keyTimeoutRead, defReadTimeout)
 	cfg.SetDefault(keyTimeoutWrite, defWriteTimeout)
 	cfg.SetDefault(keyTimeoutHeader, defHeaderTimeout)
 	cfg.SetDefault(keyTimeoutIdle, defIdleTimeout)
 	cfg.SetDefault(keyTimeoutResolver, defResolverTimeout)
+	cfg.SetDefault(keyMaxParserMemory, defMaxParserMemory)
 
 	// cors
 	cfg.SetDefault(keyCorsAllowOrigins, defCorsAllowOrigins)

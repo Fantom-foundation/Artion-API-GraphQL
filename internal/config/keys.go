@@ -20,6 +20,7 @@ const (
 	keyTimeoutIdle     = "server.idle_timeout"
 	keyTimeoutHeader   = "server.header_timeout"
 	keyTimeoutResolver = "server.resolver_timeout"
+	keyMaxParserMemory = "server.mem_max"
 
 	// logging related options
 	keyLoggingLevel  = "log.level"
