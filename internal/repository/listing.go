@@ -18,6 +18,11 @@ func (p *Proxy) StoreListing(lst *types.Listing) error {
 	return p.db.StoreListing(lst)
 }
 
+// SetListingActive sets IsActive state of listing when token ownership changes.
+func (p *Proxy) SetListingActive(contract *common.Address, tokenID *big.Int, owner *common.Address, isActive bool) error {
+	return p.db.SetListingActive(contract, tokenID, owner, isActive)
+}
+
 func (p *Proxy) ListListings(nft *common.Address, tokenId *hexutil.Big, owner *common.Address, cursor types.Cursor, count int, backward bool) (out *types.ListingList, err error) {
 	return p.db.ListListings(nft, tokenId, owner, cursor, count, backward)
 }

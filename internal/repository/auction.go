@@ -17,6 +17,11 @@ func (p *Proxy) StoreAuction(au *types.Auction) error {
 	return p.db.StoreAuction(au)
 }
 
+// SetAuctionActive sets IsActive state of auction when token ownership changes.
+func (p *Proxy) SetAuctionActive(contract *common.Address, tokenID *big.Int, owner *common.Address, isActive bool) error {
+	return p.db.SetAuctionActive(contract, tokenID, owner, isActive)
+}
+
 // ExtendAuctionDetailAt adds contract stored details to the provided auction record.
 func (p *Proxy) ExtendAuctionDetailAt(au *types.Auction, block *big.Int) error {
 	return p.rpc.ExtendAuctionDetailAt(au, block)

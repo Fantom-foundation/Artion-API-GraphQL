@@ -37,6 +37,9 @@ const (
 
 	// fiListingUnifiedPrice represents the name of the DB column storing listed price of the token in USD.
 	fiListingUnifiedPrice = "uprice"
+
+	// fiListingIsActive represents the name of the DB column storing if the listing creator currently own the token.
+	fiListingIsActive = "is_active"
 )
 
 // GetListing provides the token listing stored in the database, if available.
@@ -95,6 +98,27 @@ func (db *MongoDbBridge) StoreListing(lst *types.Listing) error {
 	return nil
 }
 
+// SetListingActive sets IsActive state of listing when token ownership changes.
+func (db *MongoDbBridge) SetListingActive(contract *common.Address, tokenID *big.Int, owner *common.Address, isActive bool) error {
+	// get the collection
+	col := db.client.Database(db.dbName).Collection(coListings)
+	rs, err := col.UpdateOne(
+		context.Background(),
+		bson.D{{Key: fieldId, Value: types.ListingID(contract, tokenID, owner)}},
+		bson.D{{Key: "$set", Value: bson.D{
+			{Key: fiListingIsActive, Value: isActive},
+		}}},
+	)
+	if err != nil {
+		log.Errorf("can not update is_active of listing %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err.Error())
+		return err
+	}
+	if rs.UpsertedCount > 0 {
+		log.Infof("listing %s/%s is_active updated", contract.String(), (*hexutil.Big)(tokenID).String())
+	}
+	return nil
+}
+
 // OpenListingSince pulls the earliest date of open listing for the token.
 // If there is no open listing, it returns nil.
 func (db *MongoDbBridge) OpenListingSince(contract *common.Address, tokenID *big.Int) *types.Time {
@@ -143,8 +167,9 @@ func (db *MongoDbBridge) MinListingPrice(contract *common.Address, tokenID *big.
 	sr := col.FindOne(context.Background(), bson.D{
 		{Key: fiListingContract, Value: *contract},
 		{Key: fiListingTokenId, Value: hexutil.Big(*tokenID)},
-		{Key: fiListingClosed, Value: bson.D{{Key: "$type", Value: 10}}}, // not closed yet
+		{Key: fiListingClosed, Value: bson.D{{Key: "$type", Value: 10}}}, // closed=null = not closed (sold) yet
 		{Key: fiListingStartTime, Value: bson.D{{Key: "$lte", Value: now}}}, // already started
+		{Key: fiListingIsActive, Value: bson.D{{Key: "$ne", Value: false}}}, // listing creator own the token
 	}, options.FindOne().SetSort(bson.D{{Key: fiListingUnifiedPrice, Value: 1}}))
 	if sr.Err() != nil {
 		if sr.Err() != mongo.ErrNoDocuments {

@@ -41,6 +41,9 @@ const (
 
 	// fiAuctionLatestBidder is the name of the DB column storing the address of the latest bidder.
 	fiAuctionLatestBidder = "last_bidder"
+
+	// fiAuctionIsActive represents the name of the DB column storing if the auction creator currently own the token.
+	fiAuctionIsActive = "is_active"
 )
 
 // GetAuction provides the auction stored in the database, if available.
@@ -161,6 +164,30 @@ func (db *MongoDbBridge) SetAuctionBidder(contract *common.Address, tokenID *big
 
 	if rs.ModifiedCount > 0 {
 		log.Infof("auction %s/%s bidder updated", contract.String(), (*hexutil.Big)(tokenID).String())
+	}
+	return nil
+}
+
+// SetAuctionActive sets IsActive state of auction when token ownership changes.
+func (db *MongoDbBridge) SetAuctionActive(contract *common.Address, tokenID *big.Int, owner *common.Address, isActive bool) error {
+	// get the collection
+	col := db.client.Database(db.dbName).Collection(coAuctions)
+	rs, err := col.UpdateOne(
+		context.Background(),
+		bson.D{
+			{Key: fieldId, Value: types.AuctionID(contract, tokenID)},
+			{Key: fiAuctionOwner, Value: *owner},
+		},
+		bson.D{{Key: "$set", Value: bson.D{
+			{Key: fiAuctionIsActive, Value: isActive},
+		}}},
+	)
+	if err != nil {
+		log.Errorf("can not update is_active of auction %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err.Error())
+		return err
+	}
+	if rs.UpsertedCount > 0 {
+		log.Infof("auction %s/%s is_active updated", contract.String(), (*hexutil.Big)(tokenID).String())
 	}
 	return nil
 }

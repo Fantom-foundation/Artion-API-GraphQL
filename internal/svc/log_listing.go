@@ -39,6 +39,7 @@ func marketNFTListed(evt *eth.Log, lo *logObserver) {
 		LastUpdate:   nil,
 		Closed:       nil,
 		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
+		IsActive:     true,
 	}
 	tokenPrice := repo.GetUnifiedPriceAt(lo.marketplace, &lst.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&lst.UnitPrice))
 	lst.UnifiedPrice = tokenPrice.Usd

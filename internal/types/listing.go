@@ -23,6 +23,7 @@ type Listing struct {
 	LastUpdate   *Time          `bson:"updated"`
 	Closed       *Time          `bson:"closed"`
 	OrdinalIndex int64          `bson:"index"`
+	IsActive     bool           `bson:"is_active"` // if the listing creator currently own the token
 }
 
 // ListingID generates unique listing ID for the given contract, token, and owner.

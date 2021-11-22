@@ -146,6 +146,9 @@ func erc721TokenTransfer(evt *eth.Log, lo *logObserver) {
 		}
 	}
 
+	// update listings/auctions status
+	setAuctionsListingsActive(&evt.Address, (*big.Int)(&tokenID), &from, &to)
+
 	// log transfer activity
 	qty := big.NewInt(1) // 1 for every ERC-721 transfer
 	logTokenTransferActivity(evt, blk, tokenID, qty, from, to)
@@ -224,5 +227,21 @@ func logTokenTransferActivity(evt *eth.Log, blk *eth.Header, tokenID hexutil.Big
 	if err := repo.StoreActivity(&activity); err != nil {
 		log.Errorf("could not store transfer activity; %s", err.Error())
 		return
+	}
+}
+
+// setAuctionsListingsActive sets listings/auction inactive for not-already-owner (and back)
+func setAuctionsListingsActive(contract *common.Address, tokenID *big.Int, from *common.Address, to *common.Address) {
+	if err := repository.R().SetListingActive(contract, tokenID, from, false); err != nil {
+		log.Errorf("unable to update listing active status on ownership change; %s", err.Error())
+	}
+	if err := repository.R().SetListingActive(contract, tokenID, to, true); err != nil {
+		log.Errorf("unable to update listing active status on ownership change; %s", err.Error())
+	}
+	if err := repository.R().SetAuctionActive(contract, tokenID, from, false); err != nil {
+		log.Errorf("unable to update auction active status on ownership change; %s", err.Error())
+	}
+	if err := repository.R().SetAuctionActive(contract, tokenID, to, true); err != nil {
+		log.Errorf("unable to update auction active status on ownership change; %s", err.Error())
 	}
 }

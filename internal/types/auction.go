@@ -29,6 +29,7 @@ type Auction struct {
 	WinningBid    *hexutil.Big    `bson:"win_bid"`
 	Resolved      *Time           `bson:"resolved"`
 	OrdinalIndex  int64           `bson:"index"`
+	IsActive       bool           `bson:"is_active"` // if the auction creator currently own the token
 }
 
 // AuctionID generates unique auction ID for the given contract, token, and owner.

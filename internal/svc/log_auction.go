@@ -28,7 +28,7 @@ func auctionCreated(evt *eth.Log, lo *logObserver) {
 		return
 	}
 
-	// make the listing
+	// make the auction
 	auction := types.Auction{
 		Contract:      common.BytesToAddress(evt.Topics[1].Bytes()),
 		TokenId:       hexutil.Big(*new(big.Int).SetBytes(evt.Topics[2].Bytes())),
@@ -47,6 +47,7 @@ func auctionCreated(evt *eth.Log, lo *logObserver) {
 		Winner:        nil,
 		Resolved:      nil,
 		OrdinalIndex:  types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
+		IsActive:      true,
 	}
 
 	// extend the auction with details pulled from the contract
