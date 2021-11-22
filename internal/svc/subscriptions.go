@@ -17,8 +17,8 @@ type eventListenerSet map[types.EventListener]bool
 
 // SubscriptionsManager provides messaging from services layer to graphql resolvers
 type SubscriptionsManager struct {
-	auctionListeners map[tokenMapKey]eventListenerSet
-	auctionBidMutex  sync.RWMutex
+	auctionListeners   map[tokenMapKey]eventListenerSet
+	auctionBidMutex    sync.RWMutex
 	userEventListeners map[common.Address]eventListenerSet
 	userEventMutex     sync.RWMutex
 }
@@ -64,10 +64,11 @@ func (sm *SubscriptionsManager) PublishAuctionEvent(event types.Event) {
 	sm.auctionBidMutex.Lock()
 	defer sm.auctionBidMutex.Unlock()
 
-	for listener, _ := range sm.auctionListeners[key] {
+	for listener := range sm.auctionListeners[key] {
 		select { // try receive
 		case <-listener.StopChan: // listener context terminated
 			delete(sm.auctionListeners[key], listener)
+			close(listener.EventsChan)
 			continue // skip sending
 		default:
 		}
@@ -94,10 +95,11 @@ func (sm *SubscriptionsManager) PublishUserEvent(user common.Address, event type
 	sm.userEventMutex.Lock()
 	defer sm.userEventMutex.Unlock()
 
-	for listener, _ := range sm.userEventListeners[user] {
+	for listener := range sm.userEventListeners[user] {
 		select { // try receive
 		case <-listener.StopChan: // listener context terminated
 			delete(sm.userEventListeners[user], listener)
+			close(listener.EventsChan)
 			continue // skip sending
 		default:
 		}
