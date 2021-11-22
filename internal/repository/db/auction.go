@@ -114,7 +114,8 @@ func (db *MongoDbBridge) OpenAuctionTimeCheck(contract *common.Address, tokenID 
 			{Key: "$match", Value: bson.D{
 				{Key: fiAuctionContract, Value: *contract},
 				{Key: fiAuctionTokenId, Value: hexutil.Big(*tokenID)},
-				{Key: fiAuctionClosed, Value: bson.D{{Key: "$type", Value: 10}}},
+				{Key: fiAuctionClosed, Value: bson.D{{Key: "$type", Value: 10}}}, // closed = null - not sold yet
+				{Key: fiAuctionIsActive, Value: bson.D{{Key: "$ne", Value: false}}}, // auction creator own the token
 			}},
 		},
 		bson.D{

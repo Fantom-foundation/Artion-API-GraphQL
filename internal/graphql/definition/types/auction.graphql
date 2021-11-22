@@ -47,4 +47,7 @@ type Auction {
 
     # When was the auction resolved (null if not resolved)
     resolved: Time
+
+    # Is the auction creator owner of the token yet?
+    isActive: Boolean!
 }

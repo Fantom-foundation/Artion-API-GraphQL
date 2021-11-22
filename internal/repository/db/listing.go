@@ -132,7 +132,8 @@ func (db *MongoDbBridge) OpenListingSince(contract *common.Address, tokenID *big
 			{Key: "$match", Value: bson.D{
 				{Key: fiListingContract, Value: *contract},
 				{Key: fiListingTokenId, Value: hexutil.Big(*tokenID)},
-				{Key: fiListingClosed, Value: bson.D{{Key: "$type", Value: 10}}}, // closed = null
+				{Key: fiListingClosed, Value: bson.D{{Key: "$type", Value: 10}}}, // closed = null - not sold yet
+				{Key: fiListingIsActive, Value: bson.D{{Key: "$ne", Value: false}}}, // listing creator own the token
 			}},
 		},
 		{
