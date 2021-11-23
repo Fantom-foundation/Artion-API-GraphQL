@@ -137,12 +137,12 @@ func (o *Opera) Erc721CheckMarketplaceIsApprovedForAll(contract *common.Address)
 	}
 	// check if the marketplace is approved to manipulate with tokens of "any" random address
 	// (actually only this random one - best afford)
-	isApproved, err := erc.IsApprovedForAll(nil, exampleAddress, *o.marketplaceAddress)
+	isApproved, err := erc.IsApprovedForAll(nil, exampleAddress, *o.defaultMarketplaceAddress)
 	if err != nil {
 		return err
 	}
 	if ! isApproved {
-		return fmt.Errorf("the marketplace contract (%s) is not ApprovedForAll in the collection", o.marketplaceAddress.String())
+		return fmt.Errorf("the marketplace contract (%s) is not ApprovedForAll in the collection", o.defaultMarketplaceAddress.String())
 	}
 	return nil
 }

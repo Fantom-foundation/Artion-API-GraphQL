@@ -1,7 +1,7 @@
 {
   "_id": "0xa06aecbb8CD9328667f8E05f288e5b3ac1CFf852",
   "name": "FantomMarketplace",
-  "type": "market",
+  "type": "market_v1",
   "created": {"$date": {"$numberLong": "1631892689000"}},
   "block": {"$numberLong":  "17191403"},
   "trx": "0xacfb0b38df48c7866b5a5e6715e3d5faf2fcfaed8c7da609be3b9feaae2fabab"
@@ -17,7 +17,7 @@
 {
   "_id": "0x951Cc69504d39b3eDb155CA99f555E47E044c2F1",
   "name": "FantomAuction",
-  "type": "auction",
+  "type": "auction_v1",
   "created": {"$date": {"$numberLong": "1631892908000"}},
   "block": {"$numberLong":  "17191508"},
   "trx": "0xf17a2742343038a2d5d76e4b086c79240619c8376169d4a7a8a6f01235fbd4f9"

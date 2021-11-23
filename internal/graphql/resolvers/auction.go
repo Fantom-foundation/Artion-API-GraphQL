@@ -7,14 +7,13 @@ import (
 	"context"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"math/big"
 )
 
 type Auction types.Auction
 
 // MinBidAmount is the mount required to be placed as a bid to outbid the current highest bidder.
 func (au *Auction) MinBidAmount() (hexutil.Big, error) {
-	val, err := repository.R().AuctionGetMinBid(&au.Contract, (*big.Int)(&au.TokenId))
+	val, err := repository.R().AuctionGetMinBid((*types.Auction)(au))
 	if err != nil {
 		return hexutil.Big{}, err
 	}

@@ -1,40 +1,32 @@
 package rpc
 
 import (
-	"bytes"
 	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 )
 
-// zeroAddress represents an empty address.
-var zeroAddress = common.Address{}
+// IMarketplaceContract defines single interface for all marketplace contract versions.
+type IMarketplaceContract interface {
+	GetTokenRoyalty(contract common.Address, tokenId *big.Int) (royalty uint16, recipient common.Address, err error)
+	GetPayTokenPrice(token *common.Address, block *big.Int) (*big.Int, error)
+}
 
 // GetTokenRoyalty provides fee for token minter when the token is sold and its recipient (royalty has 2 decimals)
 func (o *Opera) GetTokenRoyalty(contract common.Address, tokenId *big.Int) (royalty uint16, recipient common.Address, err error) {
+	return o.defaultMarketplaceContract.GetTokenRoyalty(contract, tokenId)
+}
 
-	// use token-level royalty if defined
-	royalty, err = o.marketplace.Royalties(nil, contract, tokenId)
-	if err != nil {
-		return 0, common.Address{}, err
-	}
-	if royalty != 0 {
-		recipient, err = o.marketplace.Minters(nil, contract, tokenId)
-		if !bytes.Equal(zeroAddress.Bytes(), recipient.Bytes()) {
-			return
+// GetPayTokenPrice extracts price of 1 whole pay token in USD in 6-decimals fixed point using Marketplace contract.
+func (o *Opera) GetPayTokenPrice(marketplace *common.Address, token *common.Address, block *big.Int) (*big.Int, error) {
+	marketplaceContract := o.defaultMarketplaceContract
+	if marketplace != nil {
+		mc, exists := o.marketplaceContracts[*marketplace]
+		if !exists {
+			log.Errorf("unable to get pay token %s price - unknown marketplace contract %s",
+				token.String(), marketplace.String())
+		} else {
+			marketplaceContract = mc
 		}
 	}
-
-	// use collection-level royalty otherwise
-	collectionRoyalty, err := o.marketplace.CollectionRoyalties(nil, contract)
-	if err != nil {
-		return 0, common.Address{}, err
-	}
-	if collectionRoyalty.Royalty != 0 && !bytes.Equal(zeroAddress.Bytes(), collectionRoyalty.FeeRecipient.Bytes()) {
-		royalty = collectionRoyalty.Royalty
-		recipient = collectionRoyalty.FeeRecipient
-		return
-	}
-
-	// no royalty defined
-	return 0, zeroAddress, nil
+	return marketplaceContract.GetPayTokenPrice(token, block)
 }

@@ -33,10 +33,6 @@ var cfg *config.Config
 // log represents the logger to be used by the repository.
 var log logger.Logger
 
-// contractsMap represents a map of contract type to address as provided
-// by the repository initializer.
-var contractsMap = map[string]common.Address{}
-
 // Opera represents the implementation of the Blockchain interface for Fantom Opera node.
 type Opera struct {
 	// basics of the connection
@@ -56,13 +52,13 @@ type Opera struct {
 	abiMarketplace *abi.ABI
 
 	// contracts
-	marketplace       *contracts.FantomMarketplace
-	auctionContract   *contracts.FantomAuction
-	auctionV1Contract *contracts.FantomAuctionV1
+	auctionContracts           map[common.Address]IAuctionContract
+	marketplaceContracts       map[common.Address]IMarketplaceContract
+	defaultMarketplaceContract IMarketplaceContract
 	tokenRegistryContract *contracts.FantomTokenRegistry
 	rngFeedContract *contracts.RandomNumberOracle
 
-	marketplaceAddress *common.Address
+	defaultMarketplaceAddress *common.Address
 }
 
 // RegisterContract adds a new contract address to the RPC provider.
@@ -75,23 +71,30 @@ func (o *Opera) RegisterContract(ct string, addr *common.Address) (err error) {
 	// load the contract instance
 	switch ct {
 
-	case "auction":
-		o.auctionContract, err = contracts.NewFantomAuction(*addr, o.ftm)
+	case "auction_v1":
+		var ac AuctionContractV1
+
+		ac.auctionV0Contract, err = contracts.NewFantomAuction(*addr, o.ftm)
+		if err == nil {
+			log.Noticef("loaded V0 auction contract at %s", addr.String())
+		}
+
+		ac.auctionV1Contract, err = contracts.NewFantomAuctionV1(*addr, o.ftm)
+		if err == nil {
+			log.Noticef("loaded V1 auction contract at %s", addr.String())
+		}
+
+		o.auctionContracts[*addr] = &ac
+
+	case "market_v1":
+		var mc MarketplaceContractV1
+		mc.marketplace, err = contracts.NewFantomMarketplace(*addr, o.ftm)
 		if err == nil {
 			log.Noticef("loaded %s contract at %s", ct, addr.String())
 		}
-
-		o.auctionV1Contract, err = contracts.NewFantomAuctionV1(*addr, o.ftm)
-		if err == nil {
-			log.Noticef("loaded V1 %s contract at %s", ct, addr.String())
-		}
-
-	case "market":
-		o.marketplaceAddress = addr
-		o.marketplace, err = contracts.NewFantomMarketplace(*addr, o.ftm)
-		if err == nil {
-			log.Noticef("loaded %s contract at %s", ct, addr.String())
-		}
+		o.marketplaceContracts[*addr] = &mc
+		o.defaultMarketplaceContract = &mc
+		o.defaultMarketplaceAddress = addr
 
 	case "rng":
 		o.rngFeedContract, err = contracts.NewRandomNumberOracle(*addr, o.ftm)
@@ -127,6 +130,9 @@ func New() *Opera {
 		wg:       new(sync.WaitGroup),
 		sigClose: make(chan bool, 1),
 		headers:  make(chan *eth.Header, headerObserverCapacity),
+
+		auctionContracts:     make(map[common.Address]IAuctionContract),
+		marketplaceContracts: make(map[common.Address]IMarketplaceContract),
 	}
 
 	// load and parse ABIs
