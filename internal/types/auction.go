@@ -11,9 +11,10 @@ import (
 
 // Auction represents an auction being conducted on a given ERC-721 token.
 type Auction struct {
+	Owner         common.Address  `bson:"owner"`
 	Contract      common.Address  `bson:"contract"`
 	TokenId       hexutil.Big     `bson:"token"`
-	Owner         common.Address  `bson:"owner"`
+	AuctionHall   common.Address  `bson:"hall"`
 	Quantity      hexutil.Big     `bson:"qty"`
 	PayToken      common.Address  `bson:"pay_token"`
 	MinimalBid    hexutil.Big     `bson:"min_bid"`
@@ -33,10 +34,11 @@ type Auction struct {
 }
 
 // AuctionID generates unique auction ID for the given contract, token, and owner.
-func AuctionID(contract *common.Address, tokenID *big.Int) primitive.ObjectID {
+func AuctionID(contract *common.Address, tokenID *big.Int, auctionHall *common.Address) primitive.ObjectID {
 	hash := sha256.New()
 	hash.Write(contract.Bytes())
 	hash.Write(tokenID.Bytes())
+	hash.Write(auctionHall.Bytes())
 
 	var id [12]byte
 	copy(id[:], hash.Sum(nil))
@@ -45,5 +47,5 @@ func AuctionID(contract *common.Address, tokenID *big.Int) primitive.ObjectID {
 
 // ID generates a unique identifier of the Artion auction.
 func (au *Auction) ID() primitive.ObjectID {
-	return AuctionID(&au.Contract, (*big.Int)(&au.TokenId))
+	return AuctionID(&au.Contract, (*big.Int)(&au.TokenId), &au.AuctionHall)
 }

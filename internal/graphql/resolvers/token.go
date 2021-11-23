@@ -224,7 +224,7 @@ func (t Token) Activities(args struct {
 }
 
 func (t *Token) Auction() (auction *Auction, err error) {
-	a, err := repository.R().GetAuction(&t.Contract, (*big.Int)(&t.TokenId))
+	a, err := repository.R().GetLastAuction(&t.Contract, (*big.Int)(&t.TokenId))
 	if err != nil {
 		return nil, err
 	}

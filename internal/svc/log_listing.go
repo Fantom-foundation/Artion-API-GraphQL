@@ -31,6 +31,7 @@ func marketNFTListed(evt *eth.Log, lo *logObserver) {
 		Owner:        common.BytesToAddress(evt.Topics[1].Bytes()),
 		Contract:     common.BytesToAddress(evt.Topics[2].Bytes()),
 		TokenId:      hexutil.Big(*new(big.Int).SetBytes(evt.Data[:32])),
+		Marketplace:  evt.Address,
 		Quantity:     hexutil.Big(*new(big.Int).SetBytes(evt.Data[32:64])),
 		PayToken:     common.BytesToAddress(evt.Data[64:96]),
 		UnitPrice:    hexutil.Big(*new(big.Int).SetBytes(evt.Data[96:128])),
@@ -97,7 +98,7 @@ func marketNFTUpdated(evt *eth.Log, lo *logObserver) {
 	tokenID := new(big.Int).SetBytes(evt.Data[:32])
 
 	// try to get the listing
-	lst, err := repo.GetListing(&contract, tokenID, &owner)
+	lst, err := repo.GetListing(&contract, tokenID, &owner, &evt.Address)
 	if lst == nil {
 		log.Errorf("update listing not found; %s", err)
 		return
@@ -168,7 +169,7 @@ func marketNFTUnlisted(evt *eth.Log, _ *logObserver) {
 	tokenID := new(big.Int).SetBytes(evt.Data[:])
 
 	// try to get the listing
-	lst, err := repo.GetListing(&contract, tokenID, &owner)
+	lst, err := repo.GetListing(&contract, tokenID, &owner, &evt.Address)
 	if lst == nil {
 		log.Errorf("listing not found; %s", err)
 		return
@@ -232,14 +233,14 @@ func marketItemSold(evt *eth.Log, lo *logObserver) {
 	}
 
 	// try to get the listing
-	lst, err := repo.GetListing(&contract, tokenID, &owner)
+	lst, err := repo.GetListing(&contract, tokenID, &owner, &evt.Address)
 	if lst != nil {
 		marketCloseListingWithSale(evt, lst, blk, lo, &buyer)
 		return
 	}
 
 	// try to get an offer
-	offer, err := repo.GetOffer(&contract, tokenID, &buyer)
+	offer, err := repo.GetOffer(&contract, tokenID, &buyer, &evt.Address)
 	if offer != nil {
 		marketCloseOfferWithSale(evt, offer, blk, lo, &owner)
 		return

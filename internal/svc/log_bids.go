@@ -30,7 +30,7 @@ func auctionBidPlaced(evt *eth.Log, lo *logObserver) {
 	tokenID := new(big.Int).SetBytes(evt.Topics[2].Bytes())
 
 	// pull the auction involved
-	auction, err := repo.GetAuction(&contract, tokenID)
+	auction, err := repo.GetAuction(&contract, tokenID, &evt.Address)
 	if auction == nil {
 		log.Errorf("auction %s/%s not found; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
 		return
@@ -128,7 +128,7 @@ func auctionBidWithdrawn(evt *eth.Log, _ *logObserver) {
 	}
 
 	// pull the auction involved
-	auction, err := repo.GetAuction(&contract, tokenID)
+	auction, err := repo.GetAuction(&contract, tokenID, &evt.Address)
 	if auction == nil {
 		log.Errorf("auction %s/%s not found; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
 		return

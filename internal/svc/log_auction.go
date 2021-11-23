@@ -30,9 +30,10 @@ func auctionCreated(evt *eth.Log, lo *logObserver) {
 
 	// make the auction
 	auction := types.Auction{
+		Owner:         common.Address{},
 		Contract:      common.BytesToAddress(evt.Topics[1].Bytes()),
 		TokenId:       hexutil.Big(*new(big.Int).SetBytes(evt.Topics[2].Bytes())),
-		Owner:         common.Address{},
+		AuctionHall:   evt.Address,
 		Quantity:      hexutil.Big(*new(big.Int).SetInt64(1)),
 		PayToken:      common.BytesToAddress(evt.Data[:]),
 		MinimalBid:    hexutil.Big{},
@@ -97,6 +98,7 @@ func auctionCreated(evt *eth.Log, lo *logObserver) {
 		ActType:      types.EvtAuctionCreated,
 		Contract:     auction.Contract,
 		TokenId:      auction.TokenId,
+		AuctionHall:  &evt.Address,
 		Quantity:     &auction.Quantity,
 		From:         auction.Owner,
 		PayToken:     &auction.PayToken,
@@ -169,7 +171,7 @@ func auctionTimeBoundaryUpdated(evt *eth.Log, lo *logObserver, update func(*type
 	tokenID := new(big.Int).SetBytes(evt.Topics[2].Bytes())
 
 	// pull the auction involved
-	auction, err := repo.GetAuction(&contract, tokenID)
+	auction, err := repo.GetAuction(&contract, tokenID, &evt.Address)
 	if auction == nil {
 		log.Errorf("updated auction %s/%s not found; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
 		return
@@ -206,6 +208,7 @@ func auctionTimeBoundaryUpdated(evt *eth.Log, lo *logObserver, update func(*type
 		ActType:      types.EvtAuctionUpdated,
 		Contract:     auction.Contract,
 		TokenId:      auction.TokenId,
+		AuctionHall:  &evt.Address,
 		Quantity:     &auction.Quantity,
 		From:         auction.Owner,
 		StartTime:    &auction.StartTime,
@@ -231,7 +234,7 @@ func auctionReserveUpdated(evt *eth.Log, lo *logObserver) {
 	tokenID := new(big.Int).SetBytes(evt.Topics[2].Bytes())
 
 	// pull the auction involved
-	auction, err := repo.GetAuction(&contract, tokenID)
+	auction, err := repo.GetAuction(&contract, tokenID, &evt.Address)
 	if auction == nil {
 		log.Errorf("updated auction %s/%s not found; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
 		return
@@ -270,6 +273,7 @@ func auctionReserveUpdated(evt *eth.Log, lo *logObserver) {
 		ActType:      types.EvtAuctionUpdated,
 		Contract:     auction.Contract,
 		TokenId:      auction.TokenId,
+		AuctionHall:  &evt.Address,
 		Quantity:     &auction.Quantity,
 		From:         auction.Owner,
 		UnitPrice:    &auction.ReservePrice,
@@ -311,7 +315,7 @@ func auctionCanceled(evt *eth.Log, _ *logObserver) {
 	tokenID := new(big.Int).SetBytes(evt.Topics[2].Bytes())
 
 	// pull the auction involved
-	auction, err := repo.GetAuction(&contract, tokenID)
+	auction, err := repo.GetAuction(&contract, tokenID, &evt.Address)
 	if auction == nil {
 		log.Errorf("canceled auction %s/%s not found; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
 		return
@@ -338,6 +342,7 @@ func auctionCanceled(evt *eth.Log, _ *logObserver) {
 		ActType:      types.EvtAuctionCancelled,
 		Contract:     auction.Contract,
 		TokenId:      auction.TokenId,
+		AuctionHall:  &evt.Address,
 		Quantity:     &auction.Quantity,
 		From:         auction.Owner,
 	}
@@ -428,7 +433,7 @@ func finishAuction(contract *common.Address, tokenID *big.Int, owner *common.Add
 	}
 
 	// pull the auction involved
-	auction, err := repo.GetAuction(contract, tokenID)
+	auction, err := repo.GetAuction(contract, tokenID, &evt.Address)
 	if auction == nil {
 		log.Errorf("resolved auction %s/%s not found; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
 		return
@@ -471,6 +476,7 @@ func finishAuction(contract *common.Address, tokenID *big.Int, owner *common.Add
 		ActType:      types.EvtAuctionResolved,
 		Contract:     auction.Contract,
 		TokenId:      auction.TokenId,
+		AuctionHall:  &evt.Address,
 		Quantity:     &auction.Quantity,
 		From:         *owner,
 		To:           winner,

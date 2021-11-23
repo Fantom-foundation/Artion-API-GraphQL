@@ -14,6 +14,7 @@ type Listing struct {
 	Owner        common.Address `bson:"owner"`
 	Contract     common.Address `bson:"contract"`
 	TokenId      hexutil.Big    `bson:"token"`
+	Marketplace  common.Address `bson:"marketplace"`
 	Quantity     hexutil.Big    `bson:"quantity"`
 	PayToken     common.Address `bson:"pay_token"`
 	UnitPrice    hexutil.Big    `bson:"price"`
@@ -27,11 +28,12 @@ type Listing struct {
 }
 
 // ListingID generates unique listing ID for the given contract, token, and owner.
-func ListingID(contract *common.Address, tokenID *big.Int, owner *common.Address) primitive.ObjectID {
+func ListingID(contract *common.Address, tokenID *big.Int, owner *common.Address, marketplace *common.Address) primitive.ObjectID {
 	hash := sha256.New()
 	hash.Write(contract.Bytes())
 	hash.Write(tokenID.Bytes())
 	hash.Write(owner.Bytes())
+	hash.Write(marketplace.Bytes())
 
 	var id [12]byte
 	copy(id[:], hash.Sum(nil))
@@ -40,5 +42,5 @@ func ListingID(contract *common.Address, tokenID *big.Int, owner *common.Address
 
 // ID generates a unique identifier of the Artion Marketplace listing.
 func (l *Listing) ID() primitive.ObjectID {
-	return ListingID(&l.Contract, (*big.Int)(&l.TokenId), &l.Owner)
+	return ListingID(&l.Contract, (*big.Int)(&l.TokenId), &l.Owner, &l.Marketplace)
 }

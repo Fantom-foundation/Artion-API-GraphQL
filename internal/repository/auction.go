@@ -8,8 +8,12 @@ import (
 )
 
 // GetAuction provides the auction stored in the database, if available.
-func (p *Proxy) GetAuction(contract *common.Address, tokenID *big.Int) (*types.Auction, error) {
-	return p.db.GetAuction(contract, tokenID)
+func (p *Proxy) GetAuction(contract *common.Address, tokenID *big.Int, auctionHall *common.Address) (*types.Auction, error) {
+	return p.db.GetAuction(contract, tokenID, auctionHall)
+}
+
+func (p *Proxy) GetLastAuction(contract *common.Address, tokenID *big.Int) (*types.Auction, error) {
+	return p.db.GetLastAuction(contract, tokenID)
 }
 
 // StoreAuction adds the provided auction into the database.
@@ -25,11 +29,6 @@ func (p *Proxy) SetAuctionActive(contract *common.Address, tokenID *big.Int, own
 // ExtendAuctionDetailAt adds contract stored details to the provided auction record.
 func (p *Proxy) ExtendAuctionDetailAt(au *types.Auction, block *big.Int) error {
 	return p.rpc.ExtendAuctionDetailAt(au, block)
-}
-
-// SetAuctionBidder sets a new bidder (or no bidder) into the specified auction.
-func (p *Proxy) SetAuctionBidder(contract *common.Address, tokenID *big.Int, bidder *common.Address, placed *types.Time) error {
-	return p.db.SetAuctionBidder(contract, tokenID, bidder, placed)
 }
 
 // AuctionGetMinBid provides a minimal bid amount required to participate in the auction.

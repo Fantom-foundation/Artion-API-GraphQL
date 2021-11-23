@@ -13,6 +13,7 @@ import (
 type Offer struct {
 	Contract     common.Address   `bson:"contract"`
 	TokenId      hexutil.Big      `bson:"token"`
+	Marketplace  common.Address   `bson:"marketplace"`
 	ProposedBy   common.Address   `bson:"proposer"`
 	Owners       []common.Address `bson:"owners"`
 	Quantity     hexutil.Big      `bson:"qty"`
@@ -26,11 +27,12 @@ type Offer struct {
 }
 
 // OfferID generates unique offer ID for the given contract, token, and owner.
-func OfferID(contract *common.Address, tokenID *big.Int, offeredBy *common.Address) primitive.ObjectID {
+func OfferID(contract *common.Address, tokenID *big.Int, offeredBy *common.Address, marketplace *common.Address) primitive.ObjectID {
 	hash := sha256.New()
 	hash.Write(contract.Bytes())
 	hash.Write(tokenID.Bytes())
 	hash.Write(offeredBy.Bytes())
+	hash.Write(marketplace.Bytes())
 
 	var id [12]byte
 	copy(id[:], hash.Sum(nil))
@@ -39,5 +41,5 @@ func OfferID(contract *common.Address, tokenID *big.Int, offeredBy *common.Addre
 
 // ID generates a unique identifier of the Artion Marketplace direct offer.
 func (o *Offer) ID() primitive.ObjectID {
-	return OfferID(&o.Contract, (*big.Int)(&o.TokenId), &o.ProposedBy)
+	return OfferID(&o.Contract, (*big.Int)(&o.TokenId), &o.ProposedBy, &o.Marketplace)
 }

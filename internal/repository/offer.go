@@ -9,8 +9,8 @@ import (
 )
 
 // GetOffer provides the token offer stored in the database, if available.
-func (p *Proxy) GetOffer(contract *common.Address, tokenID *big.Int, proposer *common.Address) (*types.Offer, error) {
-	return p.db.GetOffer(contract, tokenID, proposer)
+func (p *Proxy) GetOffer(contract *common.Address, tokenID *big.Int, proposer *common.Address, marketplace *common.Address) (*types.Offer, error) {
+	return p.db.GetOffer(contract, tokenID, proposer, marketplace)
 }
 
 // StoreOffer adds the provided offer into the database.

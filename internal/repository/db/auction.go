@@ -44,14 +44,50 @@ const (
 
 	// fiAuctionIsActive represents the name of the DB column storing if the auction creator currently own the token.
 	fiAuctionIsActive = "is_active"
+
+	// fiAuctionCreated represents the name of the DB column storing if the auction creator currently own the token.
+	fiAuctionCreated = "created"
 )
 
 // GetAuction provides the auction stored in the database, if available.
-func (db *MongoDbBridge) GetAuction(contract *common.Address, tokenID *big.Int) (*types.Auction, error) {
+func (db *MongoDbBridge) GetAuction(contract *common.Address, tokenID *big.Int, auctionHall *common.Address) (*types.Auction, error) {
 	// get the collection
 	col := db.client.Database(db.dbName).Collection(coAuctions)
 
-	sr := col.FindOne(context.Background(), bson.D{{Key: fieldId, Value: types.AuctionID(contract, tokenID)}})
+	sr := col.FindOne(context.Background(), bson.D{{Key: fieldId, Value: types.AuctionID(contract, tokenID, auctionHall)}})
+	if sr.Err() != nil {
+		if sr.Err() == mongo.ErrNoDocuments {
+			log.Debugf("auction for %s/%s not found",
+				contract.String(), (*hexutil.Big)(tokenID).String())
+			return nil, nil
+		}
+
+		log.Errorf("failed to lookup auction for %s/%s; %s",
+			contract.String(), (*hexutil.Big)(tokenID).String(), sr.Err().Error())
+		return nil, sr.Err()
+	}
+
+	// decode
+	var row types.Auction
+	if err := sr.Decode(&row); err != nil {
+		log.Errorf("could not decode auction for %s/%s; %s",
+			contract.String(), (*hexutil.Big)(tokenID).String(), sr.Err().Error())
+		return nil, sr.Err()
+	}
+	return &row, nil
+}
+
+// GetLastAuction provides the latest auction of the token stored in the database, if available.
+func (db *MongoDbBridge) GetLastAuction(contract *common.Address, tokenID *big.Int) (*types.Auction, error) {
+	// get the collection
+	col := db.client.Database(db.dbName).Collection(coAuctions)
+
+	sr := col.FindOne(context.Background(), bson.D{
+		{Key: fiAuctionContract, Value: *contract},
+		{Key: fiAuctionTokenId, Value: hexutil.Big(*tokenID)},
+	}, options.FindOne().SetSort(bson.D{
+		{Key: fiAuctionCreated, Value: -1},
+	}))
 	if sr.Err() != nil {
 		if sr.Err() == mongo.ErrNoDocuments {
 			log.Debugf("auction for %s/%s not found",
@@ -147,28 +183,6 @@ func (db *MongoDbBridge) OpenAuctionRange(contract *common.Address, tokenID *big
 		db.OpenAuctionTimeCheck(contract, tokenID, "$max", "$end")
 }
 
-// SetAuctionBidder sets a new bidder (or no bidder) into the specified auction.
-func (db *MongoDbBridge) SetAuctionBidder(contract *common.Address, tokenID *big.Int, bidder *common.Address, placed *types.Time) error {
-	col := db.client.Database(db.dbName).Collection(coAuctions)
-
-	rs, err := col.UpdateOne(context.Background(), bson.D{
-		{Key: fiAuctionContract, Value: *contract},
-		{Key: fiAuctionTokenId, Value: (hexutil.Big)(*tokenID)},
-	}, bson.D{
-		{Key: fiAuctionLatestBid, Value: placed},
-		{Key: fiAuctionLatestBidder, Value: bidder},
-	})
-	if err != nil {
-		log.Errorf("could not update auction; %s", err.Error())
-		return err
-	}
-
-	if rs.ModifiedCount > 0 {
-		log.Infof("auction %s/%s bidder updated", contract.String(), (*hexutil.Big)(tokenID).String())
-	}
-	return nil
-}
-
 // SetAuctionActive sets IsActive state of auction when token ownership changes.
 func (db *MongoDbBridge) SetAuctionActive(contract *common.Address, tokenID *big.Int, owner *common.Address, isActive bool) error {
 	// get the collection
@@ -176,7 +190,8 @@ func (db *MongoDbBridge) SetAuctionActive(contract *common.Address, tokenID *big
 	rs, err := col.UpdateOne(
 		context.Background(),
 		bson.D{
-			{Key: fieldId, Value: types.AuctionID(contract, tokenID)},
+			{Key: fiAuctionContract, Value: *contract},
+			{Key: fiAuctionTokenId, Value: *tokenID},
 			{Key: fiAuctionOwner, Value: *owner},
 		},
 		bson.D{{Key: "$set", Value: bson.D{

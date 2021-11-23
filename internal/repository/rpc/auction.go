@@ -17,6 +17,8 @@ const auctionDefaultDurationShift = (24 * 365 * 10) * time.Hour
 
 // ExtendAuctionDetailAt adds contract stored details to the provided auction record.
 func (o *Opera) ExtendAuctionDetailAt(au *types.Auction, block *big.Int) error {
+	// TODO use au.AuctionHall contract
+
 	// get auction details
 	res, err := o.auctionContract.Auctions(&bind.CallOpts{
 		BlockNumber: nil,

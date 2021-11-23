@@ -30,6 +30,7 @@ func marketOfferCreated(evt *eth.Log, lo *logObserver) {
 	offer := types.Offer{
 		Contract:     common.BytesToAddress(evt.Topics[2].Bytes()),
 		TokenId:      hexutil.Big(*new(big.Int).SetBytes(evt.Data[:32])),
+		Marketplace:  evt.Address,
 		ProposedBy:   common.BytesToAddress(evt.Topics[1].Bytes()),
 		Quantity:     hexutil.Big(*new(big.Int).SetBytes(evt.Data[32:64])),
 		PayToken:     common.BytesToAddress(evt.Data[64:96]),
@@ -107,7 +108,7 @@ func marketOfferCanceled(evt *eth.Log, _ *logObserver) {
 	tokenID := new(big.Int).SetBytes(evt.Data[:])
 
 	// try to get the offer being canceled
-	offer, err := repo.GetOffer(&contract, tokenID, &proposer)
+	offer, err := repo.GetOffer(&contract, tokenID, &proposer, &evt.Address)
 	if offer == nil {
 		log.Errorf("offer not found; %s", err.Error())
 		return

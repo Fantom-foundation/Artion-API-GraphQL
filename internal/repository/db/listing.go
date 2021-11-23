@@ -43,11 +43,11 @@ const (
 )
 
 // GetListing provides the token listing stored in the database, if available.
-func (db *MongoDbBridge) GetListing(contract *common.Address, tokenID *big.Int, owner *common.Address) (*types.Listing, error) {
+func (db *MongoDbBridge) GetListing(contract *common.Address, tokenID *big.Int, owner *common.Address, marketplace *common.Address) (*types.Listing, error) {
 	// get the collection
 	col := db.client.Database(db.dbName).Collection(coListings)
 
-	sr := col.FindOne(context.Background(), bson.D{{Key: fieldId, Value: types.ListingID(contract, tokenID, owner)}})
+	sr := col.FindOne(context.Background(), bson.D{{Key: fieldId, Value: types.ListingID(contract, tokenID, owner, marketplace)}})
 	if sr.Err() != nil {
 		if sr.Err() == mongo.ErrNoDocuments {
 			log.Warningf("could not find listing %s/%s of owner %s; %s",
@@ -104,7 +104,11 @@ func (db *MongoDbBridge) SetListingActive(contract *common.Address, tokenID *big
 	col := db.client.Database(db.dbName).Collection(coListings)
 	rs, err := col.UpdateOne(
 		context.Background(),
-		bson.D{{Key: fieldId, Value: types.ListingID(contract, tokenID, owner)}},
+		bson.D{
+			{Key: fiListingContract, Value: *contract},
+			{Key: fiListingTokenId, Value: *tokenID},
+			{Key: fiListingOwner, Value: *owner},
+		},
 		bson.D{{Key: "$set", Value: bson.D{
 			{Key: fiListingIsActive, Value: isActive},
 		}}},

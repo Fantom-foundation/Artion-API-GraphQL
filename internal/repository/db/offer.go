@@ -42,11 +42,11 @@ const (
 )
 
 // GetOffer provides the token offer stored in the database, if available.
-func (db *MongoDbBridge) GetOffer(contract *common.Address, tokenID *big.Int, proposer *common.Address) (*types.Offer, error) {
+func (db *MongoDbBridge) GetOffer(contract *common.Address, tokenID *big.Int, proposer *common.Address, marketplace *common.Address) (*types.Offer, error) {
 	// get the collection
 	col := db.client.Database(db.dbName).Collection(coOffers)
 
-	sr := col.FindOne(context.Background(), bson.D{{Key: fieldId, Value: types.OfferID(contract, tokenID, proposer)}})
+	sr := col.FindOne(context.Background(), bson.D{{Key: fieldId, Value: types.OfferID(contract, tokenID, proposer, marketplace)}})
 	if sr.Err() != nil {
 		if sr.Err() == mongo.ErrNoDocuments {
 			log.Warningf("could not find offer %s/%s proposed by %s",
@@ -169,7 +169,7 @@ func (db *MongoDbBridge) MaxOfferPrice(contract *common.Address, tokenID *big.In
 		{Key: fiOfferContract, Value: *contract},
 		{Key: fiOfferTokenId, Value: hexutil.Big(*tokenID)},
 		{Key: fiOfferClosed, Value: bson.D{{Key: "$type", Value: 10}}}, // not closed yet
-		{Key: fiOfferDeadline, Value: bson.D{{Key: "$gte", Value: now}}}, // already started
+		{Key: fiOfferDeadline, Value: bson.D{{Key: "$gte", Value: now}}}, // before deadline
 	}, options.FindOne().SetSort(bson.D{{Key: fiOfferUnifiedPrice, Value: -1}}))
 	if sr.Err() != nil {
 		if sr.Err() != mongo.ErrNoDocuments {

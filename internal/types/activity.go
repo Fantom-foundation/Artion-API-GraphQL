@@ -41,6 +41,10 @@ type Activity struct {
 	TokenId  hexutil.Big    `bson:"token"`
 	Quantity *hexutil.Big   `bson:"quantity"`
 
+	// place of the trade
+	Marketplace *common.Address `bson:"marketplace"`
+	AuctionHall *common.Address `bson:"hall"`
+
 	// parties
 	From common.Address  `bson:"from"`
 	To   *common.Address `bson:"to"`
