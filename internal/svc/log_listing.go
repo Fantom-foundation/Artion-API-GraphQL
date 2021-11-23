@@ -69,6 +69,7 @@ func marketNFTListed(evt *eth.Log, lo *logObserver) {
 		Contract:     lst.Contract,
 		TokenId:      lst.TokenId,
 		Quantity:     &lst.Quantity,
+		Marketplace:  &evt.Address,
 		From:         lst.Owner,
 		PayToken:     &lst.PayToken,
 		UnitPrice:    &lst.UnitPrice,
@@ -141,6 +142,7 @@ func marketNFTUpdated(evt *eth.Log, lo *logObserver) {
 		ActType:      types.EvtListingUpdated,
 		Contract:     lst.Contract,
 		TokenId:      lst.TokenId,
+		Marketplace:  &evt.Address,
 		From:         lst.Owner,
 		PayToken:     &lst.PayToken,
 		UnitPrice:    &lst.UnitPrice,
@@ -201,6 +203,7 @@ func marketNFTUnlisted(evt *eth.Log, _ *logObserver) {
 		ActType:      types.EvtListingCancelled,
 		Contract:     lst.Contract,
 		TokenId:      lst.TokenId,
+		Marketplace:  &evt.Address,
 		From:         lst.Owner,
 	}
 	if err := repo.StoreActivity(&activity); err != nil {
@@ -281,6 +284,7 @@ func marketCloseListingWithSale(evt *eth.Log, lst *types.Listing, blk *eth.Heade
 		ActType:      types.EvtListingSold,
 		Contract:     lst.Contract,
 		TokenId:      lst.TokenId,
+		Marketplace:  &evt.Address,
 		From:         lst.Owner,
 		To:           buyer,
 		PayToken:     &lst.PayToken,

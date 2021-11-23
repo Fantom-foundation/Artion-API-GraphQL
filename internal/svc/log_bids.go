@@ -80,6 +80,7 @@ func auctionBidPlaced(evt *eth.Log, lo *logObserver) {
 		ActType:      types.EvtAuctionBid,
 		Contract:     bid.Contract,
 		TokenId:      bid.TokenId,
+		AuctionHall:  &evt.Address,
 		From:         bid.Bidder,
 		To:           &auction.Owner,
 		PayToken:     &auction.PayToken,
@@ -156,6 +157,7 @@ func auctionBidWithdrawn(evt *eth.Log, _ *logObserver) {
 		ActType:      types.EvtAuctionBidWithdrawn,
 		Contract:     contract,
 		TokenId:      hexutil.Big(*tokenID),
+		AuctionHall:  &evt.Address,
 		From:         bidder,
 		To:           &auction.Owner,
 	}
