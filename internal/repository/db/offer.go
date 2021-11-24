@@ -147,7 +147,7 @@ func (db *MongoDbBridge) OpenOfferUntil(contract *common.Address, tokenID *big.I
 	if err != nil {
 		// no offer at all?
 		if err == mongo.ErrNoDocuments {
-			log.Infof("no open offer available for %s/%s", contract.String(), (*hexutil.Big)(tokenID).String())
+			log.Debugf("no open offer available for %s/%s", contract.String(), (*hexutil.Big)(tokenID).String())
 			return nil
 		}
 		log.Criticalf("failed latest offer check of %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err.Error())
@@ -168,7 +168,7 @@ func (db *MongoDbBridge) MaxOfferPrice(contract *common.Address, tokenID *big.In
 	sr := col.FindOne(context.Background(), bson.D{
 		{Key: fiOfferContract, Value: *contract},
 		{Key: fiOfferTokenId, Value: hexutil.Big(*tokenID)},
-		{Key: fiOfferClosed, Value: bson.D{{Key: "$type", Value: 10}}}, // not closed yet
+		{Key: fiOfferClosed, Value: bson.D{{Key: "$type", Value: 10}}},   // not closed yet
 		{Key: fiOfferDeadline, Value: bson.D{{Key: "$gte", Value: now}}}, // before deadline
 	}, options.FindOne().SetSort(bson.D{{Key: fiOfferUnifiedPrice, Value: -1}}))
 	if sr.Err() != nil {

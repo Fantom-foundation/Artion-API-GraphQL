@@ -136,7 +136,7 @@ func (db *MongoDbBridge) OpenListingSince(contract *common.Address, tokenID *big
 			{Key: "$match", Value: bson.D{
 				{Key: fiListingContract, Value: *contract},
 				{Key: fiListingTokenId, Value: hexutil.Big(*tokenID)},
-				{Key: fiListingClosed, Value: bson.D{{Key: "$type", Value: 10}}}, // closed = null - not sold yet
+				{Key: fiListingClosed, Value: bson.D{{Key: "$type", Value: 10}}},    // closed = null - not sold yet
 				{Key: fiListingIsActive, Value: bson.D{{Key: "$ne", Value: false}}}, // listing creator own the token
 			}},
 		},
@@ -151,7 +151,7 @@ func (db *MongoDbBridge) OpenListingSince(contract *common.Address, tokenID *big
 	if err != nil {
 		// no listing at all?
 		if err == mongo.ErrNoDocuments {
-			log.Infof("no open listing available for %s/%s", contract.String(), (*hexutil.Big)(tokenID).String())
+			log.Debugf("no open listing available for %s/%s", contract.String(), (*hexutil.Big)(tokenID).String())
 			return nil
 		}
 		log.Criticalf("failed earliest listing check of %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err.Error())
@@ -172,7 +172,7 @@ func (db *MongoDbBridge) MinListingPrice(contract *common.Address, tokenID *big.
 	sr := col.FindOne(context.Background(), bson.D{
 		{Key: fiListingContract, Value: *contract},
 		{Key: fiListingTokenId, Value: hexutil.Big(*tokenID)},
-		{Key: fiListingClosed, Value: bson.D{{Key: "$type", Value: 10}}}, // closed=null = not closed (sold) yet
+		{Key: fiListingClosed, Value: bson.D{{Key: "$type", Value: 10}}},    // closed=null = not closed (sold) yet
 		{Key: fiListingStartTime, Value: bson.D{{Key: "$lte", Value: now}}}, // already started
 		{Key: fiListingIsActive, Value: bson.D{{Key: "$ne", Value: false}}}, // listing creator own the token
 	}, options.FindOne().SetSort(bson.D{{Key: fiListingUnifiedPrice, Value: 1}}))
@@ -188,8 +188,8 @@ func (db *MongoDbBridge) MinListingPrice(contract *common.Address, tokenID *big.
 		return
 	}
 	tokenPrice = types.TokenPrice{
-		Usd: minListing.UnifiedPrice,
-		Amount: minListing.UnitPrice,
+		Usd:      minListing.UnifiedPrice,
+		Amount:   minListing.UnitPrice,
 		PayToken: minListing.PayToken,
 	}
 
@@ -198,7 +198,7 @@ func (db *MongoDbBridge) MinListingPrice(contract *common.Address, tokenID *big.
 	sr = col.FindOne(context.Background(), bson.D{
 		{Key: fiListingContract, Value: *contract},
 		{Key: fiListingTokenId, Value: hexutil.Big(*tokenID)},
-		{Key: fiListingClosed, Value: bson.D{{Key: "$type", Value: 10}}}, // not closed yet
+		{Key: fiListingClosed, Value: bson.D{{Key: "$type", Value: 10}}},   // not closed yet
 		{Key: fiListingStartTime, Value: bson.D{{Key: "$gt", Value: now}}}, // already started
 		{Key: fiListingUnifiedPrice, Value: bson.D{{Key: "$lt", Value: minListing.UnifiedPrice}}},
 	}, options.FindOne().SetSort(bson.D{{Key: fiListingStartTime, Value: 1}}))
