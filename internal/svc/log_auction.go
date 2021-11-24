@@ -78,7 +78,7 @@ func auctionCreated(evt *eth.Log, lo *logObserver) {
 		log.Errorf("could not store auction; %s", err.Error())
 	}
 
-	price := repo.GetUnifiedPriceAt(lo.marketplace, &auction.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&auction.ReservePrice))
+	price := repo.GetUnifiedPriceAt(&auction.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&auction.ReservePrice))
 
 	// mark the token as being auctioned
 	if err := repo.TokenMarkAuctioned(
@@ -189,7 +189,7 @@ func auctionTimeBoundaryUpdated(evt *eth.Log, lo *logObserver, update func(*type
 	if err := repo.TokenMarkAuctioned(
 		&auction.Contract,
 		(*big.Int)(&auction.TokenId),
-		repo.GetUnifiedPriceAt(lo.marketplace, &auction.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&auction.ReservePrice)),
+		repo.GetUnifiedPriceAt(&auction.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&auction.ReservePrice)),
 		(*time.Time)(&auction.Created),
 	); err != nil {
 		log.Errorf("could not mark token as having auction; %s", err.Error())
@@ -248,7 +248,7 @@ func auctionReserveUpdated(evt *eth.Log, lo *logObserver) {
 		log.Errorf("could not store auction; %s", err.Error())
 	}
 
-	price := repo.GetUnifiedPriceAt(lo.marketplace, &auction.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&auction.ReservePrice))
+	price := repo.GetUnifiedPriceAt(&auction.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&auction.ReservePrice))
 
 	// mark the token as being re-auctioned
 	if err := repo.TokenMarkAuctioned(

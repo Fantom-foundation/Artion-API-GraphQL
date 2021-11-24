@@ -17,16 +17,6 @@ func (o *Opera) GetTokenRoyalty(contract common.Address, tokenId *big.Int) (roya
 }
 
 // GetPayTokenPrice extracts price of 1 whole pay token in USD in 6-decimals fixed point using Marketplace contract.
-func (o *Opera) GetPayTokenPrice(marketplace *common.Address, token *common.Address, block *big.Int) (*big.Int, error) {
-	marketplaceContract := o.defaultMarketplaceContract
-	if marketplace != nil {
-		mc, exists := o.marketplaceContracts[*marketplace]
-		if !exists {
-			log.Errorf("unable to get pay token %s price - unknown marketplace contract %s",
-				token.String(), marketplace.String())
-		} else {
-			marketplaceContract = mc
-		}
-	}
-	return marketplaceContract.GetPayTokenPrice(token, block)
+func (o *Opera) GetPayTokenPrice(token *common.Address, block *big.Int) (*big.Int, error) {
+	return o.defaultMarketplaceContract.GetPayTokenPrice(token, block)
 }

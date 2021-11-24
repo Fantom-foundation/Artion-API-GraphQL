@@ -41,9 +41,9 @@ func (p *Proxy) CalculateUnifiedPrice(payToken *common.Address, amount *big.Int,
 }
 
 // GetUnifiedPriceAt converts token price in pay-tokens to value in unified units for storing in database.
-func (p *Proxy) GetUnifiedPriceAt(marketplace *common.Address, payToken *common.Address, block *big.Int, amount *big.Int) types.TokenPrice {
+func (p *Proxy) GetUnifiedPriceAt(payToken *common.Address, block *big.Int, amount *big.Int) types.TokenPrice {
 	// get price of 1 whole payToken in USD in 18-decimals fixed point
-	unit, err := p.rpc.GetPayTokenPrice(marketplace, payToken, block)
+	unit, err := p.rpc.GetPayTokenPrice(payToken, block)
 	if err != nil {
 		log.Warningf("unable to get price of pay token %s; %s", payToken.String(), err.Error())
 		return types.TokenPrice{
@@ -60,7 +60,7 @@ func (p *Proxy) GetUnifiedPriceAt(marketplace *common.Address, payToken *common.
 func (p *Proxy) GetUnifiedUnitPrice(payToken *common.Address) (uint64, error) {
 	price, err, _ := p.callGroup.Do("GetUnifiedUnitPrice"+payToken.String(), func() (interface{}, error) {
 		// get price of 1 whole payToken in USD in 18-decimals fixed point
-		unit, err := p.rpc.GetPayTokenPrice(nil, payToken, nil)
+		unit, err := p.rpc.GetPayTokenPrice(payToken, nil)
 		if err != nil {
 			return nil, err
 		}

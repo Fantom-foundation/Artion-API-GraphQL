@@ -39,9 +39,6 @@ type logObserver struct {
 
 	// topics represents a map of topics to their respective event handlers.
 	topics map[common.Hash]EventHandler
-
-	// marketplace is the address of the Marketplace contract.
-	marketplace *common.Address
 }
 
 // newLogObserver creates a new instance of the event logs observer service.
@@ -123,21 +120,13 @@ func newLogObserver(mgr *Manager) *logObserver {
 
 // name provides the name fo the log observer service.
 func (lo *logObserver) name() string {
-	return "events observer"
+	return "logs observer"
 }
 
 // init configures the log observer and subscribes it with the manager.
 func (lo *logObserver) init() {
 	// link channels
 	lo.inEvents = lo.mgr.blkObserver.outEvents
-
-	// get needed data sets
-	lo.marketplace = repo.ObservedContractAddressByType("market")
-
-	// make sure we have what we need
-	if lo.marketplace == nil {
-		log.Panicf("marketplace contract not found")
-	}
 
 	// add and run
 	lo.mgr.add(lo)
