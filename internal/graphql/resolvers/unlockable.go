@@ -4,6 +4,7 @@ import (
 	"artion-api-graphql/internal/auth"
 	"artion-api-graphql/internal/repository"
 	"artion-api-graphql/internal/types"
+	"bytes"
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
@@ -47,6 +48,13 @@ func (rs *RootResolver) SetUnlockableContent(ctx context.Context, args struct{
 	}
 	if ! isOwner {
 		return false, fmt.Errorf("not authorized - not owner of the token")
+	}
+	token, err := repository.R().Token(&args.Contract, &args.TokenId)
+	if err != nil {
+		return false, err
+	}
+	if ! bytes.Equal(token.CreatedBy.Bytes(), identity.Bytes()) {
+		return false, fmt.Errorf("not authorized - not minter of the token (minter is %s)", token.CreatedBy.String())
 	}
 	unlockable := types.Unlockable{
 		Contract: args.Contract,
