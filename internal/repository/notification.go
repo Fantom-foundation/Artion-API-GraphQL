@@ -51,6 +51,16 @@ func (p *Proxy) SendEmailNotificationBySendGrid(no *types.Notification, nt *type
 		return fmt.Errorf("user not found at %s", no.Recipient.String())
 	}
 
+	// prep the originator's account
+	origin := new(types.User)
+	if no.Originator != nil {
+		origin, err = p.GetUser(*no.Originator)
+		if err != nil {
+			log.Errorf("user %s not found; originator not available; %s", no.Originator.String(), err.Error())
+			return err
+		}
+	}
+
 	// assign recipient
 	recipient := nt.Recipient
 	if recipient == nil && nil != user.EmailAddress && strings.TrimSpace(*user.EmailAddress) != "" {
@@ -83,7 +93,7 @@ func (p *Proxy) SendEmailNotificationBySendGrid(no *types.Notification, nt *type
 		cc[1:],
 		nt.TemplateID,
 		nt.Subject,
-		dynamicTemplateData(no, user, addr, nt.ExtendedParams),
+		p.dynamicTemplateData(no, user, origin, addr, nt.ExtendedParams),
 	)
 	if err != nil {
 		log.Errorf("email notification failed; %s", err.Error())
@@ -94,7 +104,7 @@ func (p *Proxy) SendEmailNotificationBySendGrid(no *types.Notification, nt *type
 
 // dynamicTemplateData creates a map of key->value dynamic data points from provided
 // source elements.
-func dynamicTemplateData(no *types.Notification, usr *types.User, ship *types.ShippingAddress, ext *string) map[string]interface{} {
+func (p *Proxy) dynamicTemplateData(no *types.Notification, recipient *types.User, origin *types.User, ship *types.ShippingAddress, ext *string) map[string]interface{} {
 	var list map[string]interface{}
 
 	// do we have an ext?
@@ -106,25 +116,42 @@ func dynamicTemplateData(no *types.Notification, usr *types.User, ship *types.Sh
 	}
 
 	// add notification details
-	if no != nil {
+	if no.Contract != nil {
 		list["collection"] = no.Contract.String()
 		list["contract"] = no.Contract.String()
-		list["token_id"] = no.TokenId.String()
 
-		log.Infof("NFT collection %s, token ID %s", no.Contract.String(), no.TokenId.String())
+		// collection name
+		list["collection_name"] = p.MustCollectionName(no.Contract)
+
+		// add token details
+		if no.TokenId != nil {
+			list["token_id"] = no.TokenId.String()
+			list["token_name"] = p.MustTokenName(no.Contract, no.TokenId)
+		}
 	}
 
 	// add user
-	if usr != nil {
-		list["account"] = usr.Address.String()
-		list["address"] = usr.Address.String()
-		list["email"] = *usr.EmailAddress
-		list["alias"] = ""
+	if recipient != nil {
+		list["account"] = recipient.Address.String()
+		list["address"] = recipient.Address.String()
+		list["email"] = *recipient.EmailAddress
+		list["alias"] = recipient.Address.String()
 
-		if nil != usr.Username {
-			list["alias"] = *usr.Username
+		if nil != recipient.Username && "" != *recipient.Username {
+			list["alias"] = *recipient.Username
 		}
-		log.Infof("user %s, email address %s", list["alias"], list["email"])
+	}
+
+	// add originator
+	if origin != nil {
+		list["by_account"] = origin.Address.String()
+		list["by_address"] = origin.Address.String()
+		list["by_email"] = *origin.EmailAddress
+		list["by_alias"] = origin.Address.String()
+
+		if nil != origin.Username && "" != *origin.Username {
+			list["by_alias"] = *origin.Username
+		}
 	}
 
 	// add shipping address

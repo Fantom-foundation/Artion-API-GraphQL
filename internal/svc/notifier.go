@@ -116,7 +116,7 @@ func (nop *notificationProcessor) process(no *types.Notification) {
 	}
 
 	// pull applicable notification templates
-	tmp := repo.NotificationTemplates(no.Type, &no.Contract, &no.TokenId)
+	tmp := repo.NotificationTemplates(no.Type, no.Contract, no.TokenId)
 	if tmp == nil || 0 == len(tmp) {
 		log.Warningf("no templates for notification #%d on %s/%s to %s",
 			no.Type,
