@@ -40,6 +40,9 @@ internal/repository/rpc/contracts/FantomArtTradable.go: internal/repository/rpc/
 internal/repository/rpc/contracts/FantomMarketplace.go: internal/repository/rpc/contracts/abi/FantomMarketplace.json
 	abigen --type FantomMarketplace --pkg contracts --abi $< --out $@
 
+internal/repository/rpc/contracts/FantomMarketplaceV2.go: internal/repository/rpc/contracts/abi/FantomMarketplaceV2.json
+	abigen --type FantomMarketplaceV2 --pkg contracts --abi $< --out $@
+
 internal/repository/rpc/contracts/FantomNFTFactory.go: internal/repository/rpc/contracts/abi/FantomNFTFactory.json
 	abigen --type FantomNFTFactory --pkg contracts --abi $< --out $@
 
@@ -51,6 +54,9 @@ internal/repository/rpc/contracts/FantomAuction.go: internal/repository/rpc/cont
 
 internal/repository/rpc/contracts/FantomAuctionV1.go: internal/repository/rpc/contracts/abi/FantomAuctionV1.json
 	abigen --type FantomAuctionV1 --pkg contracts --abi $< --out $@
+
+internal/repository/rpc/contracts/FantomAuctionV2.go: internal/repository/rpc/contracts/abi/FantomAuctionV2.json
+	abigen --type FantomAuctionV2 --pkg contracts --abi $< --out $@
 
 internal/repository/rpc/contracts/FantomTokenRegistry.go: internal/repository/rpc/contracts/abi/FantomTokenRegistry.json
 	abigen --type FantomTokenRegistry --pkg contracts --abi $< --out $@

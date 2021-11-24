@@ -54,11 +54,10 @@ type Opera struct {
 	// contracts
 	auctionContracts           map[common.Address]IAuctionContract
 	marketplaceContracts       map[common.Address]IMarketplaceContract
-	defaultMarketplaceContract IMarketplaceContract
-	tokenRegistryContract *contracts.FantomTokenRegistry
-	rngFeedContract *contracts.RandomNumberOracle
-
-	defaultMarketplaceAddress *common.Address
+	defaultMarketplaceContract IMarketplaceContract // for token royalty or pay token price
+	defaultMarketplaceAddress  *common.Address
+	tokenRegistryContract      *contracts.FantomTokenRegistry
+	rngFeedContract            *contracts.RandomNumberOracle
 }
 
 // RegisterContract adds a new contract address to the RPC provider.
@@ -71,22 +70,27 @@ func (o *Opera) RegisterContract(ct string, addr *common.Address) (err error) {
 	// load the contract instance
 	switch ct {
 
-	case "auction_v1":
+	case "auction":
 		var ac AuctionContractV1
-
 		ac.auctionV0Contract, err = contracts.NewFantomAuction(*addr, o.ftm)
 		if err == nil {
 			log.Noticef("loaded V0 auction contract at %s", addr.String())
 		}
-
 		ac.auctionV1Contract, err = contracts.NewFantomAuctionV1(*addr, o.ftm)
 		if err == nil {
 			log.Noticef("loaded V1 auction contract at %s", addr.String())
 		}
-
 		o.auctionContracts[*addr] = &ac
 
-	case "market_v1":
+	case "auction2":
+		var ac AuctionContractV2
+		ac.auctionV2Contract, err = contracts.NewFantomAuctionV2(*addr, o.ftm)
+		if err == nil {
+			log.Noticef("loaded V2 auction contract at %s", addr.String())
+		}
+		o.auctionContracts[*addr] = &ac
+
+	case "market":
 		var mc MarketplaceContractV1
 		mc.marketplace, err = contracts.NewFantomMarketplace(*addr, o.ftm)
 		if err == nil {
@@ -95,6 +99,14 @@ func (o *Opera) RegisterContract(ct string, addr *common.Address) (err error) {
 		o.marketplaceContracts[*addr] = &mc
 		o.defaultMarketplaceContract = &mc
 		o.defaultMarketplaceAddress = addr
+
+	case "market2":
+		var mc MarketplaceContractV2
+		mc.marketplace, err = contracts.NewFantomMarketplaceV2(*addr, o.ftm)
+		if err == nil {
+			log.Noticef("loaded %s contract at %s", ct, addr.String())
+		}
+		o.marketplaceContracts[*addr] = &mc
 
 	case "rng":
 		o.rngFeedContract, err = contracts.NewRandomNumberOracle(*addr, o.ftm)

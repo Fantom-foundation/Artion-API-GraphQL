@@ -28,7 +28,7 @@ func (ac *AuctionContractV1) ExtendAuctionDetails(au *types.Auction, block *big.
 		err1 := ac.extendAuctionDetailsV1(au)
 		if err1 != nil {
 			// log error only if both versions fails
-			log.Errorf("unable to extend auction %s/%s details; %s; %s",
+			log.Errorf("unable to extend auction %s/%s details; V0: %s; V1: %s",
 				au.Contract.String(), au.TokenId.String(), au.Owner.String(), err0, err1)
 		}
 	}

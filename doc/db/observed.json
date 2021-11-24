@@ -1,42 +1,66 @@
 {
   "_id": "0xa06aecbb8CD9328667f8E05f288e5b3ac1CFf852",
-  "name": "FantomMarketplace",
-  "type": "market_v1",
+  "name": "FantomMarketplaceV1",
+  "type": "market",
   "created": {"$date": {"$numberLong": "1631892689000"}},
   "block": {"$numberLong":  "17191403"},
   "trx": "0xacfb0b38df48c7866b5a5e6715e3d5faf2fcfaed8c7da609be3b9feaae2fabab"
 }
 {
+  "_id": "0x793970a6946810Fc1EFb539FA1E7a5b5E894a80e",
+  "name": "FantomMarketplaceV2",
+  "type": "market2",
+  "created": {"$date": {"$numberLong": "1637592223000"}},
+  "block": {"$numberLong":  "22808575"},
+  "trx": "0xb42fa4068d22a85bae9130a2e9ee2b9f80ea20e3552278d3b55df016646e5720"
+}
+{
   "_id": "0x56aD389A02Ea9d63f13106cB0c161342f537a92e",
-  "name": "FantomBundleMarketplace",
+  "name": "FantomBundleMarketplaceV1",
   "type": "bundle_market",
   "created": {"$date": {"$numberLong": "1631912199000"}},
   "block": {"$numberLong":  "17206039"},
   "trx": "0x0c30dd1975a61924630c4d7cde761c728ed7d7bd9fa354cfcf0afcb5c0d6f827"
 }
 {
+  "_id": "0x4Ae0bB1F6f2997Ecc4abFd473F4BfCD2430BFd65",
+  "name": "FantomBundleMarketplaceV2",
+  "type": "bundle_market2",
+  "created": {"$date": {"$numberLong": "1637592306000"}},
+  "block": {"$numberLong":  "22808681"},
+  "trx": "0x1dd453b6cd78b3ee0630386a4a41a6a76346c297695d2a3c4d6ebab3b32e8eaf"
+}
+{
   "_id": "0x951Cc69504d39b3eDb155CA99f555E47E044c2F1",
-  "name": "FantomAuction",
-  "type": "auction_v1",
+  "name": "FantomAuctionV1",
+  "type": "auction",
   "created": {"$date": {"$numberLong": "1631892908000"}},
   "block": {"$numberLong":  "17191508"},
   "trx": "0xf17a2742343038a2d5d76e4b086c79240619c8376169d4a7a8a6f01235fbd4f9"
 }
 {
-  "_id": "0xF8f84d3c73c0836801A2a6d616135318822a0E49",
-  "name": "FantomTokenRegistry",
-  "type": "token_registry",
-  "created": {"$date": {"$numberLong": "1631893117000"}},
-  "block": {"$numberLong":  "17191603"},
-  "trx": "0xf8687dfda54c86d5a71692f161c8eb55925a39b4a1c9bede97f0544fa96152cc"
+  "_id": "0x96924B99c2bCa31cD64e3b5bc2C9bbe030E4bF3b",
+  "name": "FantomAuctionV2",
+  "type": "auction2",
+  "created": {"$date": {"$numberLong": "1637592736000"}},
+  "block": {"$numberLong":  "22809204"},
+  "trx": "0x1266ea66e752ab0df1f227a36241248f4891bdac245ddde1eaab1084c1e22937"
 }
 {
-  "_id": "0xf5418F4c04c99d100cE1211338c9582b00DD2859",
+  "_id": "0xcDA452807a531d2CeC178194e7007a6438ED06ef",
+  "name": "FantomTokenRegistry",
+  "type": "token_registry",
+  "created": {"$date": {"$numberLong": "1637650432000"}},
+  "block": {"$numberLong":  "22874510"},
+  "trx": "0x34f6b8867ac461eb231bafaeefb4a68bfbaa39001e40940662c3548ea4b33c90"
+}
+{
+  "_id": "0x8575224D191F8a61F7D720EA00c98100954e0723",
   "name": "FantomAddressRegistry",
   "type": "address_registry",
-  "created": {"$date": {"$numberLong": "1631893156000"}},
-  "block": {"$numberLong":  "17191618"},
-  "trx": "0x2455fdd57bbd34b50643e0edca6de955dd66d0c8ba94fb69db7086b08faa2fd1"
+  "created": {"$date": {"$numberLong": "1637650465000"}},
+  "block": {"$numberLong":  "22874553"},
+  "trx": "0x38315515ce319d82c572001e94985a78f7f956e97b6b33214eea1d8dec2f6ea9"
 }
 {
   "_id": "0x6fe4d7f4edb88f933b46d4984aa36fde7b4b0e07",
