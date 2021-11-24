@@ -165,7 +165,7 @@ func (db *MongoDbBridge) OpenAuctionTimeCheck(contract *common.Address, tokenID 
 	if err != nil {
 		// no offer at all?
 		if err == mongo.ErrNoDocuments {
-			log.Infof("no open auction for %s/%s", contract.String(), (*hexutil.Big)(tokenID).String())
+			log.Debugf("no open auction for %s/%s", contract.String(), (*hexutil.Big)(tokenID).String())
 			return nil
 		}
 		log.Criticalf("failed auction check of %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err.Error())
