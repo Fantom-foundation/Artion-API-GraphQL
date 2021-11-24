@@ -21,20 +21,53 @@ enum ActivityType {
 
 # Activity represents an event that happened on a market-sellable NFT token.
 type Activity {
+    # The time of the event
     time: Time!
+
+    # Type of the activity
     type: ActivityType!
+
+    # The token contract
     contract: Address!
+
+    # The token id
     tokenId: BigInt!
+
+    # The amount of tokens (always 1 for ERC-721)
     quantity: BigInt
+
+    # The address of initiator of the activity (auction bidder, offer proposer, seller of listed item)
     from: Address!
+
+    # The initiator of the activity (auction bidder, offer proposer, seller of a listed item)
     fromUser: User!
+
+    # The address of receiver of the activity (buyer of a listed item, offer acceptor, item owner for bids)
     to: Address
+
+    # The receiver of the activity (buyer of a listed item, offer acceptor, item owner for bids)
     toUser: User
+
+    # The pay token of unitPrice
     payToken: Address
+
+    # The price for one piece of the token (total price = unitPrice * quantity)
     unitPrice: BigInt
+
+    # Start time (of the auction/listing)
     startTime: Time
+
+    # End time (of auction/offer)
     endTime: Time
+
+    # The related token
     token: Token
+
+    # The FantomMarketplace contract (for offers/listings)
+    marketplace: Address
+
+    # The FantomAuction contract (for auctions)
+    auctionHall: Address
 }
 
 type ActivityEdge {

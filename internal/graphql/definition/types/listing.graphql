@@ -15,6 +15,9 @@ type Listing {
     # The listed token (detail)
     token: Token
 
+    # The FantomMarketplace contract
+    marketplace: Address!
+
     # The listed amount (only this exact amount can be bought)
     quantity: BigInt!
 

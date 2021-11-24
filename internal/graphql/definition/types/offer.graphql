@@ -9,6 +9,9 @@ type Offer {
     # The offered token (detail)
     token: Token
 
+    # The FantomMarketplace contract
+    marketplace: Address!
+
     # The buyer
     proposedBy: Address!
 

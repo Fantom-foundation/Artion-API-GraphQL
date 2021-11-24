@@ -173,7 +173,7 @@ func (p *Proxy) registerContracts() {
 	}
 
 	// load list of observed contract addresses
-	log.Notice("loading observed contracts")
 	p.observedContracts = p.ObservedContractsAddressList()
+	log.Noticef("loaded %d observed contracts", len(p.observedContracts))
 	p.loadObservedCollections()
 }

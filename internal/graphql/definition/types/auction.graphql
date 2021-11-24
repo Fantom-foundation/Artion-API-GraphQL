@@ -9,6 +9,9 @@ type Auction {
     # The seller of the item
     owner: Address!
 
+    # The FantomAuction contract
+    auctionHall: Address!
+
     # The auctioned amount of tokens (always 1 for ERC-721)
     quantity: BigInt!
 
