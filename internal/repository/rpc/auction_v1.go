@@ -69,6 +69,7 @@ func (ac *AuctionContractV1) extendAuctionDetailsV1a(au *types.Auction) error {
 	if 0 < res.EndTime.Int64() {
 		au.EndTime = types.Time(time.Unix(res.EndTime.Int64(), 0))
 	} else {
+		log.Infof("Impossible auction EndTime %d for %s/%s", res.EndTime.Int64(), au.Contract.String(), au.TokenId.String())
 		au.EndTime = types.Time(time.Time(au.StartTime).Add(auctionDefaultDurationShift))
 	}
 
@@ -109,6 +110,7 @@ func (ac *AuctionContractV1) extendAuctionDetailsV1(au *types.Auction) error {
 	if 0 < res.EndTime.Int64() {
 		au.EndTime = types.Time(time.Unix(res.EndTime.Int64(), 0))
 	} else {
+		log.Infof("Impossible auction EndTime %d for %s/%s", res.EndTime.Int64(), au.Contract.String(), au.TokenId.String())
 		au.EndTime = types.Time(time.Time(au.StartTime).Add(auctionDefaultDurationShift))
 	}
 	return nil
