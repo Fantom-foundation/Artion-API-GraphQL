@@ -16,15 +16,15 @@ const auctionDefaultDurationShift = (24 * 365 * 10) * time.Hour
 
 // AuctionContractV1 is IAuctionContract implementation for contracts in 1.0.0 version
 type AuctionContractV1 struct {
-	auctionV0Contract *contracts.FantomAuction
-	auctionV1Contract *contracts.FantomAuctionV1
+	auctionV1aContract *contracts.FantomAuction   // newer version V1a
+	auctionV1Contract  *contracts.FantomAuctionV1 // older version V1
 }
 
 func (ac *AuctionContractV1) ExtendAuctionDetails(au *types.Auction, block *big.Int) error {
-	// try to decode V0 first
-	err0 := ac.extendAuctionDetailsV0(au)
+	// try to decode V1a first
+	err0 := ac.extendAuctionDetailsV1a(au)
 	if err0 != nil {
-		// try to decode V1 if V0 failed
+		// try to decode V1 if V1a failed
 		err1 := ac.extendAuctionDetailsV1(au)
 		if err1 != nil {
 			// log error only if both versions fails
@@ -35,9 +35,9 @@ func (ac *AuctionContractV1) ExtendAuctionDetails(au *types.Auction, block *big.
 	return nil
 }
 
-func (ac *AuctionContractV1) extendAuctionDetailsV0(au *types.Auction) error {
+func (ac *AuctionContractV1) extendAuctionDetailsV1a(au *types.Auction) error {
 	// get auction details
-	res, err := ac.auctionV0Contract.Auctions(&bind.CallOpts{
+	res, err := ac.auctionV1aContract.Auctions(&bind.CallOpts{
 		BlockNumber: nil,
 		Context:     context.Background(),
 	}, au.Contract, (*big.Int)(&au.TokenId))
@@ -116,18 +116,18 @@ func (ac *AuctionContractV1) extendAuctionDetailsV1(au *types.Auction) error {
 
 func (ac *AuctionContractV1) GetMinBid(contract *common.Address, tokenId *big.Int) (*big.Int, error) {
 	// get the highest bid
-	highest, err := ac.auctionV0Contract.HighestBids(nil, *contract, tokenId)
+	highest, err := ac.auctionV1aContract.HighestBids(nil, *contract, tokenId)
 	if err != nil {
 		return nil, err
 	}
 
 	// for zero highest bid, we use min. bid instead
 	if 0 == new(big.Int).Cmp(highest.Bid) {
-		auction, err := ac.auctionV0Contract.Auctions(nil, *contract, tokenId)
+		auction, err := ac.auctionV1aContract.Auctions(nil, *contract, tokenId)
 		return auction.ReservePrice, err
 	}
 
-	minIncrement, err := ac.auctionV0Contract.MinBidIncrement(nil)
+	minIncrement, err := ac.auctionV1aContract.MinBidIncrement(nil)
 	if err != nil {
 		return nil, err
 	}

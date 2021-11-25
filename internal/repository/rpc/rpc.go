@@ -72,7 +72,7 @@ func (o *Opera) RegisterContract(ct string, addr *common.Address) (err error) {
 
 	case "auction":
 		var ac AuctionContractV1
-		ac.auctionV0Contract, err = contracts.NewFantomAuction(*addr, o.ftm)
+		ac.auctionV1aContract, err = contracts.NewFantomAuction(*addr, o.ftm)
 		if err == nil {
 			log.Noticef("loaded V0 auction contract at %s", addr.String())
 		}
@@ -101,8 +101,8 @@ func (o *Opera) RegisterContract(ct string, addr *common.Address) (err error) {
 		o.defaultMarketplaceAddress = addr
 
 	case "market2":
-		var mc MarketplaceContractV2
-		mc.marketplace, err = contracts.NewFantomMarketplaceV2(*addr, o.ftm)
+		var mc MarketplaceContractV1 // V2 use the same ABI as V1
+		mc.marketplace, err = contracts.NewFantomMarketplace(*addr, o.ftm)
 		if err == nil {
 			log.Noticef("loaded %s contract at %s", ct, addr.String())
 		}
