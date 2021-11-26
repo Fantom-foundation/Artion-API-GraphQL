@@ -77,7 +77,7 @@ func erc721TokenMustExist(contract *common.Address, tokenID *big.Int, blk *eth.H
 
 	// make the token
 	tok := types.NewToken(contract, tokenID, uri, int64(blk.Time), evt.BlockNumber, evt.Index)
-	log.Infof("ERC-721 token %s found at %s block %d", tok.TokenId.String(), tok.Contract.String(), evt.BlockNumber)
+	log.Debugf("ERC-721 token %s found at %s block %d", tok.TokenId.String(), tok.Contract.String(), evt.BlockNumber)
 
 	// add details
 	tok.CreatedBy = repo.MustTransactionSender(evt.TxHash)
