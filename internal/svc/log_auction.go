@@ -56,6 +56,16 @@ func auctionCreated(evt *eth.Log, lo *logObserver) {
 		log.Errorf("failed to load extended auction details; %s", err.Error())
 	}
 
+	if time.Time(auction.EndTime).Unix() <= 0 {
+		log.Errorf("invalid auction end time %d for %s/%s", time.Time(auction.EndTime).Unix(), auction.Contract.String(), auction.TokenId.String())
+		return // skip saving broken auction
+	}
+
+	if time.Time(auction.StartTime).Unix() <= 0 {
+		log.Errorf("invalid auction start time %d for %s/%s", time.Time(auction.StartTime).Unix(), auction.Contract.String(), auction.TokenId.String())
+		return // skip saving broken auction
+	}
+
 	// if auction owner is not known, find them by the transaction sender
 	if 0 == bytes.Compare(auction.Owner.Bytes(), zeroAddress.Bytes()) || 0 == bytes.Compare(auction.PayToken.Bytes(), zeroAddress.Bytes()) {
 		log.Warningf("parsing trx at #%d / #%d: %s", evt.BlockNumber, evt.TxIndex, evt.TxHash.String())

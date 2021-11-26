@@ -48,20 +48,8 @@ func (ac *AuctionContractV2) extendAuctionDetailsV2(au *types.Auction) error {
 	// transfer values
 	au.ReservePrice = (hexutil.Big)(*res.ReservePrice)
 	au.MinimalBid = (hexutil.Big)(*res.MinBid)
-
-	// do we have a start time? use creation time, if not
-	if 0 < res.StartTime.Int64() {
-		au.StartTime = types.Time(time.Unix(res.StartTime.Int64(), 0))
-	} else {
-		au.StartTime = au.Created
-	}
-
-	// do we have an end time? use creation + constant if not
-	if 0 < res.EndTime.Int64() {
-		au.EndTime = types.Time(time.Unix(res.EndTime.Int64(), 0))
-	} else {
-		au.EndTime = types.Time(time.Time(au.StartTime).Add(auctionDefaultDurationShift))
-	}
+	au.StartTime = types.Time(time.Unix(res.StartTime.Int64(), 0))
+	au.EndTime = types.Time(time.Unix(res.EndTime.Int64(), 0))
 
 	return nil
 }
