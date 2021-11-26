@@ -96,3 +96,11 @@ func (p *Proxy) CanRegisterCollection(contract *common.Address, user *common.Add
 
 	return nil
 }
+
+func (p *Proxy) IsApprovedForAll(contract *common.Address, owner *common.Address, operator *common.Address) (bool, error) {
+	isApproved, err := p.rpc.Erc721IsApprovedForAll(contract, owner, operator)
+	if err != nil {
+		return false, fmt.Errorf("IsApprovedForAll failed; %s", err)
+	}
+	return isApproved, err
+}
