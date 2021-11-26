@@ -39,9 +39,9 @@ func (o *Opera) MustTransactionData(tx common.Hash) (common.Address, *common.Add
 	}
 
 	if trx.To() == nil {
-		log.Noticef("loaded contract deployment trx %s / %d [%s] from %s -> %s; with %d code bytes", rec.BlockHash.String(), rec.TransactionIndex, trx.Hash().String(), from.String(), rec.ContractAddress.String(), len(trx.Data()))
+		log.Noticef("contract deployment #%d/#%d [%s] from %s -> %s; with %d bytes code", rec.BlockNumber.Uint64(), rec.TransactionIndex, trx.Hash().String(), from.String(), rec.ContractAddress.String(), len(trx.Data()))
 		return from, nil, trx.Data()
 	}
-	log.Noticef("loaded trx %s / %d [%s] from %s to %s; with %d input bytes", rec.BlockHash.String(), rec.TransactionIndex, trx.Hash().String(), from.String(), trx.To().String(), len(trx.Data()))
+	log.Noticef("trx #%d/#%d [%s] from %s -> %s; with %d bytes input", rec.BlockNumber.Uint64(), rec.TransactionIndex, trx.Hash().String(), from.String(), trx.To().String(), len(trx.Data()))
 	return from, trx.To(), trx.Data()
 }
