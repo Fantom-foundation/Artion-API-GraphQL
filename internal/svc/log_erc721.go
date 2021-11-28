@@ -121,9 +121,11 @@ func erc721TokenTransfer(evt *eth.Log, lo *logObserver) {
 	// log what we do
 	log.Debugf("erc721 %s / %s transfer %s -> %s", evt.Address.String(), tokenID.String(), from.String(), to.String())
 
-	// this may be a mint; if so, we have that one covered already
+	// this may be a mint
+	// it could have been covered on artion NFT contracts above, but we need to handle non-artion contracts, too
 	if bytes.Equal(zeroAddress.Bytes(), from.Bytes()) {
 		erc721TokenMustExist(&evt.Address, (*big.Int)(&tokenID), blk, evt, lo)
+		notifyEventToOwner(types.NotifyNFTCreated, evt.Address, tokenID, to, nil, types.Time(time.Unix(int64(blk.Time), 0)))
 	}
 
 	// ERC-721 tokens don't have quantity; the amount is always 1
@@ -180,9 +182,9 @@ func updateERC721Owner(contract common.Address, tokenID hexutil.Big, owner commo
 	return nil
 }
 
-// registerTokenBurn registers
+// registerERC721TokenBurn registers a burn event on NFT.
 func registerERC721TokenBurn(contract common.Address, tokenID hexutil.Big, owner common.Address, ts uint64) error {
-	// now we can add the new owner
+	// store the burn
 	if err := repo.StoreBurn(&types.NFTBurn{
 		Contract: contract,
 		TokenId:  tokenID,
@@ -193,15 +195,8 @@ func registerERC721TokenBurn(contract common.Address, tokenID hexutil.Big, owner
 		return err
 	}
 
-	// notify burn via notifications
-	repo.QueueNotificationForProcessing(&types.Notification{
-		Type:       types.NotifyNFTBurned,
-		Contract:   &contract,
-		TokenId:    &tokenID,
-		TimeStamp:  types.Time(time.Unix(int64(ts), 0)),
-		Recipient:  owner,
-		Originator: nil,
-	})
+	// notify burn via notifications to the owner
+	notifyEventToOwner(types.NotifyNFTBurned, contract, tokenID, owner, nil, types.Time(time.Unix(int64(ts), 0)))
 	return nil
 }
 

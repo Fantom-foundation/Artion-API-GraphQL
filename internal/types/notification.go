@@ -21,38 +21,38 @@ const (
 	notifyBid       = 0b_0000_0011_0000_0000
 	notifyOffer     = 0b_0000_0100_0000_0000
 	notifyListing   = 0b_0000_1000_0000_0000
-	notifyBundle    = 0b_0001_0000_0000_0000
 	notifyFollower  = 0b_1000_0000_0000_0000
 
-	NotifyNFTBurned             = /* d-626685e374d3441fa8e7a2d63090739b */ notifyBase
-	NotifyNFTCreated            = /* d-2fd097843ab9480884ce8dfebe58f015 */ notifyBase | notifyAdded
-	NotifyAuctionCreated        = /* d-07fb0b0e3e9b46fba27a9bbaccb12bc5 */ notifyAuction | notifyAdded
-	NotifyListingCreated        = /* d-40798e32c4a64c01bf6ed8f9f44ff640 */ notifyListing | notifyAdded
-	NotifyListingCanceled       = /* d-08ed9be9205d460d99e6c581e2bddb7b */ notifyListing | notifyCanceled
-	NotifyBundlePurchased       = /* d-49a8868cb94a4631a05f7177af05bb44 */ notifyBundle | notifyFinished | notifyPurchased
-	NotifyBundleSold            = /* d-cfd8ca0c1a904f269d1a6af3de227ca8 */ notifyBundle | notifyFinished | notifySold
-	NotifyOfferOnBundleAdded    = /* d-c79239f83c7c42afb30bd80854303661 */ notifyBundle | notifyOffer | notifyAdded
-	NotifyOfferOnBundleCanceled = /* d-46c783ce27924a6d8f1fae46600544c8 */ notifyBundle | notifyOffer | notifyCanceled
-	NotifyAuctionBidAdded       = /* d-a2143c02992c48018325101da545a0da */ notifyAuction | notifyBid | notifyAdded
-	NotifyAuctionBidCanceled    = /* d-402c6fc9a24e4d0484d5a7a1310f653c */ notifyAuction | notifyBid | notifyCanceled
-	NotifyAuctionPurchased      = /* d-d6f14efa4d324b62a9c7a0dc378412af */ notifyAuction | notifyFinished
-	NotifyAuctionCanceled       = /* d-6517723fea4d475090f051f20aa8575c */ notifyAuction | notifyCanceled
-	NotifyOfferAdded            = /* d-8d7bfd27fb414570996e961b8db4ff23 */ notifyOffer | notifyAdded
-	NotifyOfferCanceled         = /* d-d801345093f04fcda6c08012b713e9e3 */ notifyOffer | notifyCanceled
-	NotifyFollowerBundleListed  = /* d-4fe28af290f74fc0ac934427518c5bb6 */ notifyFollower | notifyBundle | notifyListing | notifyAdded
-	NotifyFollowerListingAdded  = /* d-10c7b86506874975aaac47efdfd19ee1 */ notifyFollower | notifyListing | notifyAdded
-	NotifyFollowerAuctionAdded  = /* d-8f15781aa8ed41feae05791dd28f5de8 */ notifyFollower | notifyAuction | notifyAdded
+	NotifyNFTBurned            = /* +ok d-626685e374d3441fa8e7a2d63090739b */ notifyBase
+	NotifyNFTCreated           = /* +ok d-2fd097843ab9480884ce8dfebe58f015 */ notifyBase | notifyAdded
+	NotifyNFTSold              = /* +ok +offer +list d-c41cf896b892445094171ebb9950537d */ notifySold
+	NotifyNFTPurchased         = /* +ok +offer +list d-f941e62f2cae4c20a64116868d531510 */ notifyPurchased
+	NotifyAuctionCreated       = /* +ok d-07fb0b0e3e9b46fba27a9bbaccb12bc5 */ notifyAuction | notifyAdded
+	NotifyListingCreated       = /* +ok d-40798e32c4a64c01bf6ed8f9f44ff640 */ notifyListing | notifyAdded
+	NotifyListingCanceled      = /* +ok d-08ed9be9205d460d99e6c581e2bddb7b */ notifyListing | notifyCanceled
+	NotifyAuctionBidAdded      = /* +ok d-a2143c02992c48018325101da545a0da */ notifyAuction | notifyBid | notifyAdded
+	NotifyAuctionBidCanceled   = /* +ok d-402c6fc9a24e4d0484d5a7a1310f653c */ notifyAuction | notifyBid | notifyCanceled
+	NotifyAuctionPurchased     = /* +ok d-d6f14efa4d324b62a9c7a0dc378412af */ notifyAuction | notifyFinished
+	NotifyAuctionCanceled      = /* +ok d-6517723fea4d475090f051f20aa8575c */ notifyAuction | notifyCanceled
+	NotifyOfferAdded           = /* +ok d-8d7bfd27fb414570996e961b8db4ff23 */ notifyOffer | notifyAdded
+	NotifyOfferCanceled        = /* +ok d-d801345093f04fcda6c08012b713e9e3 */ notifyOffer | notifyCanceled
+	NotifyFollowerListingAdded = /* +ok d-10c7b86506874975aaac47efdfd19ee1 */ notifyFollower | notifyListing | notifyAdded
+	NotifyFollowerAuctionAdded = /* +ok d-8f15781aa8ed41feae05791dd28f5de8 */ notifyFollower | notifyAuction | notifyAdded
 
 	/*
 		notifyUpdated   = 0b_0000_0000_0000_0100
 		notifyPrice     = 0b_0010_0000_0000_0000
+		notifyBundle    = 0b_0001_0000_0000_0000
 
 		NotifyAuctionPriceUpdated         = notifyAuction | notifyPrice | notifyUpdated
-		NotifyNFTSold                     = notifySold
-		NotifyNFTPurchased                = notifyPurchased
+		NotifyBundlePurchased       	  = notifyBundle | notifyFinished | notifyPurchased
+		NotifyBundleSold            	  = notifyBundle | notifyFinished | notifySold
+		NotifyOfferOnBundleAdded    	  = notifyBundle | notifyOffer | notifyAdded
+		NotifyOfferOnBundleCanceled 	  = notifyBundle | notifyOffer | notifyCanceled
 		NotifyFollowerActivity            = notifyFollower
 		NotifyFollowerBundleCreated       = notifyFollower | notifyBundle | notifyAdded
 		NotifyFollowerBundlePriceUpdated  = notifyFollower | notifyBundle | notifyPrice | notifyUpdated
+		NotifyFollowerBundleListed 		  = notifyFollower | notifyBundle | notifyListing | notifyAdded
 		NotifyFollowerAuctionPriceUpdated = notifyFollower | notifyAuction | notifyPrice | notifyUpdated
 		NotifyFollowerPriceUpdated        = notifyFollower | notifyPrice | notifyUpdated
 	*/
@@ -66,6 +66,55 @@ type Notification struct {
 	TimeStamp  Time            `bson:"fired" json:"fired"`
 	Recipient  common.Address  `bson:"to" json:"to"`
 	Originator *common.Address `bson:"from" json:"from"`
+}
+
+// notificationCheckByType defines a map of callbacks for notification settings validation by notification type
+var notificationCheckByType = map[int32]func(*NotificationSettings) bool{
+	NotifyNFTBurned: func(ns *NotificationSettings) bool {
+		return ns.SNotification
+	},
+	NotifyNFTCreated: func(ns *NotificationSettings) bool {
+		return ns.SNotification
+	},
+	NotifyNFTSold: func(ns *NotificationSettings) bool {
+		return ns.SNftSell
+	},
+	NotifyNFTPurchased: func(ns *NotificationSettings) bool {
+		return ns.SNftBuy
+	},
+	NotifyAuctionCreated: func(ns *NotificationSettings) bool {
+		return ns.SNotification
+	},
+	NotifyListingCreated: func(ns *NotificationSettings) bool {
+		return ns.SNotification
+	},
+	NotifyListingCanceled: func(ns *NotificationSettings) bool {
+		return ns.SNotification
+	},
+	NotifyAuctionBidAdded: func(ns *NotificationSettings) bool {
+		return ns.SNftBidToAuction
+	},
+	NotifyAuctionBidCanceled: func(ns *NotificationSettings) bool {
+		return ns.SNftBidToAuctionCancel
+	},
+	NotifyAuctionPurchased: func(ns *NotificationSettings) bool {
+		return ns.SAuctionWin
+	},
+	NotifyAuctionCanceled: func(ns *NotificationSettings) bool {
+		return ns.SAuctionOfBidCancel
+	},
+	NotifyOfferAdded: func(ns *NotificationSettings) bool {
+		return ns.SNftOffer
+	},
+	NotifyOfferCanceled: func(ns *NotificationSettings) bool {
+		return ns.SNftOfferCancel
+	},
+	NotifyFollowerListingAdded: func(ns *NotificationSettings) bool {
+		return ns.FNftList
+	},
+	NotifyFollowerAuctionAdded: func(ns *NotificationSettings) bool {
+		return ns.FNftAuction
+	},
 }
 
 // NotificationID generates unique identifier for the notification record.
@@ -90,6 +139,8 @@ func NotificationID(no *Notification) string {
 		hash.Write(no.Originator.Bytes())
 	}
 
-	hash.Write(([]byte)(time.Time(no.TimeStamp).String()))
+	binary.BigEndian.PutUint64(id[:], uint64(time.Time(no.TimeStamp).Unix()))
+	hash.Write(id[:])
+
 	return hexutils.BytesToHex(hash.Sum(nil))
 }

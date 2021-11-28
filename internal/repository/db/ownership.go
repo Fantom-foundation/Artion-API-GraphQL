@@ -129,19 +129,14 @@ func (db *MongoDbBridge) IsOwnerOf(contract common.Address, tokenId hexutil.Big,
 func (db *MongoDbBridge) GetTokenOwners(contract common.Address, tokenId hexutil.Big) ([]common.Address, error) {
 	col := db.client.Database(db.dbName).Collection(coTokenOwnerships)
 	ctx := context.Background()
-	var list []common.Address
 
 	ld, err := col.Find(ctx, bson.D{
 		{Key: fiOwnershipContract, Value: contract.String()},
 		{Key: fiOwnershipTokenId, Value: tokenId.String()},
 	})
-	defer func() {
-		err = ld.Close(ctx)
-		if err != nil {
-			log.Errorf("error closing all token owners cursor; %s", err.Error())
-		}
-	}()
+	defer closeFindCursor("token owners", ld)
 
+	var list []common.Address
 	for ld.Next(ctx) {
 		var ownership types.Ownership
 		if err = ld.Decode(&ownership); err != nil {

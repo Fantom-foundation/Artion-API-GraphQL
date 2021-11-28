@@ -1,5 +1,7 @@
 {
-  "_id": {"$oid":  "000000000000000000000001"},
+  "_id": {
+    "$oid": "000000000000000000000001"
+  },
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x1",
@@ -12,7 +14,9 @@
   "params": "{\"prize\":\"Azerbaijan 2021 race-worn helmet AND meet and greet with Pierre over the next 12 months\"}"
 }
 {
-  "_id": {"$oid":  "000000000000000000000002"},
+  "_id": {
+    "$oid": "000000000000000000000002"
+  },
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x2",
@@ -25,7 +29,9 @@
   "params": "{\"prize\":\"signed promotion helmet from Brazil 2019 race weekend AND meet and greet with Pierre over the next 12 months\"}"
 }
 {
-  "_id": {"$oid":  "000000000000000000000003"},
+  "_id": {
+    "$oid": "000000000000000000000003"
+  },
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x3",
@@ -38,7 +44,9 @@
   "params": "{\"prize\":\"VIP experience for two people at a race weekend AND meet and greet with Pierre over the next 12 months AND signed 2021 mini-helmet and merchandising\"}"
 }
 {
-  "_id": {"$oid":  "000000000000000000000104"},
+  "_id": {
+    "$oid": "000000000000000000000104"
+  },
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": null,
@@ -51,7 +59,9 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop\"}"
 }
 {
-  "_id": {"$oid":  "000000000000000000000201"},
+  "_id": {
+    "$oid": "000000000000000000000201"
+  },
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x103",
@@ -64,7 +74,9 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$oid":  "000000000000000000000202"},
+  "_id": {
+    "$oid": "000000000000000000000202"
+  },
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x10e",
@@ -77,7 +89,9 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$oid":  "000000000000000000000203"},
+  "_id": {
+    "$oid": "000000000000000000000203"
+  },
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x57",
@@ -90,7 +104,9 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$oid":  "000000000000000000000204"},
+  "_id": {
+    "$oid": "000000000000000000000204"
+  },
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x9",
@@ -103,7 +119,9 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$oid":  "000000000000000000000205"},
+  "_id": {
+    "$oid": "000000000000000000000205"
+  },
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x94",
@@ -116,7 +134,9 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$oid":  "000000000000000000000206"},
+  "_id": {
+    "$oid": "000000000000000000000206"
+  },
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0xc0",
@@ -129,7 +149,9 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$oid":  "000000000000000000000207"},
+  "_id": {
+    "$oid": "000000000000000000000207"
+  },
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0xc9",
@@ -142,7 +164,9 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$oid":  "000000000000000000000208"},
+  "_id": {
+    "$oid": "000000000000000000000208"
+  },
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0xf",
@@ -155,7 +179,9 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$oid":  "000000000000000000000209"},
+  "_id": {
+    "$oid": "000000000000000000000209"
+  },
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0xf6",
@@ -168,7 +194,9 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$oid":  "000000000000000000001001"},
+  "_id": {
+    "$oid": "000000000000000000001001"
+  },
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x1",
@@ -181,7 +209,9 @@
   "params": "{\"prize\":\"Azerbaijan 2021 race-worn helmet AND meet and greet with Pierre over the next 12 months\"}"
 }
 {
-  "_id": {"$oid":  "000000000000000000001002"},
+  "_id": {
+    "$oid": "000000000000000000001002"
+  },
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x2",
@@ -194,7 +224,9 @@
   "params": "{\"prize\":\"signed promotion helmet from Brazil 2019 race weekend AND meet and greet with Pierre over the next 12 months\"}"
 }
 {
-  "_id": {"$oid":  "000000000000000000001003"},
+  "_id": {
+    "$oid": "000000000000000000001003"
+  },
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x3",
@@ -207,7 +239,9 @@
   "params": "{\"prize\":\"VIP experience for two people at a race weekend AND meet and greet with Pierre over the next 12 months AND signed 2021 mini-helmet and merchandising\"}"
 }
 {
-  "_id": {"$oid":  "000000000000000000001104"},
+  "_id": {
+    "$oid": "000000000000000000001104"
+  },
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": null,
@@ -220,7 +254,9 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop\"}"
 }
 {
-  "_id": {"$oid":  "000000000000000000001201"},
+  "_id": {
+    "$oid": "000000000000000000001201"
+  },
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x103",
@@ -233,7 +269,9 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$oid":  "000000000000000000001202"},
+  "_id": {
+    "$oid": "000000000000000000001202"
+  },
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x10e",
@@ -246,7 +284,9 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$oid":  "000000000000000000001203"},
+  "_id": {
+    "$oid": "000000000000000000001203"
+  },
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x57",
@@ -259,7 +299,9 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$oid":  "000000000000000000001204"},
+  "_id": {
+    "$oid": "000000000000000000001204"
+  },
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x9",
@@ -272,7 +314,9 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$oid":  "000000000000000000001205"},
+  "_id": {
+    "$oid": "000000000000000000001205"
+  },
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0x94",
@@ -285,7 +329,9 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$oid":  "000000000000000000001206"},
+  "_id": {
+    "$oid": "000000000000000000001206"
+  },
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0xc0",
@@ -298,7 +344,9 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$oid":  "000000000000000000001207"},
+  "_id": {
+    "$oid": "000000000000000000001207"
+  },
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0xc9",
@@ -311,7 +359,9 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$oid":  "000000000000000000001208"},
+  "_id": {
+    "$oid": "000000000000000000001208"
+  },
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0xf",
@@ -324,7 +374,9 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$oid":  "000000000000000000001209"},
+  "_id": {
+    "$oid": "000000000000000000001209"
+  },
   "type": 0,
   "contract": "0x475631Dbd805F46BE62D8F87a4f07CA8aFaF7E45",
   "token": "0xf6",
@@ -337,7 +389,9 @@
   "params": "{\"prize\":\"numbered limited edition T-shirt celebrating the first NFT drop AND signed mini-helmet in addition to the merchandise (golden ticket)\"}"
 }
 {
-  "_id": {"$oid":  "000000000000000000002001"},
+  "_id": {
+    "$oid": "000000000000000000002001"
+  },
   "type": 0,
   "contract": "0x61aF4D29f672E27a097291F72fc571304BC93521",
   "token": null,
@@ -348,4 +402,229 @@
   "subject": "Artion Ticket Burned",
   "recipient": null,
   "params": "{\"prize\":\"no prize\"}"
+}
+{
+  "_id": {
+    "$oid": "010000000000000000000000"
+  },
+  "type": 0,
+  "contract": null,
+  "token": null,
+  "provider": "sendgrid",
+  "template": "d-626685e374d3441fa8e7a2d63090739b",
+  "sender": "Artion",
+  "sender_id": "dev@fantom.foundation",
+  "subject": "Your NFT has been burned on Artion.",
+  "recipient": null,
+  "params": null
+}
+{
+  "_id": {
+    "$oid": "010000000000000000000001"
+  },
+  "type": 1,
+  "contract": null,
+  "token": null,
+  "provider": "sendgrid",
+  "template": "d-2fd097843ab9480884ce8dfebe58f015",
+  "sender": "Artion",
+  "sender_id": "dev@fantom.foundation",
+  "subject": "Your new NFT is now available on Artion.",
+  "recipient": null,
+  "params": null
+}
+{
+  "_id": {
+    "$oid": "010000000000000000000016"
+  },
+  "type": 16,
+  "contract": null,
+  "token": null,
+  "provider": "sendgrid",
+  "template": "d-c41cf896b892445094171ebb9950537d",
+  "sender": "Artion",
+  "sender_id": "dev@fantom.foundation",
+  "subject": "You sold your NFT on Artion.",
+  "recipient": null,
+  "params": null
+}
+{
+  "_id": {
+    "$oid": "010000000000000000000032"
+  },
+  "type": 32,
+  "contract": null,
+  "token": null,
+  "provider": "sendgrid",
+  "template": "d-f941e62f2cae4c20a64116868d531510",
+  "sender": "Artion",
+  "sender_id": "dev@fantom.foundation",
+  "subject": "You received your purchased NFT on Artion.",
+  "recipient": null,
+  "params": null
+}
+{
+  "_id": {
+    "$oid": "010000000000000000000257"
+  },
+  "type": 257,
+  "contract": null,
+  "token": null,
+  "provider": "sendgrid",
+  "template": "d-07fb0b0e3e9b46fba27a9bbaccb12bc5",
+  "sender": "Artion",
+  "sender_id": "dev@fantom.foundation",
+  "subject": "Your new NFT auction is now active on Artion.",
+  "recipient": null,
+  "params": null
+}
+{
+  "_id": {
+    "$oid": "010000000000000000002049"
+  },
+  "type": 2049,
+  "contract": null,
+  "token": null,
+  "provider": "sendgrid",
+  "template": "d-40798e32c4a64c01bf6ed8f9f44ff640",
+  "sender": "Artion",
+  "sender_id": "dev@fantom.foundation",
+  "subject": "Your new NFT listing is now active on Artion.",
+  "recipient": null,
+  "params": null
+}
+{
+  "_id": {
+    "$oid": "010000000000000000002176"
+  },
+  "type": 2176,
+  "contract": null,
+  "token": null,
+  "provider": "sendgrid",
+  "template": "d-08ed9be9205d460d99e6c581e2bddb7b",
+  "sender": "Artion",
+  "sender_id": "dev@fantom.foundation",
+  "subject": "Your NFT listing has been canceled on Artion.",
+  "recipient": null,
+  "params": null
+}
+{
+  "_id": {
+    "$oid": "010000000000000000000769"
+  },
+  "type": 769,
+  "contract": null,
+  "token": null,
+  "provider": "sendgrid",
+  "template": "d-a2143c02992c48018325101da545a0da",
+  "sender": "Artion",
+  "sender_id": "dev@fantom.foundation",
+  "subject": "Your NFT auction received a bid on Artion.",
+  "recipient": null,
+  "params": null
+}
+{
+  "_id": {
+    "$oid": "010000000000000000000896"
+  },
+  "type": 896,
+  "contract": null,
+  "token": null,
+  "provider": "sendgrid",
+  "template": "d-402c6fc9a24e4d0484d5a7a1310f653c",
+  "sender": "Artion",
+  "sender_id": "dev@fantom.foundation",
+  "subject": "A bid on your Artion NFT auction has been canceled.",
+  "recipient": null,
+  "params": null
+}
+{
+  "_id": {
+    "$oid": "010000000000000000000264"
+  },
+  "type": 264,
+  "contract": null,
+  "token": null,
+  "provider": "sendgrid",
+  "template": "d-d6f14efa4d324b62a9c7a0dc378412af",
+  "sender": "Artion",
+  "sender_id": "dev@fantom.foundation",
+  "subject": "You received an NFT from an auction on Artion.",
+  "recipient": null,
+  "params": null
+}
+{
+  "_id": {
+    "$oid": "010000000000000000000384"
+  },
+  "type": 384,
+  "contract": null,
+  "token": null,
+  "provider": "sendgrid",
+  "template": "d-6517723fea4d475090f051f20aa8575c",
+  "sender": "Artion",
+  "sender_id": "dev@fantom.foundation",
+  "subject": "Artion auction for an NFT has been canceled.",
+  "recipient": null,
+  "params": null
+}
+{
+  "_id": {
+    "$oid": "010000000000000000001025"
+  },
+  "type": 1025,
+  "contract": null,
+  "token": null,
+  "provider": "sendgrid",
+  "template": "d-8d7bfd27fb414570996e961b8db4ff23",
+  "sender": "Artion",
+  "sender_id": "dev@fantom.foundation",
+  "subject": "Your NFT token received an offer on Artion.",
+  "recipient": null,
+  "params": null
+}
+{
+  "_id": {
+    "$oid": "010000000000000000001152"
+  },
+  "type": 1152,
+  "contract": null,
+  "token": null,
+  "provider": "sendgrid",
+  "template": "d-d801345093f04fcda6c08012b713e9e3",
+  "sender": "Artion",
+  "sender_id": "dev@fantom.foundation",
+  "subject": "An offer on your NFT token has been canceled on Artion.",
+  "recipient": null,
+  "params": null
+}
+{
+  "_id": {
+    "$oid": "020000000000000000034817"
+  },
+  "type": 34817,
+  "contract": null,
+  "token": null,
+  "provider": "sendgrid",
+  "template": "d-10c7b86506874975aaac47efdfd19ee1",
+  "sender": "Artion",
+  "sender_id": "dev@fantom.foundation",
+  "subject": "An user you follow listed an NFT on Artion.",
+  "recipient": null,
+  "params": null
+}
+{
+  "_id": {
+    "$oid": "020000000000000000033025"
+  },
+  "type": 33025,
+  "contract": null,
+  "token": null,
+  "provider": "sendgrid",
+  "template": "d-8f15781aa8ed41feae05791dd28f5de8",
+  "sender": "Artion",
+  "sender_id": "dev@fantom.foundation",
+  "subject": "A user you follow started NFT auction on Artion.",
+  "recipient": null,
+  "params": null
 }

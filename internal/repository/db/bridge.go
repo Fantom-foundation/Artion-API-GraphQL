@@ -101,6 +101,6 @@ func (db *MongoDbBridge) Close() {
 // closeFindCursor closes Mongo Find cursor safely.
 func closeFindCursor(name string, cur *mongo.Cursor) {
 	if err := cur.Close(context.Background()); err != nil {
-		log.Errorf("could not close %s cursor; %s", name, err.Error())
+		log.Errorf("cursor '%s' close failed; %s", name, err.Error())
 	}
 }

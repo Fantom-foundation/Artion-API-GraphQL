@@ -12,19 +12,6 @@ import (
 	"strings"
 )
 
-// notificationQueueCapacity represents the maximal capacity of notificationQueue queued to be sent.
-const notificationQueueCapacity = 100
-
-// NewNotifications provides a channel for new notification requests queue.
-func (p *Proxy) NewNotifications() chan types.Notification {
-	return p.notificationQueue
-}
-
-// QueueNotificationForProcessing puts the given notification into the queue for async processing.
-func (p *Proxy) QueueNotificationForProcessing(no *types.Notification) {
-	p.notificationQueue <- *no
-}
-
 // StoreNotification stores the given notification in persistent storage.
 // The function returns true if the notification was unique and didn't exist before.
 func (p *Proxy) StoreNotification(no *types.Notification) (bool, error) {

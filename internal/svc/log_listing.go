@@ -79,6 +79,9 @@ func marketNFTListed(evt *eth.Log, lo *logObserver) {
 		return
 	}
 
+	notifyEventToOwner(types.NotifyListingCreated, lst.Contract, lst.TokenId, lst.Owner, nil, lst.Created)
+	notifyEventToFollowers(types.NotifyFollowerListingAdded, lst.Contract, lst.TokenId, lst.Owner, lst.Created)
+
 	log.Infof("added new listing of %s/%s owner %s", lst.Contract.String(), lst.TokenId.String(), lst.Owner.String())
 }
 
@@ -207,6 +210,7 @@ func marketNFTUnlisted(evt *eth.Log, _ *logObserver) {
 		return
 	}
 
+	notifyEventToOwner(types.NotifyListingCanceled, lst.Contract, lst.TokenId, lst.Owner, nil, *lst.Closed)
 	log.Infof("canceled and closed listing of %s/%s owner %s", lst.Contract.String(), lst.TokenId.String(), lst.Owner.String())
 }
 
@@ -244,6 +248,9 @@ func marketItemSold(evt *eth.Log, lo *logObserver) {
 		marketCloseOfferWithSale(evt, offer, blk, lo, &owner)
 		return
 	}
+
+	notifyEventToOwner(types.NotifyNFTSold, contract, (hexutil.Big)(*tokenID), owner, &buyer, types.Time(time.Unix(int64(blk.Time), 0)))
+	notifyEventToOwner(types.NotifyNFTPurchased, contract, (hexutil.Big)(*tokenID), buyer, &owner, types.Time(time.Unix(int64(blk.Time), 0)))
 
 	log.Errorf("could not process sale of %s/%s by %s to %s", contract.String(), (*hexutil.Big)(tokenID).String(), owner.String(), buyer.String())
 }
@@ -290,6 +297,10 @@ func marketCloseListingWithSale(evt *eth.Log, lst *types.Listing, blk *eth.Heade
 		log.Errorf("could not store listing activity; %s", err.Error())
 		return
 	}
+
+	// send email notifications
+	notifyEventToOwner(types.NotifyNFTSold, lst.Contract, lst.TokenId, lst.Owner, buyer, types.Time(up))
+	notifyEventToOwner(types.NotifyNFTPurchased, lst.Contract, lst.TokenId, *buyer, &lst.Owner, types.Time(up))
 
 	log.Infof("closed sold listing of %s/%s owner %s", lst.Contract.String(), lst.TokenId.String(), lst.Owner.String())
 }

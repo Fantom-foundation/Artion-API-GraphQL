@@ -70,6 +70,16 @@ func (p *Proxy) TokenKnown(contract *common.Address, tokenId *big.Int) bool {
 	return p.db.TokenKnown(contract, tokenId)
 }
 
+// MustTokenOwners gets the owner of the given token, if available.
+func (p *Proxy) MustTokenOwners(contract *common.Address, tokenId hexutil.Big) []common.Address {
+	ow, err := p.db.GetTokenOwners(*contract, tokenId)
+	if err != nil {
+		log.Errorf("unknown owners of %s/#%s; %s", contract.String(), tokenId.String(), err.Error())
+		return []common.Address{}
+	}
+	return ow
+}
+
 // StoreToken puts the given token into the persistent storage.
 // The function is used for both insert and update operation.
 func (p *Proxy) StoreToken(token *types.Token) error {

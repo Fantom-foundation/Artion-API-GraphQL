@@ -8,7 +8,7 @@ import (
 
 const (
 	// maxNotificationAgeDelivery represent the max age of a notification to be pushed to delivery service.
-	maxNotificationAgeDelivery = -48 * time.Hour
+	maxNotificationAgeDelivery = -12 * time.Hour
 
 	// notificationQueueTerminateDelay is the delay we let the queue clear out before forced termination.
 	notificationQueueTerminateDelay = 2 * time.Second

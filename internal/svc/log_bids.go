@@ -91,6 +91,7 @@ func auctionBidPlaced(evt *eth.Log, lo *logObserver) {
 		return
 	}
 
+	notifyEventToOwner(types.NotifyAuctionBidAdded, auction.Contract, auction.TokenId, auction.Owner, &bid.Bidder, bid.Placed)
 	log.Infof("added new bid on auction %s/%s by %s", bid.Contract.String(), bid.TokenId.String(), bid.Bidder.String())
 
 	// notify subscribers
@@ -163,6 +164,8 @@ func auctionBidWithdrawn(evt *eth.Log, _ *logObserver) {
 		log.Errorf("can not store unbid activity of %s on %s/%s; %s", bidder, activity.Contract, activity.TokenId, err.Error())
 		return
 	}
+
+	notifyEventToOwner(types.NotifyAuctionBidAdded, auction.Contract, auction.TokenId, auction.Owner, &bidder, activity.Time)
 
 	// notify subscribers
 	event := types.Event{Type: "AUCTION_BID_WITHDRAW", Auction: auction}

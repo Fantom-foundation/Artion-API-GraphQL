@@ -77,6 +77,10 @@ func marketOfferCreated(evt *eth.Log, lo *logObserver) {
 		return
 	}
 
+	// notify new offer
+	notifyMarketplaceOffer(types.NotifyOfferAdded, offer.Contract, offer.TokenId, &offer.ProposedBy, types.Time(time.Unix(int64(blk.Time), 0)))
+
+	// log activity
 	log.Infof("added new offer of %s/%s proposed by %s", offer.Contract.String(), offer.TokenId.String(), offer.ProposedBy.String())
 
 	// notify subscribers (will be skipped for tokens owned by 100 or more owners)
@@ -92,7 +96,7 @@ func marketOfferCreated(evt *eth.Log, lo *logObserver) {
 	}
 }
 
-// marketOfferCanceled handles log event for NFT token to loose buy offer on the Marketplace.
+// marketOfferCanceled handles log event for NFT token to lose buy offer on the Marketplace.
 // Marketplace::OfferCanceled(address indexed creator, address indexed nft, uint256 tokenId)
 func marketOfferCanceled(evt *eth.Log, _ *logObserver) {
 	// sanity check: 1 + 2 topics; 1 x uint256 = 32 bytes
@@ -147,6 +151,10 @@ func marketOfferCanceled(evt *eth.Log, _ *logObserver) {
 		return
 	}
 
+	// notify lost offer
+	notifyMarketplaceOffer(types.NotifyOfferCanceled, offer.Contract, offer.TokenId, &offer.ProposedBy, types.Time(time.Unix(int64(blk.Time), 0)))
+
+	// log activity
 	log.Infof("canceled offer on %s/%s proposed by %s", offer.Contract.String(), offer.TokenId.String(), offer.ProposedBy.String())
 }
 
@@ -193,5 +201,25 @@ func marketCloseOfferWithSale(evt *eth.Log, offer *types.Offer, blk *eth.Header,
 		return
 	}
 
+	// send email notifications
+	notifyEventToOwner(types.NotifyNFTSold, offer.Contract, offer.TokenId, *seller, &offer.ProposedBy, types.Time(up))
+	notifyEventToOwner(types.NotifyNFTPurchased, offer.Contract, offer.TokenId, offer.ProposedBy, seller, types.Time(up))
+
 	log.Infof("closed buy offer of %s/%s proposed by %s", offer.Contract.String(), offer.TokenId.String(), offer.ProposedBy.String())
+}
+
+// notifyMarketplaceOffer notifies NFT owners about a new offer on their token.
+func notifyMarketplaceOffer(nt int32, contract common.Address, tokenID hexutil.Big, sender *common.Address, ts types.Time) {
+	owners := repo.MustTokenOwners(&contract, tokenID)
+
+	for _, owner := range owners {
+		repo.QueueNotificationForProcessing(&types.Notification{
+			Type:       nt,
+			Contract:   &contract,
+			TokenId:    &tokenID,
+			TimeStamp:  ts,
+			Recipient:  owner,
+			Originator: sender,
+		})
+	}
 }

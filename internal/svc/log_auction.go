@@ -72,7 +72,7 @@ func auctionCreated(evt *eth.Log, lo *logObserver) {
 		log.Errorf("could not clear auction bids; %s", err.Error())
 	}
 
-	// store the listing into database
+	// store the auction on repository
 	if err := repo.StoreAuction(&auction); err != nil {
 		log.Errorf("could not store auction; %s", err.Error())
 	}
@@ -109,6 +109,9 @@ func auctionCreated(evt *eth.Log, lo *logObserver) {
 		log.Errorf("could not store auction activity; %s", err.Error())
 		return
 	}
+
+	notifyEventToOwner(types.NotifyAuctionCreated, auction.Contract, auction.TokenId, auction.Owner, nil, types.Time(time.Unix(int64(blk.Time), 0)))
+	notifyEventToFollowers(types.NotifyFollowerAuctionAdded, auction.Contract, auction.TokenId, auction.Owner, types.Time(time.Unix(int64(blk.Time), 0)))
 
 	log.Infof("added new auction of %s/%s started by %s at %s", auction.Contract.String(), auction.TokenId.String(), auction.Owner.String(), evt.TxHash)
 }
@@ -346,6 +349,11 @@ func auctionCanceled(evt *eth.Log, _ *logObserver) {
 		return
 	}
 
+	// do we need to notify the latest bidder?
+	if auction.LastBidder != nil {
+		notifyEventToOwner(types.NotifyAuctionCanceled, auction.Contract, auction.TokenId, *auction.LastBidder, &auction.Owner, ts)
+	}
+
 	// notify subscribers
 	event := types.Event{Type: "AUCTION_CANCELLED", Auction: auction}
 	subscriptionManager := GetSubscriptionsManager()
@@ -482,6 +490,8 @@ func finishAuction(contract *common.Address, tokenID *big.Int, owner *common.Add
 		log.Errorf("could not store auction activity; %s", err.Error())
 		return
 	}
+
+	notifyEventToOwner(types.NotifyAuctionPurchased, auction.Contract, auction.TokenId, *auction.Winner, &auction.Owner, when)
 
 	// notify subscribers
 	event := types.Event{Type: "AUCTION_RESOLVED", Auction: auction}
