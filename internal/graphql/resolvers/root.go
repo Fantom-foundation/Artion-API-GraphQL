@@ -5,7 +5,9 @@ import (
 	"artion-api-graphql/cmd/artionapi/build"
 	"artion-api-graphql/internal/config"
 	"artion-api-graphql/internal/logger"
+	"artion-api-graphql/internal/repository"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"sync"
 )
 
@@ -105,4 +107,13 @@ func (rs *RootResolver) run() {
 // Version resolves the current version of the API server.
 func (rs *RootResolver) Version() string {
 	return build.Short(cfg)
+}
+
+// IsApprovedForAll checks if the operator has ApprovedForAll permission to manipulate with tokens of given owner.
+func (rs *RootResolver) IsApprovedForAll(args struct {
+	Contract common.Address
+	Owner    common.Address
+	Operator common.Address
+}) (bool, error) {
+	return repository.R().IsApprovedForAll(&args.Contract, &args.Owner, &args.Operator)
 }

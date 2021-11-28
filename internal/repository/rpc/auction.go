@@ -19,7 +19,7 @@ type IAuctionContract interface {
 func (o *Opera) ExtendAuctionDetailAt(au *types.Auction, block *big.Int) error {
 	ac, exists := o.auctionContracts[au.AuctionHall]
 	if !exists {
-		return fmt.Errorf("unable to get min bid for auction %s/%s - unknown auction contract %s",
+		return fmt.Errorf("unable to get detail for auction %s/%s - unknown auction contract %s",
 			au.Contract.String(), au.TokenId.String(), au.AuctionHall.String())
 	}
 	return ac.ExtendAuctionDetails(au, block)

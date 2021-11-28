@@ -130,14 +130,9 @@ func (o *Opera) Erc721TokenUri(contract *common.Address, tokenId *big.Int) (stri
 
 // Erc721CheckMarketplaceIsApprovedForAll checks if the marketplace contract is allowed to manipulate with any tokens in the collection.
 func (o *Opera) Erc721CheckMarketplaceIsApprovedForAll(contract *common.Address) error {
-	// instantiate contract
-	erc, err := contracts.NewErc721(*contract, o.ftm)
-	if err != nil {
-		return err
-	}
 	// check if the marketplace is approved to manipulate with tokens of "any" random address
 	// (actually only this random one - best afford)
-	isApproved, err := erc.IsApprovedForAll(nil, exampleAddress, *o.defaultMarketplaceAddress)
+	isApproved, err := o.Erc721IsApprovedForAll(contract, &exampleAddress, o.defaultMarketplaceAddress)
 	if err != nil {
 		return err
 	}
@@ -145,4 +140,13 @@ func (o *Opera) Erc721CheckMarketplaceIsApprovedForAll(contract *common.Address)
 		return fmt.Errorf("the marketplace contract (%s) is not ApprovedForAll in the collection", o.defaultMarketplaceAddress.String())
 	}
 	return nil
+}
+
+func (o *Opera) Erc721IsApprovedForAll(contract *common.Address, owner *common.Address, operator *common.Address) (bool, error) {
+	// instantiate contract
+	erc, err := contracts.NewErc721(*contract, o.ftm)
+	if err != nil {
+		return false, err
+	}
+	return erc.IsApprovedForAll(nil, *owner, *operator)
 }

@@ -52,6 +52,9 @@ type Query {
     # Estimate platform fee and gas needed for token minting.
     estimateMintFeeGas(user: Address!, contract: Address!, tokenUri: String!): MintFeeGas!
 
+    # Check if the operator has ApprovedForAll permission to manipulate with tokens of given owner.
+    isApprovedForAll(contract: Address!, owner: Address!, operator: Address!): Boolean!
+
     # Search collections, tokens, and users for the given phrase and return list of relevant results.
     textSearch(phrase: String!, maxLength: Int = 15): [TextSearchEdge]!
 }
