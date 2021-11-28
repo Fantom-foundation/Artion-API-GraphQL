@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"strings"
 )
 
@@ -22,6 +23,7 @@ const (
 	fiFollowFollowed = "to"
 )
 
+// AddFollow adds the follow into the shared backed database.
 func (sdb *SharedMongoDbBridge) AddFollow(follow *types.Follow) error {
 	if follow == nil {
 		return fmt.Errorf("no value to store")
@@ -42,6 +44,7 @@ func (sdb *SharedMongoDbBridge) AddFollow(follow *types.Follow) error {
 	return nil
 }
 
+// RemoveFollow removes the follow from the shared database.
 func (sdb *SharedMongoDbBridge) RemoveFollow(follow *types.Follow) error {
 	if follow == nil {
 		return fmt.Errorf("no value to store")
@@ -62,16 +65,50 @@ func (sdb *SharedMongoDbBridge) RemoveFollow(follow *types.Follow) error {
 	return nil
 }
 
+// ListUserFollowed gets a list of profiles followed by the user.
 func (sdb *SharedMongoDbBridge) ListUserFollowed(user common.Address, cursor types.Cursor, count int, backward bool) (out *types.FollowList, err error) {
-	filter := bson.D{ {Key: fiFollowFollower, Value: strings.ToLower(user.String())} }
+	filter := bson.D{{Key: fiFollowFollower, Value: strings.ToLower(user.String())}}
 	return sdb.listFollows(filter, cursor, count, backward)
 }
 
+// ListUserFollowers gets a list of profiles of followers of the given user.
 func (sdb *SharedMongoDbBridge) ListUserFollowers(user common.Address, cursor types.Cursor, count int, backward bool) (out *types.FollowList, err error) {
-	filter := bson.D{ {Key: fiFollowFollowed, Value: strings.ToLower(user.String())} }
+	filter := bson.D{{Key: fiFollowFollowed, Value: strings.ToLower(user.String())}}
 	return sdb.listFollows(filter, cursor, count, backward)
 }
 
+// Followers provides a list of followers' addresses for the given user.
+func (sdb *SharedMongoDbBridge) Followers(user common.Address) ([]common.Address, error) {
+	col := sdb.client.Database(sdb.dbName).Collection(coFollows)
+	ld, err := col.Find(context.Background(),
+		bson.D{{Key: fiFollowFollowed, Value: strings.ToLower(user.String())}},
+		options.Find().SetProjection(bson.D{{Key: fiFollowFollowed, Value: 1}}),
+	)
+	if err != nil {
+		log.Errorf("can not load followers of %s; %s", user.String(), err.Error())
+		return nil, err
+	}
+
+	defer closeFindCursor("followers", ld)
+
+	list := make([]common.Address, 0)
+	for ld.Next(context.Background()) {
+		var row struct {
+			To common.Address `bson:"to"`
+		}
+
+		if err := ld.Decode(&row); err != nil {
+			log.Errorf("can not decode follower; %s", err.Error())
+			continue
+		}
+
+		list = append(list, row.To)
+	}
+
+	return list, nil
+}
+
+// listFollows performs the followers loading for the given filter and set of limits.
 func (sdb *SharedMongoDbBridge) listFollows(filter bson.D, cursor types.Cursor, count int, backward bool) (out *types.FollowList, err error) {
 	db := (*MongoDbBridge)(sdb)
 	var list types.FollowList
@@ -89,13 +126,7 @@ func (sdb *SharedMongoDbBridge) listFollows(filter bson.D, cursor types.Cursor, 
 		return nil, err
 	}
 
-	// close the cursor as we leave
-	defer func() {
-		err = ld.Close(ctx)
-		if err != nil {
-			log.Errorf("error closing follow list cursor; %s", err.Error())
-		}
-	}()
+	defer closeFindCursor("follow list", ld)
 
 	for ld.Next(ctx) {
 		if len(list.Collection) < count {

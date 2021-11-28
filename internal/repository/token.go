@@ -48,6 +48,18 @@ func (p *Proxy) Token(contract *common.Address, tokenId *hexutil.Big) (*types.To
 	return token.(*types.Token), err
 }
 
+// MustTokenName returns name of the given token, or it's ID if the name is not available.
+func (p *Proxy) MustTokenName(contract *common.Address, tokenID *hexutil.Big) string {
+	t, err := p.Token(contract, tokenID)
+	if err != nil {
+		return tokenID.String()
+	}
+	if t.Name == "" {
+		return tokenID.String()
+	}
+	return t.Name
+}
+
 // ExtendLegacyToken tries to load token metadata details from the shared legacy database.
 func (p *Proxy) ExtendLegacyToken(token *types.Token) (*types.Token, error) {
 	return p.shared.ExtendLegacyToken(token)
@@ -56,6 +68,16 @@ func (p *Proxy) ExtendLegacyToken(token *types.Token) (*types.Token, error) {
 // TokenKnown checks if the given token exists i the database.
 func (p *Proxy) TokenKnown(contract *common.Address, tokenId *big.Int) bool {
 	return p.db.TokenKnown(contract, tokenId)
+}
+
+// MustTokenOwners gets the owner of the given token, if available.
+func (p *Proxy) MustTokenOwners(contract *common.Address, tokenId hexutil.Big) []common.Address {
+	ow, err := p.db.GetTokenOwners(*contract, tokenId)
+	if err != nil {
+		log.Errorf("unknown owners of %s/#%s; %s", contract.String(), tokenId.String(), err.Error())
+		return []common.Address{}
+	}
+	return ow
 }
 
 // StoreToken puts the given token into the persistent storage.
@@ -228,7 +250,7 @@ func (p *Proxy) UploadTokenData(metadata types.JsonMetadata, image types.Image) 
 }
 
 type royaltyRecipient struct {
-	royalty uint16
+	royalty   uint16
 	recipient common.Address
 }
 
@@ -241,7 +263,7 @@ func (p *Proxy) GetTokenRoyalty(contract common.Address, tokenId *big.Int) (roya
 
 	rr, err, _ := p.callGroup.Do(key.String(), func() (interface{}, error) {
 		royalty, recipient, err := p.rpc.GetTokenRoyalty(contract, tokenId)
-		return royaltyRecipient{royalty,recipient}, err
+		return royaltyRecipient{royalty, recipient}, err
 	})
 	return int32(rr.(royaltyRecipient).royalty), rr.(royaltyRecipient).recipient, err
 }

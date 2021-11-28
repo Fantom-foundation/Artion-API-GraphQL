@@ -59,17 +59,18 @@ func (db *MongoDbBridge) NotificationTemplates(nt int32, contract *common.Addres
 	// get the collection
 	col := db.client.Database(db.dbName).Collection(coNotificationTemplates)
 
+	// list templates specific to the set contract and token ID
 	list := loadNotificationTemplates(col, notificationTemplateFilter(nt, contract, tokenID))
 	if list != nil && len(list) > 0 {
 		return list
 	}
 
-	// is there the token ID? try generic contract wide list
+	// is there both contract & the token ID? try generic contract wide list, any token ID
 	if contract != nil && tokenID != nil {
 		return db.NotificationTemplates(nt, contract, nil)
 	}
 
-	// is there the token ID but no token ID? try generic type only level list
+	// is there the contract but no token ID? try generic type only level list, any contract, any token ID
 	if contract != nil && tokenID == nil {
 		return db.NotificationTemplates(nt, nil, nil)
 	}

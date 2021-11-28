@@ -84,7 +84,7 @@ func (p *Proxy) CanRegisterCollection(contract *common.Address, user *common.Add
 
 	owner := p.rpc.CollectionOwner(contract)
 	if owner != nil {
-		if ! bytes.Equal(user.Bytes(), owner.Bytes()) {
+		if !bytes.Equal(user.Bytes(), owner.Bytes()) {
 			return fmt.Errorf("the contract is owned by somebody else")
 		}
 	}

@@ -8,7 +8,7 @@ import (
 
 const (
 	// maxNotificationAgeDelivery represent the max age of a notification to be pushed to delivery service.
-	maxNotificationAgeDelivery = -48 * time.Hour
+	maxNotificationAgeDelivery = -12 * time.Hour
 
 	// notificationQueueTerminateDelay is the delay we let the queue clear out before forced termination.
 	notificationQueueTerminateDelay = 2 * time.Second
@@ -116,7 +116,7 @@ func (nop *notificationProcessor) process(no *types.Notification) {
 	}
 
 	// pull applicable notification templates
-	tmp := repo.NotificationTemplates(no.Type, &no.Contract, &no.TokenId)
+	tmp := repo.NotificationTemplates(no.Type, no.Contract, no.TokenId)
 	if tmp == nil || 0 == len(tmp) {
 		log.Warningf("no templates for notification #%d on %s/%s to %s",
 			no.Type,

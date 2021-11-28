@@ -22,3 +22,16 @@ func (p *Proxy) UploadCollectionApplication(app types.CollectionApplication, ima
 	collection := app.ToCollection(imageCid, &owner)
 	return p.shared.InsertLegacyCollection(collection)
 }
+
+// MustCollectionName provides a name of an Artion ERC721 and/or ERC1155 token,
+// or an empty string, if the name is not available.
+func (p *Proxy) MustCollectionName(adr *common.Address) string {
+	c, err := p.shared.GetLegacyCollection(*adr)
+	if err != nil {
+		return adr.String()
+	}
+	if c.Name == "" {
+		return adr.String()
+	}
+	return c.Name
+}
