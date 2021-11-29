@@ -12,7 +12,7 @@ type TokenFilter struct {
 	HasAuction      *bool
 	HasOffer        *bool
 	HasBids         *bool
-	IncludeInactive bool
+	IncludeInactive *bool
 	Collections     *[]common.Address
 	Categories      *[]int32
 	CreatedBy       *common.Address

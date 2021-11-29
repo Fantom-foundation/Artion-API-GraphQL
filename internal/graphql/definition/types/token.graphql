@@ -168,6 +168,9 @@ input TokenFilter {
     # filter tokens with auction and at least one bid
     hasBids: Boolean
 
+    # include inactive tokens?
+    includeInactive: Boolean
+
     # filter tokens by collections
     collections: [Address!]
 

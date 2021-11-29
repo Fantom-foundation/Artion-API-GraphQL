@@ -735,8 +735,8 @@ func tokenFilterToBson(f *types.TokenFilter) bson.D {
 	// make new filter
 	filter := bson.D{}
 
-	// include inactive tokens?
-	if false == f.IncludeInactive {
+	// exclude inactive tokens (if not requested to include them)
+	if f.IncludeInactive == nil || *f.IncludeInactive != true {
 		filter = append(filter, bson.E{Key: fiTokenIsActive, Value: true})
 	}
 
