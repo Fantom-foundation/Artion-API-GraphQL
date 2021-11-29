@@ -6,6 +6,7 @@ import (
 	"artion-api-graphql/internal/config"
 	"artion-api-graphql/internal/logger"
 	"artion-api-graphql/internal/repository/rpc/contracts"
+	"artion-api-graphql/internal/types"
 	"bytes"
 	"embed"
 	"fmt"
@@ -58,6 +59,8 @@ type Opera struct {
 	defaultMarketplaceAddress  *common.Address
 	tokenRegistryContract      *contracts.FantomTokenRegistry
 	rngFeedContract            *contracts.RandomNumberOracle
+
+	basicContracts types.Contracts
 }
 
 // RegisterContract adds a new contract address to the RPC provider.
@@ -89,6 +92,7 @@ func (o *Opera) RegisterContract(ct string, addr *common.Address) (err error) {
 			log.Noticef("loaded V2 auction contract at %s", addr.String())
 		}
 		o.auctionContracts[*addr] = &ac
+		o.basicContracts.AuctionHall = *addr
 
 	case "market":
 		var mc MarketplaceContractV1
@@ -107,6 +111,7 @@ func (o *Opera) RegisterContract(ct string, addr *common.Address) (err error) {
 			log.Noticef("loaded %s contract at %s", ct, addr.String())
 		}
 		o.marketplaceContracts[*addr] = &mc
+		o.basicContracts.Marketplace = *addr
 
 	case "rng":
 		o.rngFeedContract, err = contracts.NewRandomNumberOracle(*addr, o.ftm)
@@ -222,6 +227,11 @@ func (o *Opera) Close() {
 // NewHeaders provides a channel receiving new blockchain headers.
 func (o *Opera) NewHeaders() chan *eth.Header {
 	return o.headers
+}
+
+// BasicContracts provides addresses of basic Artion contracts.
+func (o *Opera) BasicContracts() *types.Contracts {
+	return &o.basicContracts
 }
 
 // SetConfig sets the repository configuration to be used to establish

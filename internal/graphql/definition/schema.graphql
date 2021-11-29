@@ -10,6 +10,9 @@ type Query {
     # version represents the API server version responding to your requests.
     version: String!
 
+    # Get primary used Artion contracts addresses.
+    contracts: Contracts!
+
     # Get list of token collections categories.
     categories: [Category!]!
 

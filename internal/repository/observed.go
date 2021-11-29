@@ -144,3 +144,7 @@ func (p *Proxy) ContractTypeByAddress(adr *common.Address) (string, error) {
 	}
 	return tp, nil
 }
+
+func (p *Proxy) BasicContracts() (c *types.Contracts) {
+	return p.rpc.BasicContracts()
+}

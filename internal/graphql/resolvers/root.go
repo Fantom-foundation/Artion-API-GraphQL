@@ -6,6 +6,7 @@ import (
 	"artion-api-graphql/internal/config"
 	"artion-api-graphql/internal/logger"
 	"artion-api-graphql/internal/repository"
+	"artion-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"sync"
@@ -116,4 +117,9 @@ func (rs *RootResolver) IsApprovedForAll(args struct {
 	Operator common.Address
 }) (bool, error) {
 	return repository.R().IsApprovedForAll(&args.Contract, &args.Owner, &args.Operator)
+}
+
+// Contracts provides primary used Artion contracts addresses.
+func (rs *RootResolver) Contracts() (*types.Contracts, error) {
+	return repository.R().BasicContracts(), nil
 }

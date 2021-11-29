@@ -1,0 +1,5 @@
+# Primary used Artion contracts addresses.
+type Contracts {
+    marketplace: Address!
+    auctionHall: Address!
+}
