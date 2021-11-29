@@ -84,6 +84,9 @@ db_status: doc/db/status.json
 db_categories: doc/db/categories.json
 	mongoimport --db=artionshared --collection=colcats --file=$<
 
+db_notifications: doc/db/notification_tpl.json
+	mongoimport --db=artion --collection=notification_tpl --file=$<
+
 contracts:
 	solc --abi --bin --overwrite --optimize --optimize-runs=200 --metadata --hashes -o doc/contracts/build/ doc/contracts/PriceOracleProxy.sol
 	solc --abi --bin --overwrite --optimize --optimize-runs=200 --metadata --hashes -o doc/contracts/build/ doc/contracts/RandomNumberOracle.sol
