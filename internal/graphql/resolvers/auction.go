@@ -20,12 +20,13 @@ func (au *Auction) MinBidAmount() (hexutil.Big, error) {
 	return (hexutil.Big)(*val), nil
 }
 
+// WatchAuction creates a client subscription for auction events.
 func (rs *RootResolver) WatchAuction(ctx context.Context, args struct {
 	Contract common.Address
 	TokenId  hexutil.Big
 }) <-chan Event {
 	listener := types.EventListener{
-		StopChan: ctx.Done(),
+		StopChan:   ctx.Done(),
 		EventsChan: make(chan types.Event),
 	}
 	mgr := svc.GetSubscriptionsManager()

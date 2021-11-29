@@ -16,7 +16,7 @@ type AuctionContractV2 struct {
 	auctionV2Contract *contracts.FantomAuctionV2
 }
 
-func (ac *AuctionContractV2) ExtendAuctionDetails(au *types.Auction, block *big.Int) error {
+func (ac *AuctionContractV2) ExtendAuctionDetails(au *types.Auction, _ *big.Int) error {
 	err2 := ac.extendAuctionDetailsV2(au)
 	if err2 != nil {
 		// log error only if both versions fails
@@ -54,6 +54,7 @@ func (ac *AuctionContractV2) extendAuctionDetailsV2(au *types.Auction) error {
 	return nil
 }
 
+// GetMinBid extract minimal required bid a used must place to participate on auction.
 func (ac *AuctionContractV2) GetMinBid(contract *common.Address, tokenId *big.Int) (*big.Int, error) {
 	// get the highest bid
 	highest, err := ac.auctionV2Contract.HighestBids(nil, *contract, tokenId)
@@ -64,7 +65,12 @@ func (ac *AuctionContractV2) GetMinBid(contract *common.Address, tokenId *big.In
 	// for zero highest bid, we use min. bid instead
 	if 0 == new(big.Int).Cmp(highest.Bid) {
 		auction, err := ac.auctionV2Contract.Auctions(nil, *contract, tokenId)
-		return auction.ReservePrice, err
+		if err != nil {
+			return nil, err
+		}
+
+		// use MinBid instead (could be zero, or reserve price, based on auction config)
+		highest.Bid = auction.MinBid
 	}
 
 	minIncrement, err := ac.auctionV2Contract.MinBidIncrement(nil)
