@@ -315,8 +315,11 @@ func (rs *RootResolver) Tokens(args struct {
 		args.Filter.PriceMin = (*hexutil.Big)(big.NewInt(1))
 	}
 
-	// when filtering listed items, replace general-price by listing-price sorting/filtering
-	if args.Filter.HasListing != nil && *args.Filter.HasListing == true {
+	// when filtering listed items only, replace general-price by listing-price sorting/filtering
+	hasListing := args.Filter.HasListing != nil && *args.Filter.HasListing
+	hasAuction := args.Filter.HasAuction != nil && *args.Filter.HasAuction
+	hasBids := args.Filter.HasBids != nil && *args.Filter.HasBids
+	if hasListing && !hasAuction && !hasBids {
 		if srt == sorting.TokenSortingPrice {
 			srt = sorting.TokenSortingListPrice
 		}
