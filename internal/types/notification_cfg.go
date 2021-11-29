@@ -98,9 +98,7 @@ func (ns *NotificationSettings) Unmarshal(data []byte) error {
 	}
 
 	in := binary.BigEndian.Uint64(data[:8])
-	result := NotificationSettings{}
-
-	v := reflect.ValueOf(result)
+	v := reflect.ValueOf(ns)
 	tv := v.Type()
 
 	for i := 0; i < v.NumField(); i++ {
@@ -111,15 +109,11 @@ func (ns *NotificationSettings) Unmarshal(data []byte) error {
 		}
 	}
 
-	*ns = result
 	return nil
 }
 
 // IsTypeEnabled checks if the given notification type is enabled on the setting.
 func (ns *NotificationSettings) IsTypeEnabled(nt int32) (bool, error) {
-	if nil == ns {
-		return false, nil
-	}
 	cbt, ok := notificationCheckByType[nt]
 	if !ok {
 		return false, fmt.Errorf("unknown type #%d", nt)

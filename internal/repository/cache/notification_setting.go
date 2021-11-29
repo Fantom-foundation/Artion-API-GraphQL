@@ -20,6 +20,7 @@ func (c *MemCache) GetNotificationSetting(user *common.Address, loader func(addr
 	key := notificationSettingKey(user)
 	data, err := c.cache.Get(key)
 	if err == nil {
+		result = &types.NotificationSettings{}
 		if err = result.Unmarshal(data); err != nil {
 			return nil, err
 		}
