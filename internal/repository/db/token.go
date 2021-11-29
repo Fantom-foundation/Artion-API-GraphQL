@@ -98,6 +98,9 @@ const (
 	// fiTokenMinListPrice is the column storing minimal listing price.
 	fiTokenMinListPrice = "min_list"
 
+	// fiTokenListUsdPrice is the column storing listed price of token in USD aggregated from listings.
+	fiTokenListUsdPrice = "min_list.usd"
+
 	// fiTokenMinListValid is the column storing end of minimal listing price validity.
 	fiTokenMinListValid = "min_list_valid"
 
@@ -679,16 +682,17 @@ func (db *MongoDbBridge) ListTokens(
 	ctx := context.Background()
 
 	bsonFilter := tokenFilterToBson(filter)
-	log.Infof("Filter: %+v", bsonFilter)
+	log.Debugf("Filter: %+v", bsonFilter)
 
 	list.TotalCount, err = db.getTotalCount(col, bsonFilter)
 	if err != nil {
-		return nil, err
+		log.Errorf("listing tokens count failed, filter: %+v; %s", bsonFilter, err)
+		return nil, fmt.Errorf("listing tokens count failed; %s", err)
 	}
 
 	ld, err := db.findPaginated(col, bsonFilter, cursor, count, sorting, backward != sortDesc)
 	if err != nil {
-		log.Errorf("error loading tokens list; %s", err.Error())
+		log.Errorf("listing tokens failed, filter: %+v; %s", bsonFilter, err.Error())
 		return nil, err
 	}
 
@@ -812,9 +816,12 @@ func tokenFilterToBson(f *types.TokenFilter) bson.D {
 	if f.PriceMax != nil {
 		filter = append(filter, bson.E{Key: fiTokenPrice, Value: bson.D{{Key: "$lte", Value: f.PriceMax.ToInt().Int64()}}})
 	}
-	if f.PriceMin == nil && f.PriceMax != nil {
-		// when price filter is used, skip all tokens without price
-		filter = append(filter, bson.E{Key: fiTokenPrice, Value: bson.D{{Key: "$gt", Value: 0}}})
+
+	if f.ListPriceMin != nil {
+		filter = append(filter, bson.E{Key: fiTokenListUsdPrice, Value: bson.D{{Key: "$gte", Value: f.ListPriceMin.ToInt().Int64()}}})
+	}
+	if f.ListPriceMax != nil {
+		filter = append(filter, bson.E{Key: fiTokenListUsdPrice, Value: bson.D{{Key: "$lte", Value: f.ListPriceMax.ToInt().Int64()}}})
 	}
 
 	return filter

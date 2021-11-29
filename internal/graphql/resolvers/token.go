@@ -300,6 +300,9 @@ func (rs *RootResolver) Tokens(args struct {
 		return nil, err
 	}
 	sortDesc := isSortingDirectionDesc(args.SortDir)
+	if args.Filter == nil {
+		args.Filter = &types.TokenFilter{}
+	}
 
 	// default sorting Recently Created
 	if srt == sorting.TokenSortingNone {
@@ -308,8 +311,19 @@ func (rs *RootResolver) Tokens(args struct {
 	}
 
 	// when sorting by price, skip zero price (not-listed/auctioned) items
-	if srt == sorting.TokenSortingPrice && args.Filter.PriceMin == nil {
+	if (srt == sorting.TokenSortingPrice || args.Filter.PriceMax != nil) && args.Filter.PriceMin == nil {
 		args.Filter.PriceMin = (*hexutil.Big)(big.NewInt(1))
+	}
+
+	// when filtering listed items, replace general-price by listing-price sorting/filtering
+	if args.Filter.HasListing != nil && *args.Filter.HasListing == true {
+		if srt == sorting.TokenSortingPrice {
+			srt = sorting.TokenSortingListPrice
+		}
+		args.Filter.ListPriceMin = args.Filter.PriceMin
+		args.Filter.PriceMin = nil
+		args.Filter.ListPriceMax = args.Filter.PriceMax
+		args.Filter.PriceMax = nil
 	}
 
 	list, err := repository.R().ListTokens(args.Filter, srt, sortDesc, cursor, count, backward)
