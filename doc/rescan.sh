@@ -9,10 +9,9 @@ if [ $USER != "root" ]; then
     exit 1
 fi
 
-echo "Starting re-scanning from block $1, reason: $2"
 version=`/home/opera/go/src/Artion-API-GraphQL/build/artionapi -v 2>/dev/null | grep "Commit Hash:"`
 time=`date --iso-8601=seconds`
-log="$time Scanning from block $1 ($version) reason: $2"
+log="$time Scanning from block $1 ($version) reason: $@"
 echo "Log: $log"
 
 systemctl stop artion.service
