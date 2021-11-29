@@ -93,23 +93,26 @@ func (ns *NotificationSettings) Marshal() (result []byte) {
 
 // Unmarshal decodes slice of bytes set into the structure.
 func (ns *NotificationSettings) Unmarshal(data []byte) error {
-	if len(data) < 8 {
-		return fmt.Errorf("not enough data provided")
-	}
-
-	in := binary.BigEndian.Uint64(data[:8])
-	v := reflect.ValueOf(ns)
-	tv := v.Type()
-
-	for i := 0; i < v.NumField(); i++ {
-		key := tv.Field(i).Name
-		mask, ok := notificationSettingsBitMap[key]
-		if ok {
-			v.Field(i).SetBool((in & mask) > 0)
-		}
-	}
-
 	return nil
+	/*
+		if len(data) < 8 {
+			return fmt.Errorf("not enough data provided")
+		}
+
+		in := binary.BigEndian.Uint64(data[:8])
+		v := reflect.ValueOf(ns)
+		tv := v.Type()
+
+		for i := 0; i < v.NumField(); i++ {
+			key := tv.Field(i).Name
+			mask, ok := notificationSettingsBitMap[key]
+			if ok {
+				v.Field(i).SetBool((in & mask) > 0)
+			}
+		}
+
+		return nil
+	*/
 }
 
 // IsTypeEnabled checks if the given notification type is enabled on the setting.
