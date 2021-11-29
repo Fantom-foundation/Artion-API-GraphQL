@@ -2,6 +2,7 @@ package types
 
 import (
 	"encoding/binary"
+	"fmt"
 	"reflect"
 )
 
@@ -92,37 +93,34 @@ func (ns *NotificationSettings) Marshal() (result []byte) {
 
 // Unmarshal decodes slice of bytes set into the structure.
 func (ns *NotificationSettings) Unmarshal(data []byte) error {
+	if len(data) < 8 {
+		return fmt.Errorf("not enough data provided")
+	}
+
+	in := binary.BigEndian.Uint64(data[:8])
+
+	nns := new(NotificationSettings)
+	ty := reflect.TypeOf(nns).Elem()
+	v := reflect.ValueOf(nns).Elem()
+
+	num := ty.NumField()
+	for i := 0; i < num; i++ {
+		key := ty.Field(i).Name
+		mask, ok := notificationSettingsBitMap[key]
+		if ok {
+			v.Field(i).SetBool((in & mask) > 0)
+		}
+	}
+
+	*ns = *nns
 	return nil
-	/*
-		if len(data) < 8 {
-			return fmt.Errorf("not enough data provided")
-		}
-
-		in := binary.BigEndian.Uint64(data[:8])
-		v := reflect.ValueOf(ns)
-		tv := v.Type()
-
-		for i := 0; i < v.NumField(); i++ {
-			key := tv.Field(i).Name
-			mask, ok := notificationSettingsBitMap[key]
-			if ok {
-				v.Field(i).SetBool((in & mask) > 0)
-			}
-		}
-
-		return nil
-	*/
 }
 
 // IsTypeEnabled checks if the given notification type is enabled on the setting.
 func (ns *NotificationSettings) IsTypeEnabled(nt int32) (bool, error) {
-	return false, nil
-	/*
-		cbt, ok := notificationCheckByType[nt]
-		if !ok {
-			return false, fmt.Errorf("unknown type #%d", nt)
-		}
-		return cbt(ns), nil
-
-	*/
+	cbt, ok := notificationCheckByType[nt]
+	if !ok {
+		return false, fmt.Errorf("unknown type #%d", nt)
+	}
+	return cbt(ns), nil
 }
