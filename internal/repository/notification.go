@@ -92,7 +92,7 @@ func (p *Proxy) SendEmailNotificationBySendGrid(no *types.Notification, nt *type
 // dynamicTemplateData creates a map of key->value dynamic data points from provided
 // source elements.
 func (p *Proxy) dynamicTemplateData(no *types.Notification, recipient *types.User, origin *types.User, ship *types.ShippingAddress, ext *string) map[string]interface{} {
-	var list map[string]interface{}
+	list := make(map[string]interface{})
 
 	// do we have an ext?
 	if nil != ext {
