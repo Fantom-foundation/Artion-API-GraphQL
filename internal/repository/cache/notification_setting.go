@@ -3,6 +3,7 @@ package cache
 
 import (
 	"artion-api-graphql/internal/types"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"strings"
 )
@@ -16,28 +17,34 @@ func notificationSettingKey(user *common.Address) string {
 }
 
 // GetNotificationSetting try to get a user's notification setting from cache, or backend.
-func (c *MemCache) GetNotificationSetting(user *common.Address, loader func(address common.Address) (*types.NotificationSettings, error)) (result *types.NotificationSettings, err error) {
+func (c *MemCache) GetNotificationSetting(user *common.Address, loader func(address common.Address) (*types.NotificationSettings, error)) (*types.NotificationSettings, error) {
 	key := notificationSettingKey(user)
+
 	data, err := c.cache.Get(key)
 	if err == nil {
-		result = &types.NotificationSettings{}
-		if err = result.Unmarshal(data); err != nil {
+		ns := new(types.NotificationSettings)
+		if err = ns.Unmarshal(data); err != nil {
 			return nil, err
 		}
+		return ns, nil
 	}
 
 	// load slow way
-	result, err = loader(*user)
+	ns, err := loader(*user)
 	if err != nil {
 		return nil, err
 	}
 
-	err = c.cache.Set(key, result.Marshal())
+	// do we have any data here?
+	if nil == ns {
+		return nil, fmt.Errorf("notification settings not availble for %s", user.String())
+	}
+
+	err = c.cache.Set(key, ns.Marshal())
 	if err != nil {
 		log.Errorf("could not store notification setting; %s", err.Error())
 	}
-
-	return result, nil
+	return ns, nil
 }
 
 // FlushNotificationSetting removes user's notification setting from in-memory cache.

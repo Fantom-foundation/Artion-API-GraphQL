@@ -7,7 +7,7 @@ import (
 )
 
 func TestNotificationSettings_Marshal(t *testing.T) {
-	ns := NotificationSettings{
+	ns := &NotificationSettings{
 		SNotification:          false, // 1
 		SBundleBuy:             true,  // 2
 		SBundleSell:            false, // 4
@@ -52,7 +52,7 @@ func TestNotificationSettings_Unmarshal(t *testing.T) {
 	testData := make([]byte, 8)
 	binary.BigEndian.PutUint64(testData, value)
 
-	ns := NotificationSettings{}
+	ns := new(NotificationSettings)
 	err := ns.Unmarshal(testData)
 	if err != nil {
 		t.Errorf("could not unmarshal; %s", err.Error())
@@ -69,7 +69,7 @@ func TestNotificationSettings_IsTypeEnabled(t *testing.T) {
 	testData := make([]byte, 8)
 	binary.BigEndian.PutUint64(testData, value)
 
-	ns := NotificationSettings{}
+	ns := new(NotificationSettings)
 	err := ns.Unmarshal(testData)
 	if err != nil {
 		t.Errorf("could not unmarshal; %s", err.Error())

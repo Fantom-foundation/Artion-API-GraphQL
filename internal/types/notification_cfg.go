@@ -118,13 +118,9 @@ func (ns *NotificationSettings) Unmarshal(data []byte) error {
 
 // IsTypeEnabled checks if the given notification type is enabled on the setting.
 func (ns *NotificationSettings) IsTypeEnabled(nt int32) (bool, error) {
-	return false, nil
-	/*
-		cbt, ok := notificationCheckByType[nt]
-		if !ok {
-			return false, fmt.Errorf("unknown type #%d", nt)
-		}
-		return cbt(ns), nil
-
-	*/
+	cbt, ok := notificationCheckByType[nt]
+	if !ok {
+		return false, fmt.Errorf("unknown type #%d", nt)
+	}
+	return cbt(ns), nil
 }
