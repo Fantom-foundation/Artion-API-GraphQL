@@ -20,4 +20,6 @@ type TokenFilter struct {
 	PriceMax        *hexutil.Big
 	ListPriceMin    *hexutil.Big
 	ListPriceMax    *hexutil.Big
+	OfferPriceMin   *hexutil.Big
+	OfferPriceMax   *hexutil.Big
 }

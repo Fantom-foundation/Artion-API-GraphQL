@@ -101,6 +101,9 @@ const (
 	// fiTokenListUsdPrice is the column storing listed price of token in USD aggregated from listings.
 	fiTokenListUsdPrice = "min_list.usd"
 
+	// fiTokenOfferUsdPrice is the column storing offered price of token in USD aggregated from listings.
+	fiTokenOfferUsdPrice = "max_offer.usd"
+
 	// fiTokenMinListValid is the column storing end of minimal listing price validity.
 	fiTokenMinListValid = "min_list_valid"
 
@@ -822,6 +825,13 @@ func tokenFilterToBson(f *types.TokenFilter) bson.D {
 	}
 	if f.ListPriceMax != nil {
 		filter = append(filter, bson.E{Key: fiTokenListUsdPrice, Value: bson.D{{Key: "$lte", Value: f.ListPriceMax.ToInt().Int64()}}})
+	}
+
+	if f.OfferPriceMin != nil {
+		filter = append(filter, bson.E{Key: fiTokenOfferUsdPrice, Value: bson.D{{Key: "$gte", Value: f.OfferPriceMin.ToInt().Int64()}}})
+	}
+	if f.OfferPriceMax != nil {
+		filter = append(filter, bson.E{Key: fiTokenOfferUsdPrice, Value: bson.D{{Key: "$lte", Value: f.OfferPriceMax.ToInt().Int64()}}})
 	}
 
 	return filter

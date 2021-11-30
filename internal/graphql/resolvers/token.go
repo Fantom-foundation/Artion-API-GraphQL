@@ -315,10 +315,12 @@ func (rs *RootResolver) Tokens(args struct {
 		args.Filter.PriceMin = (*hexutil.Big)(big.NewInt(1))
 	}
 
-	// when filtering listed items only, replace general-price by listing-price sorting/filtering
 	hasListing := args.Filter.HasListing != nil && *args.Filter.HasListing
 	hasAuction := args.Filter.HasAuction != nil && *args.Filter.HasAuction
 	hasBids := args.Filter.HasBids != nil && *args.Filter.HasBids
+	hasOffer := args.Filter.HasOffer != nil && *args.Filter.HasOffer
+
+	// when filtering listed only, replace general-price by listing-price sorting/filtering
 	if hasListing && !hasAuction && !hasBids {
 		if srt == sorting.TokenSortingPrice {
 			srt = sorting.TokenSortingListPrice
@@ -328,6 +330,19 @@ func (rs *RootResolver) Tokens(args struct {
 		args.Filter.ListPriceMax = args.Filter.PriceMax
 		args.Filter.PriceMax = nil
 	}
+
+	// when filtering offers only, replace general-price by offer-price sorting/filtering
+	if hasOffer && !hasListing && !hasAuction && !hasBids {
+		if srt == sorting.TokenSortingPrice {
+			srt = sorting.TokenSortingOfferPrice
+		}
+		args.Filter.OfferPriceMin = args.Filter.PriceMin
+		args.Filter.PriceMin = nil
+		args.Filter.OfferPriceMax = args.Filter.PriceMax
+		args.Filter.PriceMax = nil
+	}
+
+	// when filtering auctions, general-price is OK!
 
 	list, err := repository.R().ListTokens(args.Filter, srt, sortDesc, cursor, count, backward)
 	if err != nil {
