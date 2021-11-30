@@ -5,7 +5,14 @@ type Ownership {
     token: Token
     owner: Address!
     ownerUser: User!
+
+    # amount of tokens (always 1 for ERC-721, relevant for ERC-1155)
     qty: BigInt!
+
+    # is it transferred into escrow (to auction contract)?
+    inEscrow: Boolean!
+
+    # time of last change
     updated: Time!
 }
 

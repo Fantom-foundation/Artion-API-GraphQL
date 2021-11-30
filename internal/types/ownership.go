@@ -14,6 +14,7 @@ type Ownership struct {
 	TokenId  hexutil.Big    `bson:"token"`
 	Owner    common.Address `bson:"owner"`
 	Qty      hexutil.Big    `bson:"qty"`
+	InEscrow bool           `bson:"escrow"`
 	Updated  Time           `bson:"updated"`
 }
 

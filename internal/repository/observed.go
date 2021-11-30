@@ -145,6 +145,12 @@ func (p *Proxy) ContractTypeByAddress(adr *common.Address) (string, error) {
 	return tp, nil
 }
 
+// BasicContracts provides addresses of basic Artion contracts.
 func (p *Proxy) BasicContracts() (c *types.Contracts) {
 	return p.rpc.BasicContracts()
+}
+
+// IsEscrowContract test if the address is address of auction or other escrow contract.
+func (p *Proxy) IsEscrowContract(addr common.Address) bool {
+	return p.rpc.IsEscrowContract(addr)
 }
