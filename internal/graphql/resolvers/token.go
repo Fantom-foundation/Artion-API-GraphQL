@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -264,6 +265,10 @@ func (t *Token) LastTradePrice() (*types.TokenPrice, error) {
 		return nil, nil
 	}
 	return &t.AmountLastTrade, nil
+}
+
+func (t *Token) UsdPrice() string {
+	return strconv.FormatInt(t.AmountPrice, 10)
 }
 
 func (t *Token) PriceHistory(args struct {
