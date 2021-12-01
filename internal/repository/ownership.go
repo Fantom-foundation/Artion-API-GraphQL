@@ -17,6 +17,12 @@ func (p *Proxy) StoreBurn(bu *types.NFTBurn) error {
 	return p.db.StoreBurn(bu)
 }
 
+// DeleteOwnershipInEscrow removes NFT ownership from the persistent storage.
+// We do this when NFT is transferred from escrow, and we don't know stored "from".
+func (p *Proxy) DeleteOwnershipInEscrow(contract common.Address, tokenId hexutil.Big, escrow common.Address) error {
+	return p.db.DeleteOwnershipInEscrow(contract, tokenId, escrow)
+}
+
 // ListOwnerships lists token ownerships records.
 func (p *Proxy) ListOwnerships(contract *common.Address, tokenId *hexutil.Big, owner *common.Address, cursor types.Cursor, count int, backward bool) (out *types.OwnershipList, err error) {
 	return p.db.ListOwnerships(contract, tokenId, owner, cursor, count, backward)

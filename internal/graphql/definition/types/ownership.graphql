@@ -12,6 +12,9 @@ type Ownership {
     # is it transferred into escrow (to auction contract)?
     inEscrow: Boolean!
 
+    # address of the escrow if in an escrow
+    escrow: Address
+
     # time of last change
     updated: Time!
 }

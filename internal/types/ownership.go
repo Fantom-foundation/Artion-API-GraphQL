@@ -10,12 +10,12 @@ import (
 
 // Ownership represents an ownership reference between user address and owned NFT.
 type Ownership struct {
-	Contract common.Address `bson:"contract"`
-	TokenId  hexutil.Big    `bson:"token"`
-	Owner    common.Address `bson:"owner"`
-	Qty      hexutil.Big    `bson:"qty"`
-	InEscrow bool           `bson:"escrow"`
-	Updated  Time           `bson:"updated"`
+	Contract common.Address  `bson:"contract"`
+	TokenId  hexutil.Big     `bson:"token"`
+	Owner    common.Address  `bson:"owner"`
+	Qty      hexutil.Big     `bson:"qty"`
+	Escrow   *common.Address `bson:"escrow"`
+	Updated  Time            `bson:"updated"`
 }
 
 // ID generates unique identifier for the NFT owner record.

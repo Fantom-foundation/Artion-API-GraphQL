@@ -123,7 +123,8 @@ func erc721TokenTransfer(evt *eth.Log, lo *logObserver) {
 
 	isMint := bytes.Equal(zeroAddress.Bytes(), from.Bytes())
 	isBurn := bytes.Equal(zeroAddress.Bytes(), to.Bytes())
-	isEscrow := repository.R().IsEscrowContract(to)
+	isFromEscrow := repository.R().IsEscrowContract(from)
+	isToEscrow := repository.R().IsEscrowContract(to)
 
 	if isMint {
 		// it could have been covered on artion NFT contracts above, but we need to handle non-artion contracts, too
@@ -131,18 +132,23 @@ func erc721TokenTransfer(evt *eth.Log, lo *logObserver) {
 		notifyEventToOwner(types.NotifyNFTCreated, evt.Address, tokenID, to, nil, types.Time(time.Unix(int64(blk.Time), 0)))
 	}
 
-	// set inEscrow flag
-	if isEscrow {
-		if err := updateERC721Owner(evt.Address, tokenID, from, 1, true, blk.Time); err != nil {
-			log.Errorf("could not set escrow in ERC-721 NFT ownership; %s", err.Error())
+	if isToEscrow { // set as in escrow
+		if err := updateERC721Owner(evt.Address, tokenID, from, 1, &to, blk.Time); err != nil {
+			log.Errorf("could not set ERC-721 NFT ownership escrow; %s", err.Error())
+		}
+	}
+
+	if isFromEscrow { // decrease owned quantity for escrow (we don't know real "from" - it is the escrow in the event)
+		if err := repo.DeleteOwnershipInEscrow(evt.Address, tokenID, from); err != nil {
+			log.Errorf("could not delete escrow ownership of ERC-721 NFT; %s", err.Error())
 		}
 	}
 
 	// decrease owned quantity for sender
-	if !isEscrow && !isMint {
+	if !isToEscrow && !isFromEscrow && !isMint {
 		// ERC-721 tokens don't have quantity; the amount is always 1
 		// we can just clear previous owner here by setting qty to zero
-		if err := updateERC721Owner(evt.Address, tokenID, from, 0, false, blk.Time); err != nil {
+		if err := updateERC721Owner(evt.Address, tokenID, from, 0, nil, blk.Time); err != nil {
 			log.Errorf("could not clear ERC-721 NFT ownership; %s", err.Error())
 			return
 		}
@@ -155,8 +161,8 @@ func erc721TokenTransfer(evt *eth.Log, lo *logObserver) {
 	}
 
 	// increase owned quantity for recipient
-	if !isBurn && !isEscrow {
-		if err := updateERC721Owner(evt.Address, tokenID, to, 1, false, blk.Time); err != nil {
+	if !isBurn && !isToEscrow {
+		if err := updateERC721Owner(evt.Address, tokenID, to, 1, nil, blk.Time); err != nil {
 			log.Errorf("could not add ERC-721 NFT ownership; %s", err.Error())
 		}
 	}
@@ -181,14 +187,14 @@ func queueMetadataUpdate(nft *types.Token, lo *logObserver) {
 }
 
 // updateERC721Owner pushes the ownership of ERC-721 token into persistent storage.
-func updateERC721Owner(contract common.Address, tokenID hexutil.Big, owner common.Address, qty uint64, inEscrow bool, ts uint64) error {
+func updateERC721Owner(contract common.Address, tokenID hexutil.Big, owner common.Address, qty uint64, escrow *common.Address, ts uint64) error {
 	// now we can add the new owner
 	if err := repo.StoreOwnership(&types.Ownership{
 		Contract: contract,
 		TokenId:  tokenID,
 		Owner:    owner,
 		Qty:      hexutil.Big(*new(big.Int).SetUint64(qty)),
-		InEscrow: inEscrow,
+		Escrow:   escrow,
 		Updated:  types.Time(time.Unix(int64(ts), 0)),
 	}); err != nil {
 		return err

@@ -27,6 +27,9 @@ const (
 	// fiOwnershipOwner is the name of the DB column of the token owner address.
 	fiOwnershipOwner = "owner"
 
+	// fiOwnershipEscrow is the name of the DB column of the token escrow address.
+	fiOwnershipEscrow = "escrow"
+
 	// coTokenOwnershipsQueryTimeout represents the timeout applied to owners collection queries.
 	coTokenOwnershipsQueryTimeout = 10 * time.Second
 )
@@ -70,13 +73,7 @@ func (db *MongoDbBridge) StoreOwnership(to *types.Ownership) error {
 	}
 	if rs.UpsertedCount > 0 {
 		log.Debugf("token %s / #%s ownership updated to %s", to.Contract.String(), to.TokenId.String(), to.Owner.String())
-
-		err = db.UpdateOffersOwners(to.Contract, to.TokenId)
-		if err != nil {
-			log.Errorf("failed to update offers owners for %s/%s; %s",
-				to.Contract.String(), to.TokenId.String(), err.Error())
-			return err
-		}
+		db.UpdateOffersOwners(to.Contract, to.TokenId)
 	}
 	return nil
 }
@@ -103,13 +100,34 @@ func (db *MongoDbBridge) DeleteOwnership(to *types.Ownership) error {
 
 	if dr.DeletedCount > 0 {
 		log.Debugf("token %s / #%s ownership by %s deleted", to.Contract.String(), to.TokenId.String(), to.Owner.String())
+		db.UpdateOffersOwners(to.Contract, to.TokenId)
+	}
+	return nil
+}
 
-		err = db.UpdateOffersOwners(to.Contract, to.TokenId)
-		if err != nil {
-			log.Errorf("failed to update offers owners for %s/%s; %s",
-				to.Contract.String(), to.TokenId.String(), err.Error())
-			return err
-		}
+// DeleteOwnershipInEscrow removes NFT ownership from the persistent storage.
+// We do this when NFT is transferred from escrow, and we don't know stored "from".
+func (db *MongoDbBridge) DeleteOwnershipInEscrow(contract common.Address, tokenId hexutil.Big, escrow common.Address) error {
+	col := db.client.Database(db.dbName).Collection(coTokenOwnerships)
+	ctx, cancel := context.WithTimeout(context.Background(), coTokenOwnershipsQueryTimeout)
+	defer func() {
+		cancel()
+	}()
+
+	dr, err := col.DeleteOne(ctx, bson.D{
+		{Key: fiOwnershipContract, Value: contract},
+		{Key: fiOwnershipTokenId, Value: tokenId},
+		{Key: fiOwnershipEscrow, Value: escrow},
+	})
+	if err != nil {
+		log.Errorf("can not delete ownership of escrow %s of %s / #%s; %s",
+			escrow.String(), contract.String(), tokenId.String(), err.Error())
+		return err
+	}
+
+	if dr.DeletedCount > 0 {
+		log.Debugf("token %s / #%s ownership in escrow %s deleted", contract.String(), tokenId.String(), escrow.String())
+		db.UpdateOffersOwners(contract, tokenId)
 	}
 	return nil
 }

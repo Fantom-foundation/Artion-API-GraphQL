@@ -17,6 +17,10 @@ func (o Ownership) OwnerUser() (User, error) {
 	return getUserByAddress(o.Owner)
 }
 
+func (o Ownership) InEscrow() (bool, error) {
+	return o.Escrow != nil, nil
+}
+
 type OwnershipEdge struct {
 	Node *Ownership
 }
