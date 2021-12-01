@@ -249,7 +249,7 @@ func (db *MongoDbBridge) listListings(filter bson.D, cursor types.Cursor, count 
 
 	// close the cursor as we leave
 	defer func() {
-		err = ld.Close(ctx)
+		err := ld.Close(ctx)
 		if err != nil {
 			log.Errorf("error closing listings list cursor; %s", err.Error())
 		}

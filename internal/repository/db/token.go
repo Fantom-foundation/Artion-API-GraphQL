@@ -701,7 +701,7 @@ func (db *MongoDbBridge) ListTokens(
 
 	// close the cursor as we leave
 	defer func() {
-		err = ld.Close(ctx)
+		err := ld.Close(ctx)
 		if err != nil {
 			log.Errorf("error closing tokens list cursor; %s", err.Error())
 		}

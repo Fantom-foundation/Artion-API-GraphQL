@@ -230,7 +230,7 @@ func (db *MongoDbBridge) listOffers(filter bson.D, cursor types.Cursor, count in
 
 	// close the cursor as we leave
 	defer func() {
-		err = ld.Close(ctx)
+		err := ld.Close(ctx)
 		if err != nil {
 			log.Errorf("error closing Offers list cursor; %s", err.Error())
 		}

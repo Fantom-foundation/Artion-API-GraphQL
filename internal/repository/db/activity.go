@@ -88,7 +88,7 @@ func (db *MongoDbBridge) listActivities(filter bson.D, cursor types.Cursor, coun
 
 	// close the cursor as we leave
 	defer func() {
-		err = ld.Close(ctx)
+		err := ld.Close(ctx)
 		if err != nil {
 			log.Errorf("error closing activities list cursor; %s", err.Error())
 		}
