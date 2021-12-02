@@ -234,6 +234,12 @@ func (o *Opera) BasicContracts() *types.Contracts {
 	return &o.basicContracts
 }
 
+// IsEscrowContract test if the address is address of auction or other escrow contract.
+func (o *Opera) IsEscrowContract(addr common.Address) bool {
+	_, exists := o.auctionContracts[addr]
+	return exists
+}
+
 // SetConfig sets the repository configuration to be used to establish
 // and maintain external repository connections.
 func SetConfig(c *config.Config) {

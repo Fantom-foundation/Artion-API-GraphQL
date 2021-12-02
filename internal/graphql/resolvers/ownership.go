@@ -14,9 +14,11 @@ func (o Ownership) Token() (*Token, error) {
 }
 
 func (o Ownership) OwnerUser() (User, error) {
-	return User{
-		Address: o.Owner,
-	}, nil
+	return getUserByAddress(o.Owner)
+}
+
+func (o Ownership) InEscrow() (bool, error) {
+	return o.Escrow != nil, nil
 }
 
 type OwnershipEdge struct {

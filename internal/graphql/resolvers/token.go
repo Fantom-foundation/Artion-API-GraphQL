@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -266,6 +267,10 @@ func (t *Token) LastTradePrice() (*types.TokenPrice, error) {
 	return &t.AmountLastTrade, nil
 }
 
+func (t *Token) UsdPrice() string {
+	return strconv.FormatInt(t.AmountPrice, 10)
+}
+
 func (t *Token) PriceHistory(args struct {
 	From types.Time
 	To   types.Time
@@ -300,6 +305,9 @@ func (rs *RootResolver) Tokens(args struct {
 		return nil, err
 	}
 	sortDesc := isSortingDirectionDesc(args.SortDir)
+	if args.Filter == nil {
+		args.Filter = &types.TokenFilter{}
+	}
 
 	// default sorting Recently Created
 	if srt == sorting.TokenSortingNone {
@@ -308,9 +316,38 @@ func (rs *RootResolver) Tokens(args struct {
 	}
 
 	// when sorting by price, skip zero price (not-listed/auctioned) items
-	if srt == sorting.TokenSortingPrice && args.Filter.PriceMin == nil {
+	if (srt == sorting.TokenSortingPrice || args.Filter.PriceMax != nil) && args.Filter.PriceMin == nil {
 		args.Filter.PriceMin = (*hexutil.Big)(big.NewInt(1))
 	}
+
+	hasListing := args.Filter.HasListing != nil && *args.Filter.HasListing
+	hasAuction := args.Filter.HasAuction != nil && *args.Filter.HasAuction
+	hasBids := args.Filter.HasBids != nil && *args.Filter.HasBids
+	hasOffer := args.Filter.HasOffer != nil && *args.Filter.HasOffer
+
+	// when filtering listed only, replace general-price by listing-price sorting/filtering
+	if hasListing && !hasAuction && !hasBids {
+		if srt == sorting.TokenSortingPrice {
+			srt = sorting.TokenSortingListPrice
+		}
+		args.Filter.ListPriceMin = args.Filter.PriceMin
+		args.Filter.PriceMin = nil
+		args.Filter.ListPriceMax = args.Filter.PriceMax
+		args.Filter.PriceMax = nil
+	}
+
+	// when filtering offers only, replace general-price by offer-price sorting/filtering
+	if hasOffer && !hasListing && !hasAuction && !hasBids {
+		if srt == sorting.TokenSortingPrice {
+			srt = sorting.TokenSortingOfferPrice
+		}
+		args.Filter.OfferPriceMin = args.Filter.PriceMin
+		args.Filter.PriceMin = nil
+		args.Filter.OfferPriceMax = args.Filter.PriceMax
+		args.Filter.PriceMax = nil
+	}
+
+	// when filtering auctions, general-price is OK!
 
 	list, err := repository.R().ListTokens(args.Filter, srt, sortDesc, cursor, count, backward)
 	if err != nil {

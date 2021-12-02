@@ -62,9 +62,9 @@ func filterAddDateTimeLimit(filter bson.D, field string, operand string, ts type
 // filterAddDateTimeMiss adds a missed time limit of type <wall> into the provided bson.D filter.
 // I.e.: <field> not exists OR is null OR <operand> <time stamp>
 func filterAddDateTimeMiss(filter bson.D, field string, operand string, ts types.Time) bson.D {
-	return append(filter, bson.E{Key: "$or", Value: bson.D{
-		{Key: "$exists", Value: false},
-		{Key: "$eq", Value: nil},
-		{Key: field, Value: bson.D{{Key: operand, Value: ts}}},
+	return append(filter, bson.E{Key: "$or", Value: bson.A{
+		bson.D{{Key: field, Value: bson.D{{Key: "$exists", Value: false}}}},
+		bson.D{{Key: field, Value: bson.D{{Key: "$eq", Value: nil}}}},
+		bson.D{{Key: field, Value: bson.D{{Key: operand, Value: ts}}}},
 	}})
 }

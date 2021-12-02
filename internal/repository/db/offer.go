@@ -104,10 +104,11 @@ func (db *MongoDbBridge) StoreOffer(offer *types.Offer) (err error) {
 }
 
 // UpdateOffersOwners updates token owners in offers for given token
-func (db *MongoDbBridge) UpdateOffersOwners(contract common.Address, tokenID hexutil.Big) (err error) {
+func (db *MongoDbBridge) UpdateOffersOwners(contract common.Address, tokenID hexutil.Big) {
 	owners, err := db.GetTokenOwners(contract, tokenID)
 	if err != nil {
-		return err
+		log.Errorf("failed to load offers owners for %s/%s; %s",
+			contract.String(), tokenID.String(), err)
 	}
 	col := db.client.Database(db.dbName).Collection(coOffers)
 	_, err = col.UpdateMany(context.Background(), bson.D{
@@ -118,7 +119,10 @@ func (db *MongoDbBridge) UpdateOffersOwners(contract common.Address, tokenID hex
 			{Key: fiOfferOwners, Value: owners},
 		}},
 	})
-	return err
+	if err != nil {
+		log.Errorf("failed to update offers owners for %s/%s; %s",
+			contract.String(), tokenID.String(), err)
+	}
 }
 
 // OpenOfferUntil provides the latest active offer date/time if any.
@@ -226,7 +230,7 @@ func (db *MongoDbBridge) listOffers(filter bson.D, cursor types.Cursor, count in
 
 	// close the cursor as we leave
 	defer func() {
-		err = ld.Close(ctx)
+		err := ld.Close(ctx)
 		if err != nil {
 			log.Errorf("error closing Offers list cursor; %s", err.Error())
 		}

@@ -73,7 +73,7 @@ internal/repository/rpc/contracts/Erc721.go: internal/repository/rpc/contracts/a
 internal/repository/rpc/contracts/Erc1155.go: internal/repository/rpc/contracts/abi/Erc1155.json
 	abigen --type Erc1155 --pkg contracts --abi $< --out $@
 
-db: db_observed db_status
+db: db_observed db_status db_notifications
 
 db_observed: doc/db/observed.json
 	mongoimport --db=artion --collection=observed --file=$<
@@ -81,11 +81,14 @@ db_observed: doc/db/observed.json
 db_status: doc/db/status.json
 	mongoimport --db=artion --collection=status --file=$<
 
-db_categories: doc/db/categories.json
-	mongoimport --db=artionshared --collection=colcats --file=$<
-
 db_notifications: doc/db/notification_tpl.json
 	mongoimport --db=artion --collection=notification_tpl --file=$<
+
+db_colcats: doc/db/colcats.json
+	mongoimport --db=artionshared --collection=colcats --file=$<
+
+db_collections: doc/db/collections.json
+	mongoimport --db=artionshared --collection=collections --file=$<
 
 contracts:
 	solc --abi --bin --overwrite --optimize --optimize-runs=200 --metadata --hashes -o doc/contracts/build/ doc/contracts/PriceOracleProxy.sol

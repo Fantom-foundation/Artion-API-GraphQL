@@ -26,6 +26,7 @@ const (
 	fiActivityType = "type"
 	fiActivityTime = "time"
 	fiActivityUnifiedPrice = "uprice"
+	fiActivityIndex = "index"
 )
 
 func (db *MongoDbBridge) StoreActivity(activity *types.Activity) error {
@@ -36,8 +37,15 @@ func (db *MongoDbBridge) StoreActivity(activity *types.Activity) error {
 	// get the collection
 	col := db.client.Database(db.dbName).Collection(coActivities)
 
-	// try to do the insert
-	if _, err := col.InsertOne(context.Background(), activity); err != nil {
+	_, err := col.UpdateOne(
+		context.Background(),
+		bson.D{{Key: fiActivityIndex, Value: activity.OrdinalIndex}},
+		bson.D{
+			{Key: "$set", Value: activity},
+		},
+		options.Update().SetUpsert(true),
+	)
+	if err != nil {
 		log.Errorf("can not store activity; %s", err)
 		return err
 	}
@@ -88,7 +96,7 @@ func (db *MongoDbBridge) listActivities(filter bson.D, cursor types.Cursor, coun
 
 	// close the cursor as we leave
 	defer func() {
-		err = ld.Close(ctx)
+		err := ld.Close(ctx)
 		if err != nil {
 			log.Errorf("error closing activities list cursor; %s", err.Error())
 		}

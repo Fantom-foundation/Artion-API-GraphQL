@@ -16,7 +16,7 @@ func (db *MongoDbBridge) getTotalCount(col *mongo.Collection, filter bson.D) (in
 	ctx := context.Background()
 	totalCount, err := col.CountDocuments(ctx, filter)
 	if err != nil {
-		log.Errorf("can not get total count")
+		log.Errorf("can not get total count; filter: %+v, %s", filter, err)
 	}
 	return totalCount, err
 }

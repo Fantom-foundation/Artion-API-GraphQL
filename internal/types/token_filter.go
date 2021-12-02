@@ -18,4 +18,8 @@ type TokenFilter struct {
 	CreatedBy       *common.Address
 	PriceMin        *hexutil.Big
 	PriceMax        *hexutil.Big
+	ListPriceMin    *hexutil.Big
+	ListPriceMax    *hexutil.Big
+	OfferPriceMin   *hexutil.Big
+	OfferPriceMax   *hexutil.Big
 }

@@ -112,7 +112,7 @@ func (sdb *SharedMongoDbBridge) listTokenLikes(filter bson.D, cursor types.Curso
 
 	// close the cursor as we leave
 	defer func() {
-		err = ld.Close(ctx)
+		err := ld.Close(ctx)
 		if err != nil {
 			log.Errorf("error closing token like list cursor; %s", err.Error())
 		}

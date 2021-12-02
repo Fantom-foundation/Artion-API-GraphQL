@@ -1,0 +1,23 @@
+{
+    "_id": {"$oid": "60f051b79caff12ebc36971f"},
+    "__v": 1,
+    "categories": [""],
+    "collectionName": "Default Artion Collection",
+    "description": "Default Artion collection",
+    "discord": "",
+    "email": "mk@fantom.foundation",
+    "erc721Address": "0x61af4d29f672e27a097291f72fc571304bc93521",
+    "feeRecipient": "0x48f7572cfbc4f246600cf816c668271034d81f8f",
+    "isAppropriate": true,
+    "isInternal": true,
+    "isOwnerble": false,
+    "isVerified": false,
+    "logoImageHash": "QmP8idjiQxFZ1Wpe61fSmi6jPTT48apPEx4QVKDhhWNWya",
+    "mediumHandle": "",
+    "owner": "0xe24199e4b4ece5ef47db77bbd55db0a6ae0d83eb",
+    "royalty": 0,
+    "siteUrl": "https://artion.io",
+    "status": true,
+    "telegram": "",
+    "twitterHandle": ""
+}

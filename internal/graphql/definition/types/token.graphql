@@ -110,11 +110,17 @@ type Token {
 
     # Price history of the token aggregated from trades (aggregated by days)
     priceHistory(from: Time!, to: Time!): [PriceHistory!]!
+
+    # General-purpose price of the token in USD used for filtering/sorting - for debugging only
+    usdPrice: String!
 }
 
 type TokenPrice {
     amount: BigInt!
     payToken: Address!
+
+    # amount in USD used for filtering/sorting - for debugging only
+    usdPrice: String!
 }
 
 type TokenEdge {
