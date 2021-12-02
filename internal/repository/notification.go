@@ -121,8 +121,12 @@ func (p *Proxy) dynamicTemplateData(no *types.Notification, recipient *types.Use
 	if recipient != nil {
 		list["account"] = recipient.Address.String()
 		list["address"] = recipient.Address.String()
-		list["email"] = *recipient.EmailAddress
 		list["alias"] = recipient.Address.String()
+
+		list["email"] = ""
+		if recipient.EmailAddress != nil {
+			list["email"] = *recipient.EmailAddress
+		}
 
 		if nil != recipient.Username && "" != *recipient.Username {
 			list["alias"] = *recipient.Username
@@ -133,8 +137,12 @@ func (p *Proxy) dynamicTemplateData(no *types.Notification, recipient *types.Use
 	if origin != nil {
 		list["by_account"] = origin.Address.String()
 		list["by_address"] = origin.Address.String()
-		list["by_email"] = *origin.EmailAddress
 		list["by_alias"] = origin.Address.String()
+
+		list["by_email"] = ""
+		if origin.EmailAddress != nil {
+			list["by_email"] = *origin.EmailAddress
+		}
 
 		if nil != origin.Username && "" != *origin.Username {
 			list["by_alias"] = *origin.Username
