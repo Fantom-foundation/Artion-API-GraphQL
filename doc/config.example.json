@@ -23,6 +23,8 @@
   },
   "ipfs": {
     "url": "localhost:5001",
+    "gateway": "https://artion.mypinata.cloud",
+    "gateway_bearer": "xyz.abc.def",
     "skip_http_gateways": true
   },
   "auth": {
