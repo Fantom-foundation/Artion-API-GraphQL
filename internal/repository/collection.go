@@ -89,11 +89,6 @@ func (p *Proxy) CanRegisterCollection(contract *common.Address, user *common.Add
 		}
 	}
 
-	err := p.rpc.Erc721CheckMarketplaceIsApprovedForAll(contract)
-	if err != nil {
-		return fmt.Errorf("the ApprovedForAll check failed; %s", err)
-	}
-
 	return nil
 }
 
