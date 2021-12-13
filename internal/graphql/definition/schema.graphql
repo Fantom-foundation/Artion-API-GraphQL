@@ -69,6 +69,9 @@ type Query {
 
     # List collections which was banned by a moderator. (moderators only)
     bannedCollections(search: String, first: Int, after: Cursor, last: Int, before: Cursor): CollectionConnection!
+
+    # List tokens which was banned by a moderator. (moderators only)
+    bannedTokens(first: Int, after: Cursor, last: Int, before: Cursor): BannedNftConnection!
 }
 
 # Mutation endpoints for modifying the data
@@ -117,6 +120,12 @@ type Mutation {
 
     # Unban the collection (moderators only)
     unbanCollection(contract: Address!): Boolean!
+
+    # Ban the token (moderators only)
+    banToken(contract: Address!, tokenId: BigInt!): Boolean!
+
+    # Unban the token (moderators only)
+    unbanToken(contract: Address!, tokenId: BigInt!): Boolean!
 }
 
 type Subscription {

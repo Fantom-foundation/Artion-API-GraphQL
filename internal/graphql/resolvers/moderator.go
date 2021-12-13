@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 func requireModerator(ctx context.Context) error {
@@ -127,6 +128,38 @@ func (rs *RootResolver) UnbanCollection(ctx context.Context, args struct {
 		return false, err
 	}
 	err = repository.R().UnbanCollection(args.Contract)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+// BanToken set the token as banned.
+func (rs *RootResolver) BanToken(ctx context.Context, args struct {
+	Contract common.Address
+	TokenId  hexutil.Big
+}) (done bool, err error) {
+	err = requireModerator(ctx)
+	if err != nil {
+		return false, err
+	}
+	err = repository.R().BanNft(&args.Contract, &args.TokenId)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+// UnbanToken unset the token as banned.
+func (rs *RootResolver) UnbanToken(ctx context.Context, args struct {
+	Contract common.Address
+	TokenId  hexutil.Big
+}) (done bool, err error) {
+	err = requireModerator(ctx)
+	if err != nil {
+		return false, err
+	}
+	err = repository.R().UnbanNft(&args.Contract, &args.TokenId)
 	if err != nil {
 		return false, err
 	}
