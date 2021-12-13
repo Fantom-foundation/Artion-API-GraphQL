@@ -499,11 +499,7 @@ func (db *MongoDbBridge) TokenMetadataRefreshSet(setSize int64) ([]*types.Token,
 		log.Errorf("can not pull metadata refresh set; %s", err.Error())
 		return nil, err
 	}
-	defer func() {
-		if err := cur.Close(context.Background()); err != nil {
-			log.Errorf("can not close cursor; %s", err.Error())
-		}
-	}()
+	defer closeFindCursor("TokenMetadataRefreshSet", cur)
 
 	var i int
 	for cur.Next(context.Background()) {
@@ -541,11 +537,7 @@ func (db *MongoDbBridge) TokenPriceRefreshSet(setSize int64) ([]*types.Token, er
 		log.Errorf("can not pull price refresh set; %s", err.Error())
 		return nil, err
 	}
-	defer func() {
-		if err := cur.Close(context.Background()); err != nil {
-			log.Errorf("can not close cursor; %s", err.Error())
-		}
-	}()
+	defer closeFindCursor("TokenPriceRefreshSet", cur)
 
 	var i int
 	for cur.Next(context.Background()) {
@@ -653,11 +645,7 @@ func (db *MongoDbBridge) TokenLikesViewsRefreshSet(setSize int64) ([]*types.Toke
 		log.Errorf("can not pull likes/views refresh set; %s", err.Error())
 		return nil, err
 	}
-	defer func() {
-		if err := cur.Close(context.Background()); err != nil {
-			log.Errorf("can not close cursor; %s", err.Error())
-		}
-	}()
+	defer closeFindCursor("TokenLikesViewsRefreshSet", cur)
 
 	var i int
 	for cur.Next(context.Background()) {
@@ -700,12 +688,7 @@ func (db *MongoDbBridge) ListTokens(
 	}
 
 	// close the cursor as we leave
-	defer func() {
-		err := ld.Close(ctx)
-		if err != nil {
-			log.Errorf("error closing tokens list cursor; %s", err.Error())
-		}
-	}()
+	defer closeFindCursor("ListTokens", ld)
 
 	for ld.Next(ctx) {
 		if len(list.Collection) < count {

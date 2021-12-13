@@ -33,11 +33,7 @@ func (db *MongoDbBridge) AggregateSingle(col *mongo.Collection, pipe *mongo.Pipe
 		return err
 	}
 
-	defer func() {
-		if err := agg.Close(context.Background()); err != nil {
-			log.Errorf("failed to close cursor; %s", err.Error())
-		}
-	}()
+	defer closeFindCursor("AggregateSingle", agg)
 
 	if !agg.Next(context.Background()) {
 		return mongo.ErrNoDocuments

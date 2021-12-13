@@ -197,12 +197,7 @@ func (db *MongoDbBridge) listOwnerships(filter bson.D, cursor types.Cursor, coun
 	}
 
 	// close the cursor as we leave
-	defer func() {
-		err := ld.Close(ctx)
-		if err != nil {
-			log.Errorf("error closing ownerships list cursor; %s", err.Error())
-		}
-	}()
+	defer closeFindCursor("listOwnerships", ld)
 
 	for ld.Next(ctx) {
 		if len(list.Collection) < count {

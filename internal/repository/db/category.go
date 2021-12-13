@@ -24,12 +24,7 @@ func (sdb *SharedMongoDbBridge) ListCategories() (out []types.Category, err erro
 		log.Errorf("error loading categories list; %s", err.Error())
 		return nil, err
 	}
-	defer func() {
-		err := mc.Close(ctx)
-		if err != nil {
-			log.Errorf("error closing categories list cursor; %s", err.Error())
-		}
-	}()
+	defer closeFindCursor("ListCategories", mc)
 
 	for mc.Next(ctx) {
 		var row types.Category
