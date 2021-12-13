@@ -94,26 +94,116 @@ func (sdb *SharedMongoDbBridge) InsertLegacyCollection(c types.LegacyCollection)
 	return nil
 }
 
-func (sdb *SharedMongoDbBridge) ListLegacyCollections(search *string, mintableBy *common.Address, cursor types.Cursor, count int, backward bool) (out *types.LegacyCollectionList, err error) {
+func (sdb *SharedMongoDbBridge) ApproveCollection(address common.Address) error {
+	col := sdb.client.Database(sdb.dbName).Collection(coLegacyCollection)
+
+	if _, err := col.UpdateOne(
+		context.Background(),
+		bson.D{
+			{ Key: fiLegacyCollectionAddress, Value: strings.ToLower(address.String()) },
+			{ Key: fiLegacyCollectionIsReviewed, Value: false },
+		},
+		bson.D{
+			{Key: "$set", Value: bson.D{
+				{ Key: fiLegacyCollectionIsAppropriate, Value: true },
+				{ Key: fiLegacyCollectionIsReviewed, Value: true },
+			}},
+		},
+	); err != nil {
+		log.Errorf("can not approve LegacyCollection; %s", err)
+		return err
+	}
+	return nil
+}
+
+func (sdb *SharedMongoDbBridge) DeclineCollection(address common.Address) error {
+	col := sdb.client.Database(sdb.dbName).Collection(coLegacyCollection)
+
+	if _, err := col.DeleteOne(
+		context.Background(),
+		bson.D{
+			{ Key: fiLegacyCollectionAddress, Value: strings.ToLower(address.String()) },
+			{ Key: fiLegacyCollectionIsReviewed, Value: false },
+		},
+	); err != nil {
+		log.Errorf("can not remove declined LegacyCollection; %s", err)
+		return err
+	}
+	return nil
+}
+
+func (sdb *SharedMongoDbBridge) BanCollection(address common.Address) error {
+	col := sdb.client.Database(sdb.dbName).Collection(coLegacyCollection)
+
+	if _, err := col.UpdateOne(
+		context.Background(),
+		bson.D{
+			{ Key: fiLegacyCollectionAddress, Value: strings.ToLower(address.String()) },
+			{ Key: fiLegacyCollectionIsReviewed, Value: true },
+			{ Key: fiLegacyCollectionIsAppropriate, Value: true },
+		},
+		bson.D{
+			{Key: "$set", Value: bson.D{
+				{ Key: fiLegacyCollectionIsAppropriate, Value: false },
+			}},
+		},
+	); err != nil {
+		log.Errorf("can not ban LegacyCollection; %s", err)
+		return err
+	}
+	return nil
+}
+
+func (sdb *SharedMongoDbBridge) UnbanCollection(address common.Address) error {
+	col := sdb.client.Database(sdb.dbName).Collection(coLegacyCollection)
+
+	if _, err := col.UpdateOne(
+		context.Background(),
+		bson.D{
+			{ Key: fiLegacyCollectionAddress, Value: strings.ToLower(address.String()) },
+			{ Key: fiLegacyCollectionIsReviewed, Value: true },
+			{ Key: fiLegacyCollectionIsAppropriate, Value: false },
+		},
+		bson.D{
+			{Key: "$set", Value: bson.D{
+				{ Key: fiLegacyCollectionIsAppropriate, Value: true },
+			}},
+		},
+	); err != nil {
+		log.Errorf("can not unban LegacyCollection; %s", err)
+		return err
+	}
+	return nil
+}
+
+func (sdb *SharedMongoDbBridge) ListLegacyCollections(collectionFilter types.CollectionFilter, cursor types.Cursor, count int, backward bool) (out *types.LegacyCollectionList, err error) {
 	db := (*MongoDbBridge)(sdb)
 	var list types.LegacyCollectionList
 	col := sdb.client.Database(sdb.dbName).Collection(coLegacyCollection)
 	ctx := context.Background()
 
-	filter := bson.D{
-		{Key: fiLegacyCollectionIsAppropriate, Value: true},
+	filter := bson.D{}
+	if collectionFilter.InReview {
+		filter = append(filter, bson.E{Key: fiLegacyCollectionIsReviewed, Value: false})
+	} else if collectionFilter.Banned {
+		filter = append(filter,
+			bson.E{Key: fiLegacyCollectionIsReviewed, Value: true},
+			bson.E{Key: fiLegacyCollectionIsAppropriate, Value: false},
+		)
+	} else {
+		filter = append(filter, bson.E{Key: fiLegacyCollectionIsAppropriate, Value: true})
 	}
-	if search != nil {
+	if collectionFilter.Search != nil {
 		filter = append(filter, bson.E{Key: fiLegacyCollectionName, Value: primitive.Regex{
-			Pattern: *search,
+			Pattern: *collectionFilter.Search,
 			Options: "i",
 		}})
 	}
-	if mintableBy != nil {
+	if collectionFilter.MintableBy != nil {
 		filter = append(filter, bson.E{Key: fiLegacyCollectionIsInternal, Value: true})
 		filter = append(filter, bson.E{Key: "$or", Value: bson.A{
 			bson.D{{Key: fiLegacyCollectionIsOwnerOnly, Value: false }},
-			bson.D{{Key: fiLegacyCollectionOwner, Value: *mintableBy }},
+			bson.D{{Key: fiLegacyCollectionOwner, Value: *collectionFilter.MintableBy }},
 		}})
 	}
 

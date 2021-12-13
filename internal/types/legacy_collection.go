@@ -27,7 +27,7 @@ type LegacyCollection struct {
 	IsAppropriate   bool            `bson:"isAppropriate"` // is reviewed and royalties registered on chain
 	IsInternal      bool            `bson:"isInternal"` // is created using factory contract?
 	IsOwnerOnly     bool            `bson:"isOwnerble"` // is only Owner allowed to mint?
-	IsVerified      bool            `bson:"isVerified"`
+	IsVerified      bool            `bson:"isVerified"` // is boosted by admin? (moderator is not sufficient)
 	IsReviewed      bool            `bson:"status"` // false = in review, true = approved (removed on reject)
 }
 

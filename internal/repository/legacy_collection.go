@@ -10,8 +10,8 @@ func (p *Proxy) GetLegacyCollection(address common.Address) (*types.LegacyCollec
 	return p.shared.GetLegacyCollection(address)
 }
 
-func (p *Proxy) ListLegacyCollections(search *string, mintableBy *common.Address, cursor types.Cursor, count int, backward bool) (out *types.LegacyCollectionList, err error) {
-	return p.shared.ListLegacyCollections(search, mintableBy, cursor, count, backward)
+func (p *Proxy) ListLegacyCollections(collectionFilter types.CollectionFilter, cursor types.Cursor, count int, backward bool) (out *types.LegacyCollectionList, err error) {
+	return p.shared.ListLegacyCollections(collectionFilter, cursor, count, backward)
 }
 
 func (p *Proxy) UploadCollectionApplication(app types.CollectionApplication, image types.Image, owner common.Address) (err error) {
@@ -34,4 +34,20 @@ func (p *Proxy) MustCollectionName(adr *common.Address) string {
 		return adr.String()
 	}
 	return c.Name
+}
+
+func (p *Proxy) ApproveCollection(address common.Address) error {
+	return p.shared.ApproveCollection(address)
+}
+
+func (p *Proxy) DeclineCollection(address common.Address) error {
+	return p.shared.DeclineCollection(address)
+}
+
+func (p *Proxy) BanCollection(address common.Address) error {
+	return p.shared.BanCollection(address)
+}
+
+func (p *Proxy) UnbanCollection(address common.Address) error {
+	return p.shared.UnbanCollection(address)
 }

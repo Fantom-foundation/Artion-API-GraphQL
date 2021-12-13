@@ -271,6 +271,14 @@ func (rs *RootResolver) LoggedUser(ctx context.Context) (user *User, err error) 
 	}
 }
 
+func (rs *RootResolver) IsLoggedModerator(ctx context.Context) (bool, error) {
+	address, err := auth.GetIdentityOrNil(ctx)
+	if address == nil || err != nil {
+		return false, err
+	}
+	return repository.R().IsModerator(*address)
+}
+
 func (rs *RootResolver) UpdateUser(ctx context.Context, args struct {
 	Username *string
 	Bio      *string
