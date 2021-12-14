@@ -29,14 +29,23 @@ const (
 func (sdb *SharedMongoDbBridge) BanNft(contract *common.Address, tokenId *hexutil.Big) error {
 	col := sdb.client.Database(sdb.dbName).Collection(coBannedNfts)
 
-	if _, err := col.InsertOne(
+	if _, err := col.UpdateOne(
 		context.Background(),
 		bson.D{
 			{Key: fiBannedNftContract, Value: strings.ToLower(contract.String())},
 			{Key: fiBannedNftTokenId, Value: tokenId.String()},
-			{Key: fiBannedNftIsBanned, Value: true},
-			{Key: fiBannedNftUpdated, Value: time.Now()},
 		},
+		bson.D{
+			{Key: "$set", Value: bson.D{
+				{Key: fiBannedNftIsBanned, Value: true},
+				{Key: fiBannedNftUpdated, Value: time.Now()},
+			}},
+			{Key: "$setOnInsert", Value: bson.D{
+				{Key: fiBannedNftContract, Value: strings.ToLower(contract.String())},
+				{Key: fiBannedNftTokenId, Value: tokenId.String()},
+			}},
+		},
+		options.Update().SetUpsert(true),
 	); err != nil {
 		log.Errorf("can not ban NFT; %s", err)
 		return err

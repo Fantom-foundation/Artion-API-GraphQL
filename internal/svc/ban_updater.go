@@ -76,6 +76,8 @@ func (mu *banUpdater) runUpdates() {
 		}
 	}()
 
+	log.Info("updating ban status of tokens started")
+
 	newUpdateTime := time.Now().Add(-banRefreshOverlap)
 	var after time.Time
 	lastUpdate, err := repo.LastBanUpdate()
@@ -114,5 +116,5 @@ func (mu *banUpdater) runUpdates() {
 	// save the last update time
 	repo.UpdateLastBanUpdate(newUpdateTime)
 
-	log.Notice("updating ban status of tokens done")
+	log.Noticef("updating ban status of tokens done (updated %d collections, %d tokens)", len(cols), len(tokens))
 }
