@@ -62,7 +62,7 @@ func (p *Proxy) GetUnifiedUnitPrice(payToken *common.Address) (uint64, error) {
 		// get price of 1 whole payToken in USD in 18-decimals fixed point
 		unit, err := p.rpc.GetPayTokenPrice(payToken, nil)
 		if err != nil {
-			return nil, err
+			return 0, err
 		}
 
 		// calculate price for 1 whole token in USD in 6-decimals fixed point
