@@ -21,6 +21,7 @@ type Manager struct {
 	collectionValidator *nftCollectionValidator
 	priceUpdater        *priceUpdater
 	likesViewsUpdater   *likesViewsUpdater
+	banUpdater          *banUpdater
 }
 
 // newManager creates a new instance of the svc Manager.
@@ -44,6 +45,7 @@ func newManager() *Manager {
 	mgr.collectionValidator = newNFTCollectionValidator(&mgr)
 	mgr.priceUpdater = newPriceUpdater(&mgr)
 	mgr.likesViewsUpdater = newLikesViewsUpdater(&mgr)
+	mgr.banUpdater = newBanUpdater(&mgr)
 
 	// init and run
 	mgr.init()
@@ -62,6 +64,7 @@ func (mgr *Manager) init() {
 	mgr.collectionValidator.init()
 	mgr.priceUpdater.init()
 	mgr.likesViewsUpdater.init()
+	mgr.banUpdater.init()
 }
 
 // add managed service instance to the Manager and run it.

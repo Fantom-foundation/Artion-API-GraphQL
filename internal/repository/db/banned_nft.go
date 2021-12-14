@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"strings"
 	"time"
 )
@@ -64,6 +65,35 @@ func (sdb *SharedMongoDbBridge) UnbanNft(contract *common.Address, tokenId *hexu
 		return err
 	}
 	return nil
+}
+
+func (sdb *SharedMongoDbBridge) ListBannedNftsAfter(after time.Time, maxAmount int64) (out []*types.BannedNft, err error) {
+	db := (*MongoDbBridge)(sdb)
+	list := make([]*types.BannedNft, maxAmount)
+	col := db.client.Database(db.dbName).Collection(coBannedNfts)
+
+	cur, err := col.Find(
+		context.Background(),
+		bson.D{{Key: fiBannedNftUpdated, Value: bson.D{{"$gte", after}}}},
+		options.Find().SetSort(bson.D{{Key: fiBannedNftUpdated, Value: 1}}).SetLimit(maxAmount),
+	)
+	if err != nil {
+		log.Errorf("can not list of newly banned nfts; %s", err.Error())
+		return nil, err
+	}
+	defer closeFindCursor("BannedNfts", cur)
+
+	var i int
+	for cur.Next(context.Background()) {
+		var row types.BannedNft
+		if err := cur.Decode(&row); err != nil {
+			log.Errorf("can not decode BannedNft; %s", err.Error())
+			return nil, err
+		}
+		list[i] = &row
+		i++
+	}
+	return list[:i], nil
 }
 
 func (sdb *SharedMongoDbBridge) ListBannedNfts(cursor types.Cursor, count int, backward bool) (out *types.BannedNftList, err error) {

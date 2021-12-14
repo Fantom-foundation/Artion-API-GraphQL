@@ -8,7 +8,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"strings"
+	"time"
 )
 
 const (
@@ -33,6 +35,7 @@ const (
 	fiLegacyCollectionTwitterHandle = "twitterHandle"
 	fiLegacyCollectionInstagramHandle = "instagramHandle"
 	fiLegacyCollectionIsAppropriate = "isAppropriate"
+	fiLegacyCollectionAppropriateUpdate = "appropriateUpdate"
 	fiLegacyCollectionIsInternal  = "isInternal"
 	fiLegacyCollectionIsOwnerOnly = "isOwnerble"
 	fiLegacyCollectionIsVerified  = "isVerified"
@@ -86,6 +89,7 @@ func (sdb *SharedMongoDbBridge) InsertLegacyCollection(c types.LegacyCollection)
 			{Key: fiLegacyCollectionIsOwnerOnly, Value: c.IsOwnerOnly},
 			{Key: fiLegacyCollectionIsVerified, Value: c.IsVerified},
 			{Key: fiLegacyCollectionIsReviewed, Value: c.IsReviewed},
+			{Key: fiLegacyCollectionAppropriateUpdate, Value: time.Now()},
 		},
 	); err != nil {
 		log.Errorf("can not insert LegacyCollection; %s", err)
@@ -107,6 +111,7 @@ func (sdb *SharedMongoDbBridge) ApproveCollection(address common.Address) error 
 			{Key: "$set", Value: bson.D{
 				{ Key: fiLegacyCollectionIsAppropriate, Value: true },
 				{ Key: fiLegacyCollectionIsReviewed, Value: true },
+				{ Key: fiLegacyCollectionAppropriateUpdate, Value: time.Now() },
 			}},
 		},
 	); err != nil {
@@ -145,6 +150,7 @@ func (sdb *SharedMongoDbBridge) BanCollection(address common.Address) error {
 		bson.D{
 			{Key: "$set", Value: bson.D{
 				{ Key: fiLegacyCollectionIsAppropriate, Value: false },
+				{ Key: fiLegacyCollectionAppropriateUpdate, Value: time.Now() },
 			}},
 		},
 	); err != nil {
@@ -167,6 +173,7 @@ func (sdb *SharedMongoDbBridge) UnbanCollection(address common.Address) error {
 		bson.D{
 			{Key: "$set", Value: bson.D{
 				{ Key: fiLegacyCollectionIsAppropriate, Value: true },
+				{ Key: fiLegacyCollectionAppropriateUpdate, Value: time.Now() },
 			}},
 		},
 	); err != nil {
@@ -174,6 +181,35 @@ func (sdb *SharedMongoDbBridge) UnbanCollection(address common.Address) error {
 		return err
 	}
 	return nil
+}
+
+func (sdb *SharedMongoDbBridge) ListCollectionsWithAppropriateUpdate(after time.Time, maxAmount int64) (out []*types.LegacyCollection, err error) {
+	db := (*MongoDbBridge)(sdb)
+	list := make([]*types.LegacyCollection, maxAmount)
+	col := db.client.Database(db.dbName).Collection(coLegacyCollection)
+
+	cur, err := col.Find(
+		context.Background(),
+		bson.D{{Key: fiLegacyCollectionAppropriateUpdate, Value: bson.D{{"$gte", after}}}},
+		options.Find().SetSort(bson.D{{Key: fiLegacyCollectionAppropriateUpdate, Value: 1}}).SetLimit(maxAmount),
+	)
+	if err != nil {
+		log.Errorf("can not list appropriate changed LegacyCollections; %s", err.Error())
+		return nil, err
+	}
+	defer closeFindCursor("LegacyCollections", cur)
+
+	var i int
+	for cur.Next(context.Background()) {
+		var row types.LegacyCollection
+		if err := cur.Decode(&row); err != nil {
+			log.Errorf("can not decode appropriate changed LegacyCollection; %s", err.Error())
+			return nil, err
+		}
+		list[i] = &row
+		i++
+	}
+	return list[:i], nil
 }
 
 func (sdb *SharedMongoDbBridge) ListLegacyCollections(collectionFilter types.CollectionFilter, cursor types.Cursor, count int, backward bool) (out *types.LegacyCollectionList, err error) {

@@ -183,6 +183,14 @@ func (p *Proxy) TokenMarkSold(contract *common.Address, tokenID *big.Int, price 
 	return p.db.TokenMarkSold(contract, tokenID, price, tradeTime)
 }
 
+func (p *Proxy) TokenMarkBanned(contract *common.Address, tokenID *big.Int, banned bool) error {
+	return p.db.TokenMarkBanned(contract, tokenID, banned)
+}
+
+func (p *Proxy) TokenMarkCollectionBanned(contract *common.Address, banned bool) error {
+	return p.db.TokenMarkCollectionBanned(contract, banned)
+}
+
 // ListTokens loads a list of tokens from the local database.
 // A callback for legacy extension is provided to the loader.
 func (p *Proxy) ListTokens(filter *types.TokenFilter, sorting sorting.TokenSorting, sortDesc bool, cursor types.Cursor, count int, backward bool) (*types.TokenList, error) {

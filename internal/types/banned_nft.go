@@ -10,6 +10,7 @@ type BannedNft struct {
 	Id         primitive.ObjectID `bson:"_id"`
 	Contract   common.Address     `bson:"contractAddress"`
 	TokenId    hexutil.Big        `bson:"tokenID"`
+	IsBanned   bool               `bson:"banned"`
 	Updated    Time               `bson:"updatedAt"`
 }
 

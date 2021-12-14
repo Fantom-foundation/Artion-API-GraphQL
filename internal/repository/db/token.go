@@ -26,6 +26,12 @@ const (
 	// fiTokenIsActive is the column storing the NFT token activity mark.
 	fiTokenIsActive = "is_active"
 
+	// fiTokenIsBanned is the column storing the NFT token banned mark.
+	fiTokenIsBanned = "is_banned"
+
+	// fiTokenIsColBanned is the column storing the NFT token collection banned mark.
+	fiTokenIsColBanned = "is_col_banned"
+
 	// fiTokenMetadataURI is the column storing the NFT token metadata URI.
 	fiTokenMetadataURI = "uri"
 
@@ -479,6 +485,31 @@ func (db *MongoDbBridge) TokenMarkSold(contract *common.Address, tokenID *big.In
 		{Key: fiTokenPrice, Value: t.AmountPrice},
 		{Key: fiTokenPriceValid, Value: t.PriceValid},
 	})
+}
+
+func (db *MongoDbBridge) TokenMarkBanned(contract *common.Address, tokenID *big.Int, banned bool) error {
+	return db.UpdateToken(contract, tokenID, bson.D{
+		{Key: fiTokenIsBanned, Value: banned},
+	})
+}
+
+func (db *MongoDbBridge) TokenMarkCollectionBanned(contract *common.Address, banned bool) error {
+	col := db.client.Database(db.dbName).Collection(coTokens)
+	rs, err := col.UpdateMany(
+		context.Background(),
+		bson.D{{Key: fiTokenContract, Value: contract}},
+		bson.D{{Key: "$set", Value: bson.D{
+			{Key: fiTokenIsColBanned, Value: banned},
+		}}},
+	)
+	if err != nil {
+		log.Errorf("can not update tokens of collection %s; %s", contract.String(), err.Error())
+		return err
+	}
+	if rs.UpsertedCount > 0 {
+		log.Infof("tokens of %s updated", contract.String())
+	}
+	return nil
 }
 
 // TokenMetadataRefreshSet pulls s set of NFT tokens scheduled to be updated up to this time.

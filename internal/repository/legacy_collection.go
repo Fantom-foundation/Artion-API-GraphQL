@@ -4,6 +4,7 @@ import (
 	"artion-api-graphql/internal/types"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"time"
 )
 
 func (p *Proxy) GetLegacyCollection(address common.Address) (*types.LegacyCollection, error) {
@@ -50,4 +51,8 @@ func (p *Proxy) BanCollection(address common.Address) error {
 
 func (p *Proxy) UnbanCollection(address common.Address) error {
 	return p.shared.UnbanCollection(address)
+}
+
+func (p *Proxy) ListCollectionsWithAppropriateUpdate(after time.Time, maxAmount int64) (out []*types.LegacyCollection, err error) {
+	return p.shared.ListCollectionsWithAppropriateUpdate(after, maxAmount)
 }
