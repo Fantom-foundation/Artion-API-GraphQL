@@ -17,7 +17,7 @@ const (
 )
 
 // banUpdater represents a service responsible for updating tokens ban status
-// (ban status is obtained from the collection status and from presence in bannednfts in shared database)
+// (ban status is obtained from collection.isAppropriate and from presence in bannednfts in shared database)
 type banUpdater struct {
 	// mgr represents the Manager instance
 	mgr *Manager

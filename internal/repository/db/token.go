@@ -758,7 +758,11 @@ func tokenFilterToBson(f *types.TokenFilter) bson.D {
 
 	// exclude inactive tokens (if not requested to include them)
 	if f.IncludeInactive == nil || *f.IncludeInactive != true {
-		filter = append(filter, bson.E{Key: fiTokenIsActive, Value: true})
+		filter = append(filter,
+			bson.E{Key: fiTokenIsActive, Value: true},
+			bson.E{Key: fiTokenIsBanned, Value: bson.D{{Key: "$ne", Value: true}}},
+			bson.E{Key: fiTokenIsColBanned, Value: bson.D{{Key: "$ne", Value: true}}},
+		)
 	}
 
 	// regular expression search

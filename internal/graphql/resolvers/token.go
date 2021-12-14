@@ -287,7 +287,11 @@ func (rs *RootResolver) Token(args struct {
 	Contract common.Address
 	TokenId  hexutil.Big
 }) (*Token, error) {
-	return NewToken(&args.Contract, &args.TokenId)
+	token, err := NewToken(&args.Contract, &args.TokenId)
+	if token != nil && (token.IsBanned || token.IsColBanned) {
+		return nil, nil // hide banned token
+	}
+	return token, err
 }
 
 func (rs *RootResolver) Tokens(args struct {
