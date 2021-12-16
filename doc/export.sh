@@ -9,4 +9,7 @@ mongoexport --db=artion --collection=offers --out offers.json
 mongoexport --db=artion --collection=ownerships --out ownerships.json
 mongoexport --db=artion --collection=status --out status.json
 mongoexport --db=artion --collection=tokens --out tokens.json
+mongoexport --db=artion --collection=burns --out burns.json
+mongoexport --db=artion --collection=notification_tpl --out notification_tpl.json
+mongoexport --db=artion --collection=notifications --out notifications.json
 
