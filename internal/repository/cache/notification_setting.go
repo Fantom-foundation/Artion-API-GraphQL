@@ -3,7 +3,6 @@ package cache
 
 import (
 	"artion-api-graphql/internal/types"
-	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"strings"
 )
@@ -35,10 +34,7 @@ func (c *MemCache) GetNotificationSetting(user *common.Address, loader func(addr
 		return nil, err
 	}
 
-	// do we have any data here?
-	if nil == ns {
-		return nil, fmt.Errorf("notification settings not availble for %s", user.String())
-	}
+	// ns can be nil if the user has not set his settings
 
 	err = c.cache.Set(key, ns.Marshal())
 	if err != nil {
