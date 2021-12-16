@@ -230,6 +230,7 @@ func logTokenTransferActivity(evt *eth.Log, blk *eth.Header, tokenID hexutil.Big
 		actType = types.EvtBurn
 	}
 	activity := types.Activity{
+		Transaction:  evt.TxHash,
 		OrdinalIndex: types.OrdinalIndex(int64(evt.BlockNumber), int64(evt.Index)),
 		Time:         types.Time(time.Unix(int64(blk.Time), 0)),
 		ActType:      actType,
