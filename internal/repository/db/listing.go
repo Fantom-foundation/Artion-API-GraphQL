@@ -102,11 +102,11 @@ func (db *MongoDbBridge) StoreListing(lst *types.Listing) error {
 func (db *MongoDbBridge) SetListingActive(contract *common.Address, tokenID *big.Int, owner *common.Address, isActive bool) error {
 	// get the collection
 	col := db.client.Database(db.dbName).Collection(coListings)
-	rs, err := col.UpdateOne(
+	rs, err := col.UpdateMany(
 		context.Background(),
 		bson.D{
 			{Key: fiListingContract, Value: *contract},
-			{Key: fiListingTokenId, Value: *tokenID},
+			{Key: fiListingTokenId, Value: hexutil.Big(*tokenID)},
 			{Key: fiListingOwner, Value: *owner},
 		},
 		bson.D{{Key: "$set", Value: bson.D{
