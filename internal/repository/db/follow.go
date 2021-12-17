@@ -82,7 +82,7 @@ func (sdb *SharedMongoDbBridge) Followers(user common.Address) ([]common.Address
 	col := sdb.client.Database(sdb.dbName).Collection(coFollows)
 	ld, err := col.Find(context.Background(),
 		bson.D{{Key: fiFollowFollowed, Value: strings.ToLower(user.String())}},
-		options.Find().SetProjection(bson.D{{Key: fiFollowFollowed, Value: 1}}),
+		options.Find().SetProjection(bson.D{{Key: fiFollowFollower, Value: 1}}),
 	)
 	if err != nil {
 		log.Errorf("can not load followers of %s; %s", user.String(), err.Error())
@@ -94,7 +94,7 @@ func (sdb *SharedMongoDbBridge) Followers(user common.Address) ([]common.Address
 	list := make([]common.Address, 0)
 	for ld.Next(context.Background()) {
 		var row struct {
-			To common.Address `bson:"to"`
+			To common.Address `bson:"from"`
 		}
 
 		if err := ld.Decode(&row); err != nil {
