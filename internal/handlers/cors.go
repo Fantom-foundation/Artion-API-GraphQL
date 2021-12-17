@@ -22,8 +22,10 @@ func Cors(cfg *config.Config, log logger.Logger, handler http.Handler) http.Hand
 func corsOptions(cfg *config.Config) cors.Options {
 	return cors.Options{
 		AllowedOrigins: cfg.Server.CorsOrigin,
-		AllowedMethods: []string{"HEAD", "GET", "POST"},
+		AllowedMethods: []string{"HEAD", "GET", "POST", "OPTIONS"},
 		AllowedHeaders: []string{"Origin", "Accept", "Content-Type", "X-Requested-With", "Authorization"},
-		MaxAge:         300,
+		ExposedHeaders: []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:         3000,
 	}
 }

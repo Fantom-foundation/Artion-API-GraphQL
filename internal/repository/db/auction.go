@@ -191,7 +191,7 @@ func (db *MongoDbBridge) SetAuctionActive(contract *common.Address, tokenID *big
 		context.Background(),
 		bson.D{
 			{Key: fiAuctionContract, Value: *contract},
-			{Key: fiAuctionTokenId, Value: *tokenID},
+			{Key: fiAuctionTokenId, Value: hexutil.Big(*tokenID)},
 			{Key: fiAuctionOwner, Value: *owner},
 		},
 		bson.D{{Key: "$set", Value: bson.D{

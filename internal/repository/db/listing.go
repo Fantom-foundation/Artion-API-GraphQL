@@ -102,11 +102,11 @@ func (db *MongoDbBridge) StoreListing(lst *types.Listing) error {
 func (db *MongoDbBridge) SetListingActive(contract *common.Address, tokenID *big.Int, owner *common.Address, isActive bool) error {
 	// get the collection
 	col := db.client.Database(db.dbName).Collection(coListings)
-	rs, err := col.UpdateOne(
+	rs, err := col.UpdateMany(
 		context.Background(),
 		bson.D{
 			{Key: fiListingContract, Value: *contract},
-			{Key: fiListingTokenId, Value: *tokenID},
+			{Key: fiListingTokenId, Value: hexutil.Big(*tokenID)},
 			{Key: fiListingOwner, Value: *owner},
 		},
 		bson.D{{Key: "$set", Value: bson.D{
@@ -248,12 +248,7 @@ func (db *MongoDbBridge) listListings(filter bson.D, cursor types.Cursor, count 
 	}
 
 	// close the cursor as we leave
-	defer func() {
-		err := ld.Close(ctx)
-		if err != nil {
-			log.Errorf("error closing listings list cursor; %s", err.Error())
-		}
-	}()
+	defer closeFindCursor("listListings", ld)
 
 	for ld.Next(ctx) {
 		if len(list.Collection) < count {

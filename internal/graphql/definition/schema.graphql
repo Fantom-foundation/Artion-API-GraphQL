@@ -60,6 +60,18 @@ type Query {
 
     # Search collections, tokens, and users for the given phrase and return list of relevant results.
     textSearch(phrase: String!, maxLength: Int = 15): [TextSearchEdge]!
+
+    # Check it the logged user is a moderator.
+    isLoggedModerator: Boolean!
+
+    # List collections to be reviewed by a moderator. (moderators only)
+    collectionsInReview(search: String, first: Int, after: Cursor, last: Int, before: Cursor): CollectionConnection!
+
+    # List collections which was banned by a moderator. (moderators only)
+    bannedCollections(search: String, first: Int, after: Cursor, last: Int, before: Cursor): CollectionConnection!
+
+    # List tokens which was banned by a moderator. (moderators only)
+    bannedTokens(first: Int, after: Cursor, last: Int, before: Cursor): BannedNftConnection!
 }
 
 # Mutation endpoints for modifying the data
@@ -96,6 +108,24 @@ type Mutation {
 
     # Increment amount of views of the token.
     incrementTokenViews(contract: Address!, tokenId: BigInt!): Boolean!
+
+    # Approve the in-review collection (moderators only)
+    approveCollection(contract: Address!): Boolean!
+
+    # Decline the in-review collection (moderators only)
+    declineCollection(contract: Address!): Boolean!
+
+    # Ban the collection (moderators only)
+    banCollection(contract: Address!): Boolean!
+
+    # Unban the collection (moderators only)
+    unbanCollection(contract: Address!): Boolean!
+
+    # Ban the token (moderators only)
+    banToken(contract: Address!, tokenId: BigInt!): Boolean!
+
+    # Unban the token (moderators only)
+    unbanToken(contract: Address!, tokenId: BigInt!): Boolean!
 }
 
 type Subscription {

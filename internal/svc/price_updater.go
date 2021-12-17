@@ -22,7 +22,7 @@ type priceUpdater struct {
 	// sigStop represents the signal for closing the router
 	sigStop chan bool
 
-	// refreshQueue is the queue used to store NFT metadata update candidates.
+	// refreshQueue is the queue used to store token price update candidates.
 	refreshQueue chan *types.Token
 }
 
@@ -51,8 +51,7 @@ func (mu *priceUpdater) close() {
 	mu.sigStop <- true
 }
 
-// run processes metadata update requests from new NFT and also ensures
-// updates on existing tokens' metadata as needed.
+// run processes the token prices update.
 func (mu *priceUpdater) run() {
 	// make the metadata refresh ticker
 	refreshTick := time.NewTicker(priceRefreshTick)

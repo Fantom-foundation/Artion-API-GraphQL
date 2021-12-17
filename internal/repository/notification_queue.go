@@ -37,7 +37,11 @@ func (p *Proxy) NotificationCanSend(no *types.Notification) bool {
 	// get the recipient config
 	nst, err := p.GetNotificationSettings(no.Recipient)
 	if err != nil {
-		log.Errorf("can not validate for %s; %s", no.Recipient.String(), err.Error())
+		log.Errorf("can get notification settings for %s; %s", no.Recipient.String(), err.Error())
+		return false
+	}
+	if nst == nil {
+		log.Debugf("recipient %s does not have set notifications settings", no.Recipient.String())
 		return false
 	}
 

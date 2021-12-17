@@ -44,7 +44,10 @@ func (rs *RootResolver) Collections(args struct {
 		return nil, err
 	}
 
-	list, err := repository.R().ListLegacyCollections(args.Search, args.MintableBy, cursor, count, backward)
+	list, err := repository.R().ListLegacyCollections(types.CollectionFilter{
+		Search:     args.Search,
+		MintableBy: args.MintableBy,
+	}, cursor, count, backward)
 	if err != nil {
 		return nil, err
 	}

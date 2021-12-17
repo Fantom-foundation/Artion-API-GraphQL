@@ -26,6 +26,12 @@ const (
 	// fiTokenIsActive is the column storing the NFT token activity mark.
 	fiTokenIsActive = "is_active"
 
+	// fiTokenIsBanned is the column storing the NFT token banned mark.
+	fiTokenIsBanned = "is_banned"
+
+	// fiTokenIsColBanned is the column storing the NFT token collection banned mark.
+	fiTokenIsColBanned = "is_col_banned"
+
 	// fiTokenMetadataURI is the column storing the NFT token metadata URI.
 	fiTokenMetadataURI = "uri"
 
@@ -481,6 +487,31 @@ func (db *MongoDbBridge) TokenMarkSold(contract *common.Address, tokenID *big.In
 	})
 }
 
+func (db *MongoDbBridge) TokenMarkBanned(contract *common.Address, tokenID *big.Int, banned bool) error {
+	return db.UpdateToken(contract, tokenID, bson.D{
+		{Key: fiTokenIsBanned, Value: banned},
+	})
+}
+
+func (db *MongoDbBridge) TokenMarkCollectionBanned(contract *common.Address, banned bool) error {
+	col := db.client.Database(db.dbName).Collection(coTokens)
+	rs, err := col.UpdateMany(
+		context.Background(),
+		bson.D{{Key: fiTokenContract, Value: contract}},
+		bson.D{{Key: "$set", Value: bson.D{
+			{Key: fiTokenIsColBanned, Value: banned},
+		}}},
+	)
+	if err != nil {
+		log.Errorf("can not update tokens of collection %s; %s", contract.String(), err.Error())
+		return err
+	}
+	if rs.UpsertedCount > 0 {
+		log.Infof("tokens of %s updated", contract.String())
+	}
+	return nil
+}
+
 // TokenMetadataRefreshSet pulls s set of NFT tokens scheduled to be updated up to this time.
 func (db *MongoDbBridge) TokenMetadataRefreshSet(setSize int64) ([]*types.Token, error) {
 	list := make([]*types.Token, setSize)
@@ -499,11 +530,7 @@ func (db *MongoDbBridge) TokenMetadataRefreshSet(setSize int64) ([]*types.Token,
 		log.Errorf("can not pull metadata refresh set; %s", err.Error())
 		return nil, err
 	}
-	defer func() {
-		if err := cur.Close(context.Background()); err != nil {
-			log.Errorf("can not close cursor; %s", err.Error())
-		}
-	}()
+	defer closeFindCursor("TokenMetadataRefreshSet", cur)
 
 	var i int
 	for cur.Next(context.Background()) {
@@ -541,11 +568,7 @@ func (db *MongoDbBridge) TokenPriceRefreshSet(setSize int64) ([]*types.Token, er
 		log.Errorf("can not pull price refresh set; %s", err.Error())
 		return nil, err
 	}
-	defer func() {
-		if err := cur.Close(context.Background()); err != nil {
-			log.Errorf("can not close cursor; %s", err.Error())
-		}
-	}()
+	defer closeFindCursor("TokenPriceRefreshSet", cur)
 
 	var i int
 	for cur.Next(context.Background()) {
@@ -653,11 +676,7 @@ func (db *MongoDbBridge) TokenLikesViewsRefreshSet(setSize int64) ([]*types.Toke
 		log.Errorf("can not pull likes/views refresh set; %s", err.Error())
 		return nil, err
 	}
-	defer func() {
-		if err := cur.Close(context.Background()); err != nil {
-			log.Errorf("can not close cursor; %s", err.Error())
-		}
-	}()
+	defer closeFindCursor("TokenLikesViewsRefreshSet", cur)
 
 	var i int
 	for cur.Next(context.Background()) {
@@ -700,12 +719,7 @@ func (db *MongoDbBridge) ListTokens(
 	}
 
 	// close the cursor as we leave
-	defer func() {
-		err := ld.Close(ctx)
-		if err != nil {
-			log.Errorf("error closing tokens list cursor; %s", err.Error())
-		}
-	}()
+	defer closeFindCursor("ListTokens", ld)
 
 	for ld.Next(ctx) {
 		if len(list.Collection) < count {
@@ -744,7 +758,11 @@ func tokenFilterToBson(f *types.TokenFilter) bson.D {
 
 	// exclude inactive tokens (if not requested to include them)
 	if f.IncludeInactive == nil || *f.IncludeInactive != true {
-		filter = append(filter, bson.E{Key: fiTokenIsActive, Value: true})
+		filter = append(filter,
+			bson.E{Key: fiTokenIsActive, Value: true},
+			bson.E{Key: fiTokenIsBanned, Value: bson.D{{Key: "$ne", Value: true}}},
+			bson.E{Key: fiTokenIsColBanned, Value: bson.D{{Key: "$ne", Value: true}}},
+		)
 	}
 
 	// regular expression search

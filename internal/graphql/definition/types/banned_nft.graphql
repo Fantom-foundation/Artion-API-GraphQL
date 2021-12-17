@@ -1,5 +1,5 @@
-# TokenLike represents a like given by a user to a token.
-type TokenLike {
+# BannedNft represents a banned NFT.
+type BannedNft {
     # Address of the token contract
     contract: Address!
 
@@ -10,14 +10,14 @@ type TokenLike {
     token: Token
 }
 
-type TokenLikeEdge {
+type BannedNftEdge {
     cursor: Cursor!
-    node: TokenLike!
+    node: BannedNft!
 }
 
-type TokenLikeConnection {
+type BannedNftConnection {
     # Edges contains provided edges of the sequential list.
-    edges: [TokenLikeEdge!]!
+    edges: [BannedNftEdge!]!
 
     # TotalCount is the total amount of items in the list.
     totalCount: BigInt!

@@ -112,11 +112,7 @@ func loadNotificationTemplates(col *mongo.Collection, filter bson.D) []types.Not
 		return nil
 	}
 
-	defer func(c *mongo.Cursor) {
-		if err := c.Close(context.Background()); err != nil {
-			log.Errorf("could not close search cursor; %s", err.Error())
-		}
-	}(cur)
+	defer closeFindCursor("loadNotificationTemplates", cur)
 
 	// collect templates
 	templates := make([]types.NotificationTemplate, 0)

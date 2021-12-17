@@ -26,7 +26,9 @@ const (
 type Token struct {
 	Contract        common.Address `bson:"contract"`
 	TokenId         hexutil.Big    `bson:"token"`
-	IsActive        bool           `bson:"is_active"`
+	IsActive        bool           `bson:"is_active"` // the metadata are loaded
+	IsBanned        bool           `bson:"is_banned"` // the NFT is in bannednfts
+	IsColBanned     bool           `bson:"is_col_banned"` // the collection has IsAppropriate = false
 	OrdinalIndex    int64          `bson:"index"`
 	Uri             string         `bson:"uri"`
 	Name            string         `bson:"name"`

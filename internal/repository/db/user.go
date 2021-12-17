@@ -165,12 +165,7 @@ func (sdb *SharedMongoDbBridge) listUsers(filter bson.D, cursor types.Cursor, co
 	}
 
 	// close the cursor as we leave
-	defer func() {
-		err := ld.Close(ctx)
-		if err != nil {
-			log.Errorf("error closing user list cursor; %s", err.Error())
-		}
-	}()
+	defer closeFindCursor("listUsers", ld)
 
 	for ld.Next(ctx) {
 		if len(list.Collection) < count {

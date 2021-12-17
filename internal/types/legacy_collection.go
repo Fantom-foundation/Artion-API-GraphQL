@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/ethereum/go-ethereum/common"
 	"strconv"
+	"time"
 )
 
 // LegacyCollection represents token collection from old Artion.
@@ -27,8 +28,9 @@ type LegacyCollection struct {
 	IsAppropriate   bool            `bson:"isAppropriate"` // is reviewed and royalties registered on chain
 	IsInternal      bool            `bson:"isInternal"` // is created using factory contract?
 	IsOwnerOnly     bool            `bson:"isOwnerble"` // is only Owner allowed to mint?
-	IsVerified      bool            `bson:"isVerified"`
+	IsVerified      bool            `bson:"isVerified"` // is boosted by admin? (moderator is not sufficient)
 	IsReviewed      bool            `bson:"status"` // false = in review, true = approved (removed on reject)
+	AppropriateUpdate time.Time     `bson:"appropriateUpdate"` // when was "isAppropriate" changed last time?
 }
 
 // CategoriesAsInt provides a list of category ID-s

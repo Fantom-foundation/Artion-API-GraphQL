@@ -95,12 +95,7 @@ func (db *MongoDbBridge) listActivities(filter bson.D, cursor types.Cursor, coun
 	}
 
 	// close the cursor as we leave
-	defer func() {
-		err := ld.Close(ctx)
-		if err != nil {
-			log.Errorf("error closing activities list cursor; %s", err.Error())
-		}
-	}()
+	defer closeFindCursor("ListActivities", ld)
 
 	for ld.Next(ctx) {
 		if len(list.Collection) < count {
@@ -160,11 +155,7 @@ func (db *MongoDbBridge) TokenPriceHistory(contract *common.Address, tokenId *he
 		log.Errorf("can not load token price history; %s", err.Error())
 		return nil, err
 	}
-	defer func() {
-		if err := cur.Close(context.Background()); err != nil {
-			log.Errorf("can not close cursor; %s", err.Error())
-		}
-	}()
+	defer closeFindCursor("TokenPriceHistory", cur)
 
 	for cur.Next(context.Background()) {
 		var row types.PriceHistory
