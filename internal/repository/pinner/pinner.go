@@ -83,7 +83,7 @@ func (p Pinner) PinFile(filename string, content []byte) (cid string, err error)
 	req.Header.Add("Authorization", "Bearer " + p.pinataBearer)
 
 	client := &http.Client{
-		Timeout: 60 * time.Second,
+		Timeout: 30 * time.Second,
 	}
 
 	log.Infof("pinning file "+filename)

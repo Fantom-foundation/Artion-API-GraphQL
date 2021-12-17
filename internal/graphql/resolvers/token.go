@@ -150,6 +150,10 @@ func (t *Token) IsLiked(ctx context.Context) (bool, error) {
 	return repository.R().IsTokenLiked(identity, &t.Contract, (*big.Int)(&t.TokenId))
 }
 
+func (t *Token) IsLikedBy(args struct{ User *common.Address }) (bool, error) {
+	return repository.R().IsTokenLiked(args.User, &t.Contract, (*big.Int)(&t.TokenId))
+}
+
 func (t *Token) Views() (hexutil.Big, error) {
 	count, err := repository.R().GetTokenViews(t.Contract, big.Int(t.TokenId))
 	if err != nil {
