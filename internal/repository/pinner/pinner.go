@@ -53,7 +53,7 @@ func (p Pinner) PinTokenData(metadata types.JsonMetadata, image types.Image) (ur
 
 	cid, err = p.PinFile("token-meta", data)
 	if err != nil {
-		return "", fmt.Errorf("uploading token image failed; %s", err)
+		return "", fmt.Errorf("uploading token meta failed; %s", err)
 	}
 	return "https://artion.mypinata.cloud/ipfs/" + cid, nil
 }
@@ -83,7 +83,7 @@ func (p Pinner) PinFile(filename string, content []byte) (cid string, err error)
 	req.Header.Add("Authorization", "Bearer " + p.pinataBearer)
 
 	client := &http.Client{
-		Timeout: 30 * time.Second,
+		Timeout: 60 * time.Second,
 	}
 
 	log.Infof("pinning file "+filename)
