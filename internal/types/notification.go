@@ -23,21 +23,21 @@ const (
 	notifyListing   = 0b_0000_1000_0000_0000
 	notifyFollower  = 0b_1000_0000_0000_0000
 
-	NotifyNFTBurned            = /* +ok d-626685e374d3441fa8e7a2d63090739b */ notifyBase
-	NotifyNFTCreated           = /* +ok d-2fd097843ab9480884ce8dfebe58f015 */ notifyBase | notifyAdded
-	NotifyNFTSold              = /* +ok +offer +list d-c41cf896b892445094171ebb9950537d */ notifySold
-	NotifyNFTPurchased         = /* +ok +offer +list d-f941e62f2cae4c20a64116868d531510 */ notifyPurchased
-	NotifyAuctionCreated       = /* +ok d-07fb0b0e3e9b46fba27a9bbaccb12bc5 */ notifyAuction | notifyAdded
-	NotifyListingCreated       = /* +ok d-40798e32c4a64c01bf6ed8f9f44ff640 */ notifyListing | notifyAdded
-	NotifyListingCanceled      = /* +ok d-08ed9be9205d460d99e6c581e2bddb7b */ notifyListing | notifyCanceled
-	NotifyAuctionBidAdded      = /* +ok d-a2143c02992c48018325101da545a0da */ notifyAuction | notifyBid | notifyAdded
-	NotifyAuctionBidCanceled   = /* +ok d-402c6fc9a24e4d0484d5a7a1310f653c */ notifyAuction | notifyBid | notifyCanceled
-	NotifyAuctionPurchased     = /* +ok d-d6f14efa4d324b62a9c7a0dc378412af */ notifyAuction | notifyFinished
-	NotifyAuctionCanceled      = /* +ok d-6517723fea4d475090f051f20aa8575c */ notifyAuction | notifyCanceled
-	NotifyOfferAdded           = /* +ok d-8d7bfd27fb414570996e961b8db4ff23 */ notifyOffer | notifyAdded
-	NotifyOfferCanceled        = /* +ok d-d801345093f04fcda6c08012b713e9e3 */ notifyOffer | notifyCanceled
-	NotifyFollowerListingAdded = /* +ok d-10c7b86506874975aaac47efdfd19ee1 */ notifyFollower | notifyListing | notifyAdded
-	NotifyFollowerAuctionAdded = /* +ok d-8f15781aa8ed41feae05791dd28f5de8 */ notifyFollower | notifyAuction | notifyAdded
+	NotifyNFTBurned            = /* #0     +ok d-626685e374d3441fa8e7a2d63090739b */ notifyBase
+	NotifyNFTCreated           = /* #1     +ok d-2fd097843ab9480884ce8dfebe58f015 */ notifyBase | notifyAdded
+	NotifyNFTSold              = /* #16    +ok +offer +list d-f941e62f2cae4c20a64116868d531510 */ notifySold
+	NotifyNFTPurchased         = /* #32    +ok +offer +list d-c41cf896b892445094171ebb9950537d */ notifyPurchased
+	NotifyAuctionCreated       = /* #257   +ok d-07fb0b0e3e9b46fba27a9bbaccb12bc5 */ notifyAuction | notifyAdded
+	NotifyListingCreated       = /* #2049  +ok d-40798e32c4a64c01bf6ed8f9f44ff640 */ notifyListing | notifyAdded
+	NotifyListingCanceled      = /* #2176  +ok d-08ed9be9205d460d99e6c581e2bddb7b */ notifyListing | notifyCanceled
+	NotifyAuctionBidAdded      = /* #769   +ok d-a2143c02992c48018325101da545a0da */ notifyAuction | notifyBid | notifyAdded
+	NotifyAuctionBidCanceled   = /* #896   +ok d-402c6fc9a24e4d0484d5a7a1310f653c */ notifyAuction | notifyBid | notifyCanceled
+	NotifyAuctionPurchased     = /* #264   +ok d-d6f14efa4d324b62a9c7a0dc378412af */ notifyAuction | notifyFinished
+	NotifyAuctionCanceled      = /* #387   +ok d-6517723fea4d475090f051f20aa8575c */ notifyAuction | notifyCanceled
+	NotifyOfferAdded           = /* #1025  +ok d-8d7bfd27fb414570996e961b8db4ff23 */ notifyOffer | notifyAdded
+	NotifyOfferCanceled        = /* #1152  +ok d-d801345093f04fcda6c08012b713e9e3 */ notifyOffer | notifyCanceled
+	NotifyFollowerListingAdded = /* #34817 +ok d-10c7b86506874975aaac47efdfd19ee1 */ notifyFollower | notifyListing | notifyAdded
+	NotifyFollowerAuctionAdded = /* #33025 +ok d-8f15781aa8ed41feae05791dd28f5de8 */ notifyFollower | notifyAuction | notifyAdded
 
 	/*
 		notifyUpdated   = 0b_0000_0000_0000_0100
