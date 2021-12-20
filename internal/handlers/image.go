@@ -19,7 +19,7 @@ func ImageHandler(log logger.Logger, resolver func(path string) (string, error))
 				log.Errorf("Panic in ImageHandler handler; %s", r)
 
 				w.WriteHeader(500)
-				_, err := w.Write([]byte("Request handling failed, invalid image data received."))
+				_, err := w.Write([]byte("Request handling failed, check server log for details."))
 				if err != nil {
 					log.Errorf("could not write response; %s", err.Error())
 				}
@@ -74,7 +74,7 @@ func TokenImageResolver(path string) (string, error) {
 	}
 
 	tok, err := repository.R().Token(&tokenAddress, (*hexutil.Big)(tokenId))
-	if err != nil {
+	if tok == nil {
 		return "", fmt.Errorf("unable to get token in db; %s", err)
 	}
 	if tok.ImageURI != "" {
