@@ -94,7 +94,7 @@ func (sdb *SharedMongoDbBridge) Followers(user common.Address) ([]common.Address
 	list := make([]common.Address, 0)
 	for ld.Next(context.Background()) {
 		var row struct {
-			To common.Address `bson:"from"`
+			Follower common.Address `bson:"from"`
 		}
 
 		if err := ld.Decode(&row); err != nil {
@@ -102,7 +102,7 @@ func (sdb *SharedMongoDbBridge) Followers(user common.Address) ([]common.Address
 			continue
 		}
 
-		list = append(list, row.To)
+		list = append(list, row.Follower)
 	}
 
 	return list, nil
