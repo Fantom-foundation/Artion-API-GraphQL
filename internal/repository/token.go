@@ -221,7 +221,7 @@ func (p *Proxy) GetImage(imgUri string) (*types.Image, error) {
 		log.Errorf("image can not be loaded from %s; %s", imgUri, err.Error())
 		return nil, err
 	}
-	if nil == data {
+	if data == nil {
 		log.Errorf("image not found at %s", imgUri)
 		return nil, fmt.Errorf("image not found at given URI")
 	}
@@ -250,6 +250,9 @@ func (p *Proxy) GetImageThumbnail(imgUri string) (*types.Image, error) {
 		}
 		return &thumb, nil
 	})
+	if data == nil {
+		return nil, err
+	}
 	return data.(*types.Image), err
 }
 
