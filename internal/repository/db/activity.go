@@ -19,14 +19,14 @@ const (
 	coActivities = "activities"
 
 	// BSON attributes names used in the database collection.
-	fiActivityContract = "contract"
-	fiActivityTokenId = "token"
-	fiActivityFrom = "from"
-	fiActivityTo   = "to"
-	fiActivityType = "type"
-	fiActivityTime = "time"
+	fiActivityContract     = "contract"
+	fiActivityTokenId      = "token"
+	fiActivityFrom         = "from"
+	fiActivityTo           = "to"
+	fiActivityType         = "type"
+	fiActivityTime         = "time"
 	fiActivityUnifiedPrice = "uprice"
-	fiActivityIndex = "index"
+	fiActivityIndex        = "index"
 )
 
 func (db *MongoDbBridge) StoreActivity(activity *types.Activity) error {
@@ -55,10 +55,10 @@ func (db *MongoDbBridge) StoreActivity(activity *types.Activity) error {
 func (db *MongoDbBridge) ListActivities(contract *common.Address, tokenId *hexutil.Big, user *common.Address, actTypes []types.ActivityType, cursor types.Cursor, count int, backward bool) (out *types.ActivityList, err error) {
 	filter := bson.D{}
 	if contract != nil {
-		filter = append(filter, primitive.E{Key: fiActivityContract, Value: contract.String() })
+		filter = append(filter, primitive.E{Key: fiActivityContract, Value: contract.String()})
 	}
 	if tokenId != nil {
-		filter = append(filter, primitive.E{Key: fiActivityTokenId, Value: tokenId.String() })
+		filter = append(filter, primitive.E{Key: fiActivityTokenId, Value: tokenId.String()})
 	}
 	if user != nil {
 		filter = append(filter, bson.E{
@@ -88,7 +88,7 @@ func (db *MongoDbBridge) listActivities(filter bson.D, cursor types.Cursor, coun
 		return nil, err
 	}
 
-	ld, err := db.findPaginated(col, filter, cursor, count, sorting.ActivitySortingNone, ! backward)
+	ld, err := db.findPaginated(col, filter, cursor, count, sorting.ActivitySortingNone, !backward)
 	if err != nil {
 		log.Errorf("error loading activities list; %s", err.Error())
 		return nil, err
@@ -138,15 +138,15 @@ func (db *MongoDbBridge) TokenPriceHistory(contract *common.Address, tokenId *he
 				{Key: fiActivityContract, Value: contract.String()},
 				{Key: fiActivityTokenId, Value: tokenId.String()},
 				{Key: fiActivityType, Value: bson.D{{Key: "$in", Value: tradesActivityTypes}}},
-			} }},
+			}}},
 			{{Key: "$group", Value: bson.D{
 				{Key: "_id", Value: bson.D{
-					{Key: "y", Value: bson.D{{"$year", "$"+fiActivityTime}}},
-					{Key: "m", Value: bson.D{{"$month", "$"+fiActivityTime}}},
-					{Key: "d", Value: bson.D{{"$dayOfMonth", "$"+fiActivityTime}}},
+					{Key: "y", Value: bson.D{{"$year", "$" + fiActivityTime}}},
+					{Key: "m", Value: bson.D{{"$month", "$" + fiActivityTime}}},
+					{Key: "d", Value: bson.D{{"$dayOfMonth", "$" + fiActivityTime}}},
 				}},
 				{Key: fiActivityTime, Value: bson.D{{"$first", "$" + fiActivityTime}}},
-				{Key: fiActivityUnifiedPrice, Value: bson.D{{"$avg", "$" + fiActivityUnifiedPrice}}},
+				{Key: fiActivityUnifiedPrice, Value: bson.D{{"$max", "$" + fiActivityUnifiedPrice}}},
 			}}},
 		},
 		options.Aggregate(),
