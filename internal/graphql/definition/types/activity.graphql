@@ -1,21 +1,53 @@
-# ActivityType represents type of Activity.
+# ActivityType represents type of Activity on a token.
 enum ActivityType {
     UNKNOWN
+
+    # Listing created (offered for sale for given price by the token owner)
     LISTING_CREATED
+
+    # Listing updated (changed price)
     LISTING_UPDATED
+
+    # Listing cancelled
     LISTING_CANCELLED
+
+    # Token sold in a listing
     LISTING_SOLD
+
+    # Offer created by a buyer
     OFFER_CREATED
+
+    # Offer cancelled
     OFFER_CANCELLED
+
+    # Token sold by an offer
     OFFER_SOLD
+
+    # Auction created
     AUCTION_CREATED
+
+    # New bid in the auction
     AUCTION_BID
+
+    # Bid cancelled (only when the auction allows is)
     AUCTION_BID_WITHDRAW
+
+    # Auction cancelled
     AUCTION_CANCELLED
+
+    # Auction finished - token sold in the auction
     AUCTION_RESOLVED
+
+    # Auction updated (changed time range or reserve price)
     AUCTION_UPDATED
+
+    # Token transfer
     TRANSFER
+
+    # Token minted (created)
     MINT
+
+    # Token burned (redeemed)
     BURN
 }
 

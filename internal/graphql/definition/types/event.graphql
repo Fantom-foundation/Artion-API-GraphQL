@@ -1,10 +1,11 @@
-# Event represents something what should be reported to client.
+# Event represents something what should be reported to a subscribed client.
 type Event {
     type: EventType!
     auction: Auction
     offer: Offer
 }
 
+# EventType represent a type of event reported to a subscribed client.
 enum EventType {
     AUCTION_BID,
     AUCTION_BID_WITHDRAW,

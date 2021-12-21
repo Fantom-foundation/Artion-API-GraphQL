@@ -1,6 +1,12 @@
 # Platform fee and estimated gas for mint operation
+# Return type of estimateMintFeeGas operation.
 type MintFeeGas {
+    # The error message, if the minting has failed in the estimating simulation.
     error: String
+
+    # The platform fee for the token minting in native FTM tokens.
     platformFee: BigInt
+
+    # The gas estimated to be necessary for the minting.
     gas: BigInt
 }

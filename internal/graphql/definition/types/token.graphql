@@ -118,8 +118,12 @@ type Token {
     usdPrice: String!
 }
 
+# TokenPrice represents price of a token.
 type TokenPrice {
+    # Price in amount of smallest bits of an ERC-20 token
     amount: BigInt!
+
+    # The ERC-20 token used as the price currency.
     payToken: Address!
 
     # amount in USD used for filtering/sorting - for debugging only
@@ -142,6 +146,7 @@ type TokenConnection {
     pageInfo: PageInfo!
 }
 
+# TokenSorting defines order of a tokens list
 enum TokenSorting {
     # Recently Created / Oldest
     CREATED
@@ -161,6 +166,7 @@ enum TokenSorting {
     LIKES
 }
 
+# TokenFilter defines filter which can be used to filter a tokens list
 input TokenFilter {
     # search tokens by name
     search: String
@@ -189,9 +195,9 @@ input TokenFilter {
     # filter tokens created by user
     createdBy: Address
 
-    # minimal token price in USD
+    # minimal token price in USD to 6 decimals fixed point
     priceMin: BigInt
 
-    # maximal token price in USD
+    # maximal token price in USD to 6 decimals fixed point
     priceMax: BigInt
 }

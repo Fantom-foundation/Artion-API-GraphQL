@@ -1,0 +1,31 @@
+[Unit]
+Description=Fantom Opera Node
+After=network.target auditd.service
+
+[Service]
+Type=simple
+User=opera
+Group=opera
+WorkingDirectory=/var/opera
+ExecStart=/usr/local/bin/opera \
+	--datadir=/var/opera/mainnet \
+	--genesis=/var/opera/mainnet/genesis.g \
+	--config=/etc/opera/config.toml \
+	--port=5050 \
+	--cache=4096 \
+	--maxpeers=101 \
+	--verbosity=3 \
+        --ws \
+        --ws.addr=0.0.0.0 \
+        --ws.port=18546 \
+        --ws.origins="*" \
+        --ws.api=eth,web3,net,ftm,sfc
+LimitNOFILE=262144
+OOMScoreAdjust=-900
+Restart=on-failure
+RestartSec=10s
+TimeoutSec=120
+
+[Install]
+WantedBy=multi-user.target
+Alias=lachesis.service

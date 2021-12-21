@@ -1,6 +1,11 @@
 # TextSearchEdge is a single edge in a paginated text search output set.
 type TextSearchEdge {
+    # The collection, if the item is a collection.
     collection: Collection
+
+    # The token, if the item is a token.
     token: Token
+
+    # The user, if the item is an user.
     user: User
 }

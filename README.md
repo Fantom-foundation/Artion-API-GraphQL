@@ -1,5 +1,5 @@
 # Artion-API-GraphQL
-GraphQL API server for Fantom Artion v2 - backed for [Artion-Client-V2](https://github.com/Fantom-foundation/Artion-Client-V2).
+GraphQL API server for Fantom Artion v2 - backend for [Artion-Client-V2](https://github.com/Fantom-foundation/Artion-Client-V2).
 
 Build using make:
 ```bash
