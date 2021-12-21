@@ -175,23 +175,31 @@ func (d *Downloader) getFromHttp(uri string) (data []byte, mimetype string, err 
 		Timeout: 1 * time.Minute,
 	}
 
+	// call for image
 	resp, err := client.Get(uri)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("request failed; %s", err.Error())
 	}
+
+	// make sure to always close the body reader
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			fmt.Printf("error closing HTTP body; %s", err.Error())
+		}
+	}(resp.Body)
 
 	if resp.StatusCode != 200 {
 		return nil, "", fmt.Errorf("HTTP server returned %s", resp.Status)
 	}
 
-	reader := resp.Body
-	out, err := io.ReadAll(reader)
+	out, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("can not read response; %s", err.Error())
 	}
 
 	mimetype = resp.Header.Get("Content-Type")
-	return out, mimetype, reader.Close()
+	return out, mimetype, nil
 }
 
 // getFromDataUri obtains the file encoded in "data:" URI.
