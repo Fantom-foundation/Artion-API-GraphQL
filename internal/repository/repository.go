@@ -122,7 +122,7 @@ func newProxy() *Proxy {
 	// make Proxy instance
 	p := Proxy{
 		rpc:       rpc.New(),
-		uri:       uri.New(cfg),
+		uri:       uri.New(cfg, log),
 		pinner:    pinner.New(cfg),
 		db:        db.New(),
 		shared:    db.NewShared(),

@@ -4,6 +4,7 @@ package uri
 
 import (
 	"artion-api-graphql/internal/config"
+	"artion-api-graphql/internal/logger"
 	"artion-api-graphql/internal/types"
 	"encoding/base64"
 	"errors"
@@ -24,15 +25,19 @@ type Downloader struct {
 	skipHttpGateways bool
 	gateway          string
 	gatewayBearer    string
+
+	// log represents the logger to be used by the repository.
+	log logger.Logger
 }
 
 // New provides new Downloader instance.
-func New(cfg *config.Config) *Downloader {
+func New(cfg *config.Config, l logger.Logger) *Downloader {
 	d := &Downloader{
 		ipfsShell:        ipfsapi.NewShell(cfg.Ipfs.Url),
 		skipHttpGateways: cfg.Ipfs.SkipHttpGateways,
 		gateway:          cfg.Ipfs.Gateway,
 		gatewayBearer:    cfg.Ipfs.GatewayBearer,
+		log:              l,
 	}
 	d.ipfsShell.SetTimeout(ipfsRequestTimeout)
 	return d
@@ -185,7 +190,7 @@ func (d *Downloader) getFromHttp(uri string) (data []byte, mimetype string, err 
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-			fmt.Printf("error closing HTTP body; %s", err.Error())
+			d.log.Errorf("error closing HTTP body for %s; %s", uri, err.Error())
 		}
 	}(resp.Body)
 
