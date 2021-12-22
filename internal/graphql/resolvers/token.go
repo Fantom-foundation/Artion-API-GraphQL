@@ -151,6 +151,9 @@ func (t *Token) IsLiked(ctx context.Context) (bool, error) {
 }
 
 func (t *Token) IsLikedBy(args struct{ User *common.Address }) (bool, error) {
+	if args.User == nil {
+		return false, nil
+	}
 	return repository.R().IsTokenLiked(args.User, &t.Contract, (*big.Int)(&t.TokenId))
 }
 
