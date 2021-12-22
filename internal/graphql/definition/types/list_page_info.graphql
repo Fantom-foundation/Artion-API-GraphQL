@@ -1,4 +1,4 @@
-# ListPageInfo contains information about a sequential access list page.
+# PageInfo contains information about a sequential access list page.
 # Specified by https://relay.dev/graphql/connections.htm#sec-undefined.PageInfo
 type PageInfo {
     # startCursor is the cursor of the first edge of the edges list. null for empty list.

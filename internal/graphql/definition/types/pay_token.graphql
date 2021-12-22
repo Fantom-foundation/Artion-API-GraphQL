@@ -1,4 +1,4 @@
-# PayToken represents token supported for payments on the marketplace
+# PayToken represents ERC-20 token supported for payments on the marketplace
 type PayToken {
     # Address of the token contract
     contract: Address!
