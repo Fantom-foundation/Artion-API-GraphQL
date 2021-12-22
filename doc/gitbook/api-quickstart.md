@@ -19,7 +19,7 @@ https://artion-api-b.fantom.network/graphql
 The API allows only to read data aggragated from the chain. If you want to do any operation writing to the chain (create an auction/listing, bid etc.), you will need to sign and send the transaction directly to the Opera RPC, for example using Web3.js library and Metamask.
 {% endhint %}
 
-## First example - the auction status
+## Example 1: auction status
 
 To check status of auction running on token `2937` (`0xb79` in hexa) from collection `0x5dbc2a8b01b7e37dfd7850237a3330c9939d6457`, you can just send following GraphQL API query:
 
@@ -57,16 +57,15 @@ You will get result in format defined by the query:
 }
 ```
 
-**Try the example NOW in the integrated GraphiQL interface:**\
-****[**https://artion-api-a.fantom.network/graphi**](https://artion-api-a.fantom.network/graphi)****
-
 {% hint style="info" %}
-Fast tip: The GraphiQL interface allows to browse the API documentation - just click on the "Docs" button in the right top corner of GraphiQL interface.
+**Try the example NOW in the integrated GraphiQL interface:**\
+**[https://artion-api-a.fantom.network/graphi](https://artion-api-a.fantom.network/graphi)**
 
-When you click on the "History" button, you can browse history of your last queries.
+Tip: The GraphiQL interface allows to browse the API documentation - just click on the "Docs" button in the top right corner of the GraphiQL interface.
+Also, under the "History" button you can browse your previous queries.
 {% endhint %}
 
-## Second example - tokens listing
+## Example 2: tokens listing
 
 To browse list of tokens you can use `tokens()` function, which allows to filter, sort and paginate list of all tokens known to Artion.
 
@@ -170,7 +169,7 @@ fetch('https://artion-api-a.fantom.network/graphql', {
   body: JSON.stringify({
     query:`
       {
-          token(contract:\"0x5dbc2a8b01b7e37dfd7850237a3330c9939d6457\", tokenId:\"0xb79\") {
+          token(contract:"0x5dbc2a8b01b7e37dfd7850237a3330c9939d6457", tokenId:"0xb79") {
               name
               auction {
                   created
@@ -187,8 +186,8 @@ fetch('https://artion-api-a.fantom.network/graphql', {
 .then(response => response.json())
 .then(json => {
     console.log(json); // print the result into the console
-})
+});
 ```
 
-In the `json` variable you will get an object identical with the result above.
+In the `json` variable you will get a result object identical with the output from previous example.
 
