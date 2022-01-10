@@ -34,6 +34,9 @@ test: internal/graphql/schema/gen/schema.graphql
 internal/graphql/schema/gen/schema.graphql:
 	@bash tools/make_graphql_bundle.sh $@ internal/graphql/definition
 
+internal/repository/rpc/contracts/Artion.go: internal/repository/rpc/contracts/abi/Artion.json
+	abigen --type Artion --pkg contracts --abi $< --out $@
+
 internal/repository/rpc/contracts/FantomArtTradable.go: internal/repository/rpc/contracts/abi/FantomArtTradable.json
 	abigen --type FantomArtTradable --pkg contracts --abi $< --out $@
 

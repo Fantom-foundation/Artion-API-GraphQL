@@ -15,6 +15,14 @@
   "trx": "0xb42fa4068d22a85bae9130a2e9ee2b9f80ea20e3552278d3b55df016646e5720"
 }
 {
+  "_id": "0xf824717E5e7cefd7Aa78112Fb7e62dd9422488D3",
+  "name": "FantomMarketplaceV3",
+  "type": "market3",
+  "created": {"$date": {"$numberLong": "1641805208000"}},
+  "block": {"$numberLong":  "27543020"},
+  "trx": "0xd2087b9a06df4948d939649386ab5f8a1df5f5612aafe34e9ea9306989074426"
+}
+{
   "_id": "0x56aD389A02Ea9d63f13106cB0c161342f537a92e",
   "name": "FantomBundleMarketplaceV1",
   "type": "bundle_market",
@@ -45,6 +53,14 @@
   "created": {"$date": {"$numberLong": "1637592736000"}},
   "block": {"$numberLong":  "22809204"},
   "trx": "0x1266ea66e752ab0df1f227a36241248f4891bdac245ddde1eaab1084c1e22937"
+}
+{
+  "_id": "0x8F1E67b35400464d8Bf42284dEfB29b61efBa104",
+  "name": "FantomAuctionV3",
+  "type": "auction3",
+  "created": {"$date": {"$numberLong": "1641805287000"}},
+  "block": {"$numberLong":  "27543115"},
+  "trx": "0xbe9ba968c0259161e00159f80e5de774a083f36f12ee65989b70a3b7e9e67e3a"
 }
 {
   "_id": "0xcDA452807a531d2CeC178194e7007a6438ED06ef",

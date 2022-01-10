@@ -53,7 +53,7 @@ type Query {
     unlockableContent(contract: Address!, tokenId: BigInt!): String
 
     # Estimate platform fee and gas needed for token minting.
-    estimateMintFeeGas(user: Address!, contract: Address!, tokenUri: String!): MintFeeGas!
+    estimateMintFeeGas(user: Address!, contract: Address!, tokenUri: String!, royalty: Int!): MintFeeGas!
 
     # Check if the operator has ApprovedForAll permission to manipulate with tokens of given owner.
     isApprovedForAll(contract: Address!, owner: Address!, operator: Address!): Boolean!

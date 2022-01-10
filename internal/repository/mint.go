@@ -6,6 +6,6 @@ import (
 )
 
 // EstimateMintGas provides platform fee and gas estimation for new token minting
-func (p *Proxy) EstimateMintGas(from common.Address, contract common.Address, tokenUri string) (platformFee *big.Int, gas uint64, err error) {
-	return p.rpc.EstimateMintGas(from, contract, tokenUri)
+func (p *Proxy) EstimateMintGas(from common.Address, contract common.Address, tokenUri string, royalty uint16) (platformFee *big.Int, gas uint64, err error) {
+	return p.rpc.EstimateMintGas(from, contract, tokenUri, royalty)
 }

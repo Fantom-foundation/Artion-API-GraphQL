@@ -55,8 +55,7 @@ type Opera struct {
 	// contracts
 	auctionContracts           map[common.Address]IAuctionContract
 	marketplaceContracts       map[common.Address]IMarketplaceContract
-	defaultMarketplaceContract IMarketplaceContract // for token royalty or pay token price
-	defaultMarketplaceAddress  *common.Address
+	payTokenPriceContract      IMarketplaceContract // for token royalty or pay token price
 	tokenRegistryContract      *contracts.FantomTokenRegistry
 	rngFeedContract            *contracts.RandomNumberOracle
 
@@ -92,6 +91,14 @@ func (o *Opera) RegisterContract(ct string, addr *common.Address) (err error) {
 			log.Noticef("loaded V2 auction contract at %s", addr.String())
 		}
 		o.auctionContracts[*addr] = &ac
+
+	case "auction3":
+		var ac AuctionContractV2 // V3 use the same ABI as V2
+		ac.auctionV2Contract, err = contracts.NewFantomAuctionV2(*addr, o.ftm)
+		if err == nil {
+			log.Noticef("loaded V3 auction contract at %s", addr.String())
+		}
+		o.auctionContracts[*addr] = &ac
 		o.basicContracts.AuctionHall = *addr
 
 	case "market":
@@ -101,11 +108,18 @@ func (o *Opera) RegisterContract(ct string, addr *common.Address) (err error) {
 			log.Noticef("loaded %s contract at %s", ct, addr.String())
 		}
 		o.marketplaceContracts[*addr] = &mc
-		o.defaultMarketplaceContract = &mc
-		o.defaultMarketplaceAddress = addr
+		o.payTokenPriceContract = &mc
 
 	case "market2":
 		var mc MarketplaceContractV1 // V2 use the same ABI as V1
+		mc.marketplace, err = contracts.NewFantomMarketplace(*addr, o.ftm)
+		if err == nil {
+			log.Noticef("loaded %s contract at %s", ct, addr.String())
+		}
+		o.marketplaceContracts[*addr] = &mc
+
+	case "market3":
+		var mc MarketplaceContractV1 // V3 use the same ABI as V1
 		mc.marketplace, err = contracts.NewFantomMarketplace(*addr, o.ftm)
 		if err == nil {
 			log.Noticef("loaded %s contract at %s", ct, addr.String())

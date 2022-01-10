@@ -10,8 +10,8 @@ import (
 )
 
 // EstimateMintGas provides platform fee and gas estimation for new token minting
-func (o *Opera) EstimateMintGas(user common.Address, contract common.Address, tokenUri string) (platformFee *big.Int, gas uint64, err error) {
-	contr, err := contracts.NewFantomNFTTradable(contract, o.ftm)
+func (o *Opera) EstimateMintGas(user common.Address, contract common.Address, tokenUri string, royalty uint16) (platformFee *big.Int, gas uint64, err error) {
+	contr, err := contracts.NewArtion(contract, o.ftm)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -26,11 +26,13 @@ func (o *Opera) EstimateMintGas(user common.Address, contract common.Address, to
 	}
 
 	// construct minting transaction
-	abi, err := contracts.FantomNFTTradableMetaData.GetAbi()
+	abi, err := contracts.ArtionMetaData.GetAbi()
 	if err != nil {
 		return nil, 0, err
 	}
-	data, err := abi.Pack("mint", user, tokenUri)
+
+	// contract.mint(address _beneficiary, string _tokenUri, address _royaltyRecipient, uint256 _royaltyValue)
+	data, err := abi.Pack("mint", user, tokenUri, user, big.NewInt(int64(royalty)))
 	if err != nil {
 		return nil, 0, err
 	}
