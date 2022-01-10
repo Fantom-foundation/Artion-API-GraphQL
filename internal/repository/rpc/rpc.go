@@ -100,6 +100,7 @@ func (o *Opera) RegisterContract(ct string, addr *common.Address) (err error) {
 		}
 		o.auctionContracts[*addr] = &ac
 		o.basicContracts.AuctionHall = *addr
+		log.Warningf("setting basic auction to %s", ct, addr.String())
 
 	case "market":
 		var mc MarketplaceContractV1
@@ -126,6 +127,7 @@ func (o *Opera) RegisterContract(ct string, addr *common.Address) (err error) {
 		}
 		o.marketplaceContracts[*addr] = &mc
 		o.basicContracts.Marketplace = *addr
+		log.Warningf("setting basic marketplace to %s", ct, addr.String())
 
 	case "rng":
 		o.rngFeedContract, err = contracts.NewRandomNumberOracle(*addr, o.ftm)
