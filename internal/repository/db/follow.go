@@ -120,6 +120,10 @@ func (sdb *SharedMongoDbBridge) listFollows(filter bson.D, cursor types.Cursor, 
 		return nil, err
 	}
 
+	if count == 0 {
+		return &list, nil // interested in TotalCount only
+	}
+
 	ld, err := db.findPaginated(col, filter, cursor, count, sorting.FollowSortingNone, backward)
 	if err != nil {
 		log.Errorf("error loading follows list; %s", err.Error())

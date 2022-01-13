@@ -248,6 +248,10 @@ func (sdb *SharedMongoDbBridge) ListLegacyCollections(collectionFilter types.Col
 		return nil, err
 	}
 
+	if count == 0 {
+		return &list, nil // interested in TotalCount only
+	}
+
 	ld, err := db.findPaginated(col, filter, cursor, count, sorting.LegacyCollectionSortingName, backward)
 	if err != nil {
 		log.Errorf("error loading LegacyCollections list; %s", err.Error())

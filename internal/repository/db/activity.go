@@ -88,6 +88,10 @@ func (db *MongoDbBridge) listActivities(filter bson.D, cursor types.Cursor, coun
 		return nil, err
 	}
 
+	if count == 0 {
+		return &list, nil // interested in TotalCount only
+	}
+
 	ld, err := db.findPaginated(col, filter, cursor, count, sorting.ActivitySortingNone, !backward)
 	if err != nil {
 		log.Errorf("error loading activities list; %s", err.Error())

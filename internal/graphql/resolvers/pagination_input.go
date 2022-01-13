@@ -22,7 +22,7 @@ func (input *PaginationInput) ToRepositoryInput() (cursor types.Cursor, count in
 		return
 	}
 
-	if input.First != nil && *input.First > 0 && input.Last == nil && input.Before == nil {
+	if input.First != nil && *input.First >= 0 && input.Last == nil && input.Before == nil {
 		if input.After != nil {
 			cursor = *input.After
 		}
@@ -31,7 +31,7 @@ func (input *PaginationInput) ToRepositoryInput() (cursor types.Cursor, count in
 		return
 	}
 
-	if input.Last != nil && *input.Last > 0 && input.First == nil && input.After == nil {
+	if input.Last != nil && *input.Last >= 0 && input.First == nil && input.After == nil {
 		if input.Before != nil {
 			cursor = *input.Before
 		}

@@ -120,6 +120,10 @@ func (sdb *SharedMongoDbBridge) ListBannedNfts(cursor types.Cursor, count int, b
 		return nil, err
 	}
 
+	if count == 0 {
+		return &list, nil // interested in TotalCount only
+	}
+
 	ld, err := db.findPaginated(col, filter, cursor, count, sorting.BannedNftSortingUpdated, !backward)
 	if err != nil {
 		log.Errorf("error loading BannedNft list; %s", err.Error())

@@ -158,6 +158,10 @@ func (sdb *SharedMongoDbBridge) listUsers(filter bson.D, cursor types.Cursor, co
 		return nil, err
 	}
 
+	if count == 0 {
+		return &list, nil // interested in TotalCount only
+	}
+
 	ld, err := db.findPaginated(col, filter, cursor, count, sorting.UserSortingNone, backward)
 	if err != nil {
 		log.Errorf("error loading users list; %s", err.Error())

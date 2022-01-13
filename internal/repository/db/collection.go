@@ -68,6 +68,10 @@ func (db *MongoDbBridge) listCollections(filter bson.D, cursor types.Cursor, cou
 		return nil, err
 	}
 
+	if count == 0 {
+		return &list, nil // interested in TotalCount only
+	}
+
 	ld, err := db.findPaginated(col, filter, cursor, count, sorting.CollectionSortingNone, backward)
 	if err != nil {
 		log.Errorf("error loading Collections list; %s", err.Error())

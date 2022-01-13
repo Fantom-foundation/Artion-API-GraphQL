@@ -712,6 +712,10 @@ func (db *MongoDbBridge) ListTokens(
 		return nil, fmt.Errorf("listing tokens count failed; %s", err)
 	}
 
+	if count == 0 {
+		return &list, nil // interested in TotalCount only
+	}
+
 	ld, err := db.findPaginated(col, bsonFilter, cursor, count, sorting, backward != sortDesc)
 	if err != nil {
 		log.Errorf("listing tokens failed, filter: %+v; %s", bsonFilter, err.Error())
