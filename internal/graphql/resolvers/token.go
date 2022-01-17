@@ -331,6 +331,12 @@ func (rs *RootResolver) Tokens(args struct {
 		args.Filter.PriceMin = (*hexutil.Big)(big.NewInt(1))
 	}
 
+	// when filtering max 15.00 USD, include anything what is displayed as 15.00 (like 15.004)
+	if args.Filter.PriceMax != nil {
+		max := args.Filter.PriceMax.ToInt()
+		max.Add(max, big.NewInt(10000)) // add 0.01 USD
+	}
+
 	hasListing := args.Filter.HasListing != nil && *args.Filter.HasListing
 	hasAuction := args.Filter.HasAuction != nil && *args.Filter.HasAuction
 	hasBids := args.Filter.HasBids != nil && *args.Filter.HasBids
