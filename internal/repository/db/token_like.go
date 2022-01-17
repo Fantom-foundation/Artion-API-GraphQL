@@ -108,7 +108,7 @@ func (sdb *SharedMongoDbBridge) listTokenLikes(filter bson.D, cursor types.Curso
 		return &list, nil // interested in TotalCount only
 	}
 
-	ld, err := db.findPaginated(col, filter, cursor, count, sorting.TokenLikeSortingNone, backward)
+	ld, err := db.findPaginated(col, filter, cursor, count, sorting.TokenLikeSortingNone, !backward)
 	if err != nil {
 		log.Errorf("error loading token likes list; %s", err.Error())
 		return nil, err
