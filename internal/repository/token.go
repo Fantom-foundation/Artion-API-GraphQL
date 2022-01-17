@@ -50,8 +50,8 @@ func (p *Proxy) Token(contract *common.Address, tokenId *hexutil.Big) (*types.To
 
 // MustTokenName returns name of the given token, or it's ID if the name is not available.
 func (p *Proxy) MustTokenName(contract *common.Address, tokenID *hexutil.Big) string {
-	t, err := p.Token(contract, tokenID)
-	if err != nil {
+	t, _ := p.Token(contract, tokenID)
+	if t == nil {
 		return tokenID.String()
 	}
 	if t.Name == "" {

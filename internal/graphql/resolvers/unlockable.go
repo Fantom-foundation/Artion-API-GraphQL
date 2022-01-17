@@ -50,7 +50,7 @@ func (rs *RootResolver) SetUnlockableContent(ctx context.Context, args struct{
 		return false, fmt.Errorf("not authorized - not owner of the token")
 	}
 	token, err := repository.R().Token(&args.Contract, &args.TokenId)
-	if err != nil {
+	if token == nil {
 		return false, err
 	}
 	if ! bytes.Equal(token.CreatedBy.Bytes(), identity.Bytes()) {
