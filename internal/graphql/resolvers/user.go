@@ -214,7 +214,7 @@ func (user User) Offers(args struct{ PaginationInput }) (con *OfferConnection, e
 	if err != nil {
 		return nil, err
 	}
-	list, err := repository.R().ListOffers(nil, nil, nil, &user.Address, cursor, count, backward)
+	list, err := repository.R().ListOffers(nil, nil, nil, &user.Address, true, cursor, count, backward)
 	if err != nil {
 		return nil, err
 	}
@@ -226,7 +226,7 @@ func (user User) MyOffers(args struct{ PaginationInput }) (con *OfferConnection,
 	if err != nil {
 		return nil, err
 	}
-	list, err := repository.R().ListOffers(nil, nil, &user.Address, nil, cursor, count, backward)
+	list, err := repository.R().ListOffers(nil, nil, &user.Address, nil, true, cursor, count, backward)
 	if err != nil {
 		return nil, err
 	}

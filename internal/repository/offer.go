@@ -18,6 +18,6 @@ func (p *Proxy) StoreOffer(offer *types.Offer) error {
 	return p.db.StoreOffer(offer)
 }
 
-func (p *Proxy) ListOffers(nft *common.Address, tokenId *hexutil.Big, creator *common.Address, owner *common.Address, cursor types.Cursor, count int, backward bool) (out *types.OfferList, err error) {
-	return p.db.ListOffers(nft, tokenId, creator, owner, cursor, count, backward)
+func (p *Proxy) ListOffers(nft *common.Address, tokenId *hexutil.Big, creator *common.Address, owner *common.Address, activeOnly bool, cursor types.Cursor, count int, backward bool) (out *types.OfferList, err error) {
+	return p.db.ListOffers(nft, tokenId, creator, owner, activeOnly, cursor, count, backward)
 }

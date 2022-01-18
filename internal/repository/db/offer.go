@@ -195,7 +195,7 @@ func (db *MongoDbBridge) MaxOfferPrice(contract *common.Address, tokenID *big.In
 	return
 }
 
-func (db *MongoDbBridge) ListOffers(contract *common.Address, tokenId *hexutil.Big, creator *common.Address, owner *common.Address, cursor types.Cursor, count int, backward bool) (out *types.OfferList, err error) {
+func (db *MongoDbBridge) ListOffers(contract *common.Address, tokenId *hexutil.Big, creator *common.Address, owner *common.Address, activeOnly bool, cursor types.Cursor, count int, backward bool) (out *types.OfferList, err error) {
 	filter := bson.D{}
 	if contract != nil {
 		filter = append(filter, primitive.E{Key: fiOfferContract, Value: contract.String()})
@@ -208,6 +208,12 @@ func (db *MongoDbBridge) ListOffers(contract *common.Address, tokenId *hexutil.B
 	}
 	if owner != nil {
 		filter = append(filter, primitive.E{Key: fiOfferOwners, Value: bson.D{{Key: "$all", Value: primitive.A{owner.String()}}}})
+	}
+	if activeOnly {
+		filter = append(filter,
+			primitive.E{Key: fiOfferClosed, Value: bson.D{{Key: "$type", Value: 10}}}, // not closed yet
+			primitive.E{Key: fiOfferDeadline, Value: bson.D{{Key: "$gte", Value: time.Now()}}}, // before deadline
+			)
 	}
 	return db.listOffers(filter, cursor, count, backward)
 }
