@@ -57,6 +57,7 @@ type Opera struct {
 	marketplaceContracts       map[common.Address]IMarketplaceContract
 	payTokenPriceContract      IMarketplaceContract // for token royalty or pay token price
 	tokenRegistryContract      *contracts.FantomTokenRegistry
+	royaltyRegistryContract    *contracts.FantomRoyaltyRegistry
 	rngFeedContract            *contracts.RandomNumberOracle
 
 	basicContracts types.Contracts
@@ -137,6 +138,12 @@ func (o *Opera) RegisterContract(ct string, addr *common.Address) (err error) {
 
 	case "token_registry":
 		o.tokenRegistryContract, err = contracts.NewFantomTokenRegistry(*addr, o.ftm)
+		if err == nil {
+			log.Noticef("loaded %s contract at %s", ct, addr.String())
+		}
+
+	case "royalty_registry":
+		o.royaltyRegistryContract, err = contracts.NewFantomRoyaltyRegistry(*addr, o.ftm)
 		if err == nil {
 			log.Noticef("loaded %s contract at %s", ct, addr.String())
 		}

@@ -86,3 +86,11 @@
   "block": {"$numberLong":  "19756764"},
   "trx": "0x09e291be0e373692a72f3edc050f0cbae946d764d002ee5b656a334cda3d5b87"
 }
+{
+  "_id": "0x905fD568F43e261554F582817196c5de36331FE5",
+  "name": "RoyaltyRegistry",
+  "type": "royalty_registry",
+  "created": {"$date": {"$numberLong": "1641802076000"}},
+  "block": {"$numberLong":  "27539235"},
+  "trx": "0x7c09ab25ded60ce646622673ee78693dba6d1331d816e08b142ba549c3e0628b"
+}

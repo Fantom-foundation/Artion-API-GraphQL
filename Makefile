@@ -76,6 +76,9 @@ internal/repository/rpc/contracts/Erc721.go: internal/repository/rpc/contracts/a
 internal/repository/rpc/contracts/Erc1155.go: internal/repository/rpc/contracts/abi/Erc1155.json
 	abigen --type Erc1155 --pkg contracts --abi $< --out $@
 
+internal/repository/rpc/contracts/FantomRoyaltyRegistry.go: internal/repository/rpc/contracts/abi/FantomRoyaltyRegistry.json
+	abigen --type FantomRoyaltyRegistry --pkg contracts --abi $< --out $@
+
 db: db_observed db_status db_notifications
 
 db_observed: doc/db/observed.json
