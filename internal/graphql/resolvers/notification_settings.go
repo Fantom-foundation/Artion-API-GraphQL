@@ -15,14 +15,14 @@ func (rs *RootResolver) NotificationSettings(ctx context.Context) (*Notification
 		return nil, err
 	}
 	settings, err := repository.R().GetNotificationSettings(*user)
-	if err != nil {
+	if settings == nil {
 		return nil, err
 	} else {
-		return (*NotificationSettings)(settings), nil
+		return (*NotificationSettings)(settings), err
 	}
 }
 
-func (rs *RootResolver) UpdateNotificationSettings(ctx context.Context, args struct{
+func (rs *RootResolver) UpdateNotificationSettings(ctx context.Context, args struct {
 	Settings types.NotificationSettings
 }) (bool, error) {
 	user, err := auth.GetIdentityOrErr(ctx)
