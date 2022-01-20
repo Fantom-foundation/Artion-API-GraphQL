@@ -9,7 +9,7 @@ import (
 
 // IndexDefinitionTokens provides a list of indexes expected to exist on tokens' collection.
 func IndexDefinitionTokens() []mongo.IndexModel {
-	ix := make([]mongo.IndexModel, 3)
+	ix := make([]mongo.IndexModel, 14)
 
 	ixContractToken := "ix_contract_token"
 	ix[0] = mongo.IndexModel{Keys: bson.D{{Key: "contract", Value: 1}, {Key: "token", Value: 1}}, Options: &options.IndexOptions{Name: &ixContractToken}}
@@ -23,6 +23,41 @@ func IndexDefinitionTokens() []mongo.IndexModel {
 		{Key: "desc", Value: "text"},
 		{Key: "symbol", Value: "text"},
 	}, Options: &options.IndexOptions{Name: &ixFulltext}}
+
+	ixCreatedBy := "ix_created_by"
+	ix[3] = mongo.IndexModel{Keys: bson.D{{Key: "created_by", Value: 1}}, Options: &options.IndexOptions{Name: &ixCreatedBy}}
+
+	// fields used for sorting
+	ixCreated := "ix_created"
+	ix[4] = mongo.IndexModel{Keys: bson.D{{Key: "created", Value: 1}}, Options: &options.IndexOptions{Name: &ixCreated}}
+
+	ixLastList := "ix_last_list"
+	ix[5] = mongo.IndexModel{Keys: bson.D{{Key: "last_list", Value: 1}}, Options: &options.IndexOptions{Name: &ixLastList}}
+
+	ixLastTrade := "ix_last_trade"
+	ix[6] = mongo.IndexModel{Keys: bson.D{{Key: "last_trade", Value: 1}}, Options: &options.IndexOptions{Name: &ixLastTrade}}
+
+	ixAuctionUntil := "ix_auction_until"
+	ix[7] = mongo.IndexModel{Keys: bson.D{{Key: "auction_until", Value: 1}}, Options: &options.IndexOptions{Name: &ixAuctionUntil}}
+
+	ixPrice := "ix_price"
+	ix[8] = mongo.IndexModel{Keys: bson.D{{Key: "price", Value: 1}}, Options: &options.IndexOptions{Name: &ixPrice}}
+
+	ixListPrice := "ix_min_list_usd"
+	ix[9] = mongo.IndexModel{Keys: bson.D{{Key: "min_list.usd", Value: 1}}, Options: &options.IndexOptions{Name: &ixListPrice}}
+
+	ixOfferPrice := "ix_max_offer_usd"
+	ix[10] = mongo.IndexModel{Keys: bson.D{{Key: "max_offer.usd", Value: 1}}, Options: &options.IndexOptions{Name: &ixOfferPrice}}
+
+	ixLastTradeAmount := "ix_amo_trade_usd"
+	ix[11] = mongo.IndexModel{Keys: bson.D{{Key: "amo_trade.usd", Value: 1}}, Options: &options.IndexOptions{Name: &ixLastTradeAmount}}
+
+	ixViews := "ix_views"
+	ix[12] = mongo.IndexModel{Keys: bson.D{{Key: "views", Value: 1}}, Options: &options.IndexOptions{Name: &ixViews}}
+
+	ixLikes := "ix_likes"
+	ix[13] = mongo.IndexModel{Keys: bson.D{{Key: "likes", Value: 1}}, Options: &options.IndexOptions{Name: &ixLikes}}
+
 	return ix
 }
 
