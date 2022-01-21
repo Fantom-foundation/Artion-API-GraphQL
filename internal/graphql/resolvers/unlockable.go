@@ -11,6 +11,14 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
+func (t *Token) HasUnlockable() (bool, error) {
+	unlockable, err := repository.R().GetUnlockable(t.Contract, *t.TokenId.ToInt())
+	if unlockable == nil {
+		return false, err
+	}
+	return true, err
+}
+
 func (rs *RootResolver) UnlockableContent(ctx context.Context, args struct{
 	Contract common.Address
 	TokenId  hexutil.Big

@@ -93,6 +93,9 @@ type Token {
     # Is the token liked by given user?
     isLikedBy(user: Address): Boolean!
 
+    # Has the token an unlockable content?
+    hasUnlockable: Boolean!
+
     # Collection (token contract) of the token
     collection: Collection
 
