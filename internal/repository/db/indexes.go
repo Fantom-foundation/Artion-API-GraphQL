@@ -101,36 +101,63 @@ func (db *MongoDbBridge) updateIndexes(col *mongo.Collection, list []mongo.Index
 		default:
 		}
 
-		err = db.updateIndex(col, &view, ix, known)
+		err = db.createIndexIfNotExists(col, &view, ix, known)
 		if err != nil {
 			log.Errorf(err.Error())
 		}
 	}
+
+	// loop indexes and remove indexes missing in the prescriptions
+	for _, spec := range known {
+		err = db.removeIndexIfShouldNotExists(col, &view, spec, list)
+		if err != nil {
+			log.Errorf(err.Error())
+		}
+	}
+
 	return nil
 }
 
-// updateIndex checks specific index model and creates the index on the DB collection if needed.
-func (db *MongoDbBridge) updateIndex(col *mongo.Collection, view *mongo.IndexView, ix mongo.IndexModel, known []*mongo.IndexSpecification) error {
+// createIndexIfNotExists checks specific index model and creates the index on the DB collection if needed.
+func (db *MongoDbBridge) createIndexIfNotExists(col *mongo.Collection, view *mongo.IndexView, ix mongo.IndexModel, known []*mongo.IndexSpecification) error {
 	// throw if index is not explicitly named
 	if ix.Options.Name == nil {
 		return fmt.Errorf("index name not defined on %s", col.Name())
 	}
 
 	// do we know the index?
-	var ok = false
 	for _, spec := range known {
 		if spec.Name == *ix.Options.Name {
-			ok = true
-			break
+			return nil
 		}
 	}
 
-	if !ok {
-		ina, err := view.CreateOne(context.Background(), ix)
-		if err != nil {
-			return fmt.Errorf("failed to create index %s on %s", *ix.Options.Name, col.Name())
-		}
-		log.Noticef("created index %s on %s", ina, col.Name())
+	createdName, err := view.CreateOne(context.Background(), ix)
+	if err != nil {
+		return fmt.Errorf("failed to create index %s on %s", *ix.Options.Name, col.Name())
 	}
+	log.Noticef("created index %s on %s", createdName, col.Name())
+	return nil
+}
+
+// removeIndexIfShouldNotExists checks specific index model and creates the index on the DB collection if needed.
+func (db *MongoDbBridge) removeIndexIfShouldNotExists(col *mongo.Collection, view *mongo.IndexView, spec *mongo.IndexSpecification, list []mongo.IndexModel) error {
+	// skip for _id_ index
+	if spec.Name == "_id_" {
+		return nil
+	}
+
+	// do we know the index?
+	for _, ix := range list {
+		if spec.Name == *ix.Options.Name {
+			return nil
+		}
+	}
+
+	_, err := view.DropOne(context.Background(), spec.Name)
+	if err != nil {
+		return fmt.Errorf("failed to drop index %s on %s", spec.Name, col.Name())
+	}
+	log.Noticef("dropped index %s on %s", spec.Name, col.Name())
 	return nil
 }
