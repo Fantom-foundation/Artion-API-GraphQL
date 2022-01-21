@@ -21,7 +21,7 @@ func (db *MongoDbBridge) getTotalCount(col *mongo.Collection, filter bson.D) (in
 	if err != nil {
 		log.Errorf("can not get total count; filter: %+v, %s", filter, err)
 	}
-	if duration > 500 * time.Millisecond {
+	if duration > 100 * time.Millisecond {
 		log.Infof("SlowMongo TotalCount dur=%s col=%s filter=%s", duration, col.Name(), filter)
 	}
 	return totalCount, err
@@ -86,7 +86,7 @@ func (db *MongoDbBridge) findPaginated(col *mongo.Collection, filter bson.D, cur
 	if err != nil {
 		log.Errorf("error loading list; %s", err.Error())
 	}
-	if duration > 500 * time.Millisecond {
+	if duration > 100 * time.Millisecond {
 		log.Infof("SlowMongo Find dur=%s col=%s filter=%s cursor=%s count=%s", duration, col.Name(), filter, cursor, count)
 	}
 	return mc, err
