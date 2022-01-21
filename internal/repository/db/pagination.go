@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"time"
 )
 
 const fieldId = "_id"
@@ -14,9 +15,14 @@ const fieldId = "_id"
 // getTotalCount obtains count of documents in MongoDB collection corresponding the filter.
 func (db *MongoDbBridge) getTotalCount(col *mongo.Collection, filter bson.D) (int64, error) {
 	ctx := context.Background()
+	start := time.Now()
 	totalCount, err := col.CountDocuments(ctx, filter)
+	duration := time.Now().Sub(start)
 	if err != nil {
 		log.Errorf("can not get total count; filter: %+v, %s", filter, err)
+	}
+	if duration > 500 * time.Millisecond {
+		log.Infof("SlowMongo TotalCount dur=%s col=%s filter=%s", duration, col.Name(), filter)
 	}
 	return totalCount, err
 }
@@ -74,9 +80,14 @@ func (db *MongoDbBridge) findPaginated(col *mongo.Collection, filter bson.D, cur
 	}
 	opt.SetLimit(int64(count + 1))
 
+	start := time.Now()
 	mc, err = col.Find(ctx, filter, opt)
+	duration := time.Now().Sub(start)
 	if err != nil {
 		log.Errorf("error loading list; %s", err.Error())
+	}
+	if duration > 500 * time.Millisecond {
+		log.Infof("SlowMongo Find dur=%s col=%s filter=%s cursor=%s count=%s", duration, col.Name(), filter, cursor, count)
 	}
 	return mc, err
 }
