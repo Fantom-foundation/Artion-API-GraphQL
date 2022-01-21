@@ -81,11 +81,17 @@ type Token {
     # Price of the last trade (finished auction/listing/offer)
     lastTradePrice: TokenPrice
 
-    # How much times was the token viewed.
+    # How much times was the token viewed. (cached value)
     views: BigInt!
 
-    # How much users likes this token.
+    # How much users likes this token. (cached value)
     likes: BigInt!
+
+    # How much times was the token viewed. (from shared db)
+    exactViews: BigInt!
+
+    # How much users likes this token. (from shared db)
+    exactLikes: BigInt!
 
     # Is the token liked by logged user?
     isLiked: Boolean!

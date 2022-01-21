@@ -140,6 +140,10 @@ func (t *Token) ImageThumb() *string {
 }
 
 func (t *Token) Likes() (hexutil.Big, error) {
+	return *(*hexutil.Big)(big.NewInt((*types.Token)(t).CachedLikes)), nil
+}
+
+func (t *Token) ExactLikes() (hexutil.Big, error) {
 	count, err := repository.R().GetTokenLikesCount(&t.Contract, (*big.Int)(&t.TokenId))
 	if err != nil {
 		return hexutil.Big{}, err
@@ -163,6 +167,10 @@ func (t *Token) IsLikedBy(args struct{ User *common.Address }) (bool, error) {
 }
 
 func (t *Token) Views() (hexutil.Big, error) {
+	return *(*hexutil.Big)(big.NewInt((*types.Token)(t).CachedViews)), nil
+}
+
+func (t *Token) ExactViews() (hexutil.Big, error) {
 	count, err := repository.R().GetTokenViews(t.Contract, big.Int(t.TokenId))
 	if err != nil {
 		return hexutil.Big{}, err
