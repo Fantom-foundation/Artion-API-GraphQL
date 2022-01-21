@@ -5,9 +5,6 @@ type TokenList struct {
 	// List keeps the actual Collection.
 	Collection []*Token
 
-	// TotalCount indicates total number of results.
-	TotalCount int64
-
 	// HasPrev indicates there are some results before this results page.
 	HasPrev bool
 

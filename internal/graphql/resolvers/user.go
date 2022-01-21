@@ -161,7 +161,7 @@ func (user User) CreatedTokens(args struct {
 	if err != nil {
 		return nil, err
 	}
-	return NewTokenConnection(list, sorting.TokenSortingCreated)
+	return NewTokenConnection(list, sorting.TokenSortingCreated, &filter)
 }
 
 func (user User) Followers(args struct{ PaginationInput }) (con *FollowConnection, err error) {

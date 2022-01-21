@@ -192,9 +192,12 @@ func (p *Proxy) TokenMarkCollectionBanned(contract *common.Address, banned bool)
 }
 
 // ListTokens loads a list of tokens from the local database.
-// A callback for legacy extension is provided to the loader.
 func (p *Proxy) ListTokens(filter *types.TokenFilter, sorting sorting.TokenSorting, sortDesc bool, cursor types.Cursor, count int, backward bool) (*types.TokenList, error) {
 	return p.db.ListTokens(filter, sorting, sortDesc, cursor, count, backward)
+}
+
+func (p *Proxy) TokensCount(filter *types.TokenFilter) (count int64, err error) {
+	return p.db.TokensCount(filter)
 }
 
 func (p *Proxy) GetTokenJsonMetadata(uri string) (*types.JsonMetadata, error) {

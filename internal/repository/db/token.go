@@ -691,6 +691,17 @@ func (db *MongoDbBridge) TokenLikesViewsRefreshSet(setSize int64) ([]*types.Toke
 	return list[:i], nil
 }
 
+func (db *MongoDbBridge) TokensCount(filter *types.TokenFilter) (count int64, err error) {
+	col := db.client.Database(db.dbName).Collection(coTokens)
+	bsonFilter := tokenFilterToBson(filter)
+	count, err = db.getTotalCount(col, bsonFilter)
+	if err != nil {
+		log.Errorf("tokens count failed, filter: %+v; %s", bsonFilter, err)
+		return 0, fmt.Errorf("tokens count failed; %s", err)
+	}
+	return count, err
+}
+
 func (db *MongoDbBridge) ListTokens(
 	filter *types.TokenFilter,
 	sorting sorting.TokenSorting,
@@ -705,12 +716,6 @@ func (db *MongoDbBridge) ListTokens(
 
 	bsonFilter := tokenFilterToBson(filter)
 	log.Debugf("Filter: %+v", bsonFilter)
-
-	list.TotalCount, err = db.getTotalCount(col, bsonFilter)
-	if err != nil {
-		log.Errorf("listing tokens count failed, filter: %+v; %s", bsonFilter, err)
-		return nil, fmt.Errorf("listing tokens count failed; %s", err)
-	}
 
 	if count == 0 {
 		return &list, nil // interested in TotalCount only

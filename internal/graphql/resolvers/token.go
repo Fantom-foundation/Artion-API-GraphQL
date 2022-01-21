@@ -27,8 +27,8 @@ type TokenEdge struct {
 // TokenConnection represents scrollable tokens list connector.
 type TokenConnection struct {
 	Edges      []TokenEdge
-	TotalCount hexutil.Big
 	PageInfo   PageInfo
+	filter     *types.TokenFilter
 }
 
 // NewToken creates a new instance of the resolvable Token.
@@ -41,11 +41,11 @@ func NewToken(contract *common.Address, tokenID *hexutil.Big) (*Token, error) {
 }
 
 // NewTokenConnection creates new resolver of scrollable token list connector.
-func NewTokenConnection(list *types.TokenList, sorting sorting.TokenSorting) (con *TokenConnection, err error) {
+func NewTokenConnection(list *types.TokenList, sorting sorting.TokenSorting, filter *types.TokenFilter) (con *TokenConnection, err error) {
 	con = new(TokenConnection)
 
-	con.TotalCount = (hexutil.Big)(*big.NewInt(list.TotalCount))
 	con.Edges = make([]TokenEdge, len(list.Collection))
+	con.filter = filter
 
 	for i := 0; i < len(list.Collection); i++ {
 		tok, err := NewToken(&list.Collection[i].Contract, &list.Collection[i].TokenId)
@@ -77,6 +77,11 @@ func NewTokenConnection(list *types.TokenList, sorting sorting.TokenSorting) (co
 		con.PageInfo.EndCursor = &endCur
 	}
 	return con, err
+}
+
+func (t *TokenConnection) TotalCount() (hexutil.Big, error) {
+	count, err := repository.R().TokensCount(t.filter)
+	return (hexutil.Big)(*big.NewInt(count)), err
 }
 
 // Image resolves URI of the token image.
@@ -370,7 +375,7 @@ func (rs *RootResolver) Tokens(args struct {
 	if err != nil {
 		return nil, err
 	}
-	return NewTokenConnection(list, srt)
+	return NewTokenConnection(list, srt, args.Filter)
 }
 
 // IncrementTokenViews increments amount of views of the token.

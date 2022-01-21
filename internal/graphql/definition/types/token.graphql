@@ -139,7 +139,7 @@ type TokenConnection {
     # Edges contains provided edges of the sequential list.
     edges: [TokenEdge!]!
 
-    # TotalCount is the total amount of items in the list.
+    # TotalCount is the total amount of items in the list - SLOW! query only when needed!
     totalCount: BigInt!
 
     # PageInfo is an information about the current page of the list.
