@@ -119,7 +119,7 @@ func (mwt *nftMetadataWorkerThread) update(tok *types.Token) {
 	log.Debugf("loading metadata for %s/%s", tok.Contract.String(), tok.TokenId.String())
 	md, err := repo.GetTokenJsonMetadata(tok.Uri)
 	if err != nil {
-		log.Errorf("NFT metadata [%s] failed on %s/%s; %s", tok.Uri, tok.Contract.String(), tok.TokenId.String(), err.Error())
+		log.Warningf("NFT metadata [%s] failed on %s/%s; %s", tok.Uri, tok.Contract.String(), tok.TokenId.String(), err.Error())
 		mwt.tryLegacyUpdate(tok)
 
 		handleTokenMetaUpdateFailure(tok)
@@ -130,7 +130,7 @@ func (mwt *nftMetadataWorkerThread) update(tok *types.Token) {
 	if md.Image != nil && *md.Image != tok.ImageURI {
 		img, err := repo.GetImage(*md.Image)
 		if err != nil {
-			log.Errorf("NFT image [%s] failed on %s/%s; %s", *md.Image, tok.Contract.String(), tok.TokenId.String(), err.Error())
+			log.Warningf("NFT image [%s] failed on %s/%s; %s", *md.Image, tok.Contract.String(), tok.TokenId.String(), err.Error())
 			mwt.tryLegacyUpdate(tok)
 
 			handleTokenMetaUpdateFailure(tok)

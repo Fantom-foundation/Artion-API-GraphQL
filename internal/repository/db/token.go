@@ -874,7 +874,7 @@ func (sdb *SharedMongoDbBridge) ExtendLegacyToken(token *types.Token) (*types.To
 	})
 	if result.Err() != nil {
 		if result.Err() == mongo.ErrNoDocuments {
-			log.Errorf("token %s / %s not found", token.Contract.String(), token.TokenId.String())
+			log.Debugf("token %s / %s not found in legacy db", token.Contract.String(), token.TokenId.String())
 			return token, nil
 		}
 		return nil, result.Err()

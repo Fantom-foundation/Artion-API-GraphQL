@@ -282,7 +282,7 @@ func (rs *RootResolver) IsLoggedModerator(ctx context.Context) (bool, error) {
 func (rs *RootResolver) UpdateUser(ctx context.Context, args struct {
 	Username *string
 	Bio      *string
-	Email    string
+	Email    *string
 }) (bool, error) {
 	address, err := auth.GetIdentityOrErr(ctx)
 	if err != nil {
@@ -292,7 +292,7 @@ func (rs *RootResolver) UpdateUser(ctx context.Context, args struct {
 		Address:      *address,
 		Username:     args.Username,
 		Bio:          args.Bio,
-		EmailAddress: &args.Email,
+		EmailAddress: args.Email,
 	}
 	err = repository.R().StoreUser(&user)
 	return err == nil, err

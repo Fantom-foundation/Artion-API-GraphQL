@@ -83,7 +83,7 @@ type Mutation {
     login(user: Address!, challenge: String!, signature: String!): String!
 
     # Update user profile of logged user
-    updateUser(username: String, bio: String, email: String!): Boolean!
+    updateUser(username: String, bio: String, email: String): Boolean!
 
     # Update notification settings of logged user
     updateNotificationSettings(settings: InputNotificationSettings!): Boolean!

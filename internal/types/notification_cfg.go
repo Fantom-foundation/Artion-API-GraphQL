@@ -93,6 +93,10 @@ func (ns *NotificationSettings) Marshal() (result []byte) {
 
 // Unmarshal decodes slice of bytes set into the structure.
 func (ns *NotificationSettings) Unmarshal(data []byte) error {
+	if len(data) == 0 {
+		*ns = NotificationSettings{} // user have not configured notifications yet
+		return nil
+	}
 	if len(data) < 8 {
 		return fmt.Errorf("not enough data provided")
 	}
