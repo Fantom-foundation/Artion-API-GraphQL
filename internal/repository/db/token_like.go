@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"math/big"
 	"strings"
 )
@@ -80,10 +81,13 @@ func (sdb *SharedMongoDbBridge) GetTokenLikesCount(contract *common.Address, tok
 // IsTokenLiked get like status of the token for given user
 func (sdb *SharedMongoDbBridge) IsTokenLiked(user *common.Address, contract *common.Address, tokenId *big.Int) (bool, error) {
 	col := sdb.client.Database(sdb.dbName).Collection(coTokenLikes)
+	limit := int64(1)
 	count, err := col.CountDocuments(context.Background(), bson.D{
 		{Key: fiTokenLikeUser, Value: strings.ToLower(user.String())},
 		{Key: fiTokenLikeContract, Value: strings.ToLower(contract.String()) },
 		{Key: fiTokenLikeToken, Value: int32(tokenId.Int64()) },
+	}, &options.CountOptions{
+		Limit: &limit,
 	})
 	return count != 0, err
 }
