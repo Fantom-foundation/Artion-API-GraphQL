@@ -40,7 +40,11 @@ func (p *Proxy) StoreCollection(nft *types.Collection) error {
 }
 
 func (p *Proxy) GetCollection(address common.Address) (*types.Collection, error) {
-	return p.db.GetCollection(address)
+	key := "Col-" + address.String()
+	user, err, _ := p.callGroup.Do(key, func() (interface{}, error) {
+		return p.db.GetCollection(address)
+	})
+	return user.(*types.Collection), err
 }
 
 func (p *Proxy) ListCollections(cursor types.Cursor, count int, backward bool) (*types.CollectionList, error) {
