@@ -10,7 +10,7 @@ import (
 func (p *Proxy) GetLegacyCollection(address common.Address) (*types.LegacyCollection, error) {
 	key := "LCol-" + address.String()
 	user, err, _ := p.callGroup.Do(key, func() (interface{}, error) {
-		return p.shared.GetLegacyCollection(address)
+		return p.cache.GetLegacyCollection(address, p.shared.GetLegacyCollection)
 	})
 	return user.(*types.LegacyCollection), err
 }
@@ -41,20 +41,28 @@ func (p *Proxy) MustCollectionName(adr *common.Address) string {
 	return c.Name
 }
 
-func (p *Proxy) ApproveCollection(address common.Address) error {
-	return p.shared.ApproveCollection(address)
+func (p *Proxy) ApproveCollection(address common.Address) (err error) {
+	err = p.shared.ApproveCollection(address)
+	p.cache.FlushLegacyCollection(address)
+	return err
 }
 
-func (p *Proxy) DeclineCollection(address common.Address) error {
-	return p.shared.DeclineCollection(address)
+func (p *Proxy) DeclineCollection(address common.Address) (err error) {
+	err = p.shared.DeclineCollection(address)
+	p.cache.FlushLegacyCollection(address)
+	return err
 }
 
-func (p *Proxy) BanCollection(address common.Address) error {
-	return p.shared.BanCollection(address)
+func (p *Proxy) BanCollection(address common.Address) (err error) {
+	err = p.shared.BanCollection(address)
+	p.cache.FlushLegacyCollection(address)
+	return err
 }
 
-func (p *Proxy) UnbanCollection(address common.Address) error {
-	return p.shared.UnbanCollection(address)
+func (p *Proxy) UnbanCollection(address common.Address) (err error) {
+	err = p.shared.UnbanCollection(address)
+	p.cache.FlushLegacyCollection(address)
+	return err
 }
 
 func (p *Proxy) ListCollectionsWithAppropriateUpdate(after time.Time, maxAmount int64) (out []*types.LegacyCollection, err error) {
