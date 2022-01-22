@@ -46,7 +46,7 @@ func (sdb *SharedMongoDbBridge) GetLegacyCollection(address common.Address) (col
 	col := sdb.client.Database(sdb.dbName).Collection(coLegacyCollection)
 	ctx := context.Background()
 	filter := bson.D{
-		{ Key: fiLegacyCollectionAddress, Value: bson.D{{Key: "$eq", Value: strings.ToLower(address.String()) }} },
+		{ Key: fiLegacyCollectionAddress, Value: strings.ToLower(address.String()) },
 	}
 	result := col.FindOne(ctx, filter)
 
