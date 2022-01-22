@@ -8,7 +8,11 @@ import (
 )
 
 func (p *Proxy) GetLegacyCollection(address common.Address) (*types.LegacyCollection, error) {
-	return p.shared.GetLegacyCollection(address)
+	key := "LCol-" + address.String()
+	user, err, _ := p.callGroup.Do(key, func() (interface{}, error) {
+		return p.shared.GetLegacyCollection(address)
+	})
+	return user.(*types.LegacyCollection), err
 }
 
 func (p *Proxy) ListLegacyCollections(collectionFilter types.CollectionFilter, cursor types.Cursor, count int, backward bool) (out *types.LegacyCollectionList, err error) {
