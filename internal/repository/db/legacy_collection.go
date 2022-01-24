@@ -229,7 +229,7 @@ func (sdb *SharedMongoDbBridge) ListLegacyCollections(collectionFilter types.Col
 	} else {
 		filter = append(filter, bson.E{Key: fiLegacyCollectionIsAppropriate, Value: true})
 	}
-	if collectionFilter.Search != nil {
+	if collectionFilter.Search != nil && *collectionFilter.Search != "" {
 		filter = append(filter, bson.E{Key: fiLegacyCollectionName, Value: primitive.Regex{
 			Pattern: *collectionFilter.Search,
 			Options: "i",

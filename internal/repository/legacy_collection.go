@@ -8,7 +8,7 @@ import (
 )
 
 func (p *Proxy) GetLegacyCollection(address common.Address) (*types.LegacyCollection, error) {
-	key := "LCol-" + address.String()
+	key := "lcol_-" + address.String()
 	user, err, _ := p.callGroup.Do(key, func() (interface{}, error) {
 		return p.cache.GetLegacyCollection(address, p.shared.GetLegacyCollection)
 	})
@@ -16,7 +16,17 @@ func (p *Proxy) GetLegacyCollection(address common.Address) (*types.LegacyCollec
 }
 
 func (p *Proxy) ListLegacyCollections(collectionFilter types.CollectionFilter, cursor types.Cursor, count int, backward bool) (out *types.LegacyCollectionList, err error) {
-	return p.shared.ListLegacyCollections(collectionFilter, cursor, count, backward)
+	if collectionFilter.IsUsed() || cursor != "" || backward {
+		return p.shared.ListLegacyCollections(collectionFilter, cursor, count, backward)
+	}
+
+	// cache result for the default (mostly used) params
+	list, err, _ := p.callGroup.Do("lcols", func() (interface{}, error) {
+		return p.cache.GetLegacyCollectionList(func() (*types.LegacyCollectionList, error) {
+			return p.shared.ListLegacyCollections(types.CollectionFilter{}, "", 5000, false)
+		})
+	})
+	return list.(*types.LegacyCollectionList), err
 }
 
 func (p *Proxy) UploadCollectionApplication(app types.CollectionApplication, image types.Image, owner common.Address) (err error) {
@@ -43,25 +53,25 @@ func (p *Proxy) MustCollectionName(adr *common.Address) string {
 
 func (p *Proxy) ApproveCollection(address common.Address) (err error) {
 	err = p.shared.ApproveCollection(address)
-	p.cache.FlushLegacyCollection(address)
+	p.cache.InvalidateLegacyCollection(address)
 	return err
 }
 
 func (p *Proxy) DeclineCollection(address common.Address) (err error) {
 	err = p.shared.DeclineCollection(address)
-	p.cache.FlushLegacyCollection(address)
+	p.cache.InvalidateLegacyCollection(address)
 	return err
 }
 
 func (p *Proxy) BanCollection(address common.Address) (err error) {
 	err = p.shared.BanCollection(address)
-	p.cache.FlushLegacyCollection(address)
+	p.cache.InvalidateLegacyCollection(address)
 	return err
 }
 
 func (p *Proxy) UnbanCollection(address common.Address) (err error) {
 	err = p.shared.UnbanCollection(address)
-	p.cache.FlushLegacyCollection(address)
+	p.cache.InvalidateLegacyCollection(address)
 	return err
 }
 

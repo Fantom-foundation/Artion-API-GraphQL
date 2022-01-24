@@ -12,3 +12,9 @@ type CollectionFilter struct {
 	Banned bool
 }
 
+func (cf CollectionFilter) IsUsed() bool {
+	return (cf.Search != nil && *cf.Search != "") ||
+		cf.MintableBy != nil ||
+		cf.InReview ||
+		cf.Banned
+}
