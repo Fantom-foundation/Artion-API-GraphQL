@@ -26,7 +26,15 @@ func (p *Proxy) ListLegacyCollections(collectionFilter types.CollectionFilter, c
 			return p.shared.ListLegacyCollections(types.CollectionFilter{}, "", 5000, false)
 		})
 	})
-	return list.(*types.LegacyCollectionList), err
+
+	colList := list.(*types.LegacyCollectionList)
+	if colList != nil && len(colList.Collection) > count {
+		newColList := *colList // clone callGroup output before modification
+		newColList.Collection = newColList.Collection[:count]
+		newColList.HasNext = true
+		return &newColList, err
+	}
+	return colList, err
 }
 
 func (p *Proxy) UploadCollectionApplication(app types.CollectionApplication, image types.Image, owner common.Address) (err error) {
