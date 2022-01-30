@@ -72,6 +72,9 @@ type AuctionProps {
     # Can seller cancel auction when topBid is more than reserve price?
     canCancelSuccessful: Boolean!
 
+    # Can bidder withdraw the bid 2 months (5184000 seconds) after the auction START?
+    withdraw2MonthsAfterStart: Boolean!
+
     # Has the contract "resultFailedAuction" method?
     hasResultFailed: Boolean!
 }
