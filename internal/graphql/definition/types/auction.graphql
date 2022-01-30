@@ -61,6 +61,8 @@ type Auction {
     isActive: Boolean!
 
     # Since when can be a bid withdrawn? (null if already resolved or no bid placed)
+    # If the auction support resultFailedAuction() and the current bid is less than reserve price,
+    # this will be the time since when can be resultFailedAuction() called instead.
     withdrawSince: Time
 }
 

@@ -48,9 +48,13 @@ func (au *Auction) WithdrawSince() (*types.Time, error) {
 	if err != nil {
 		return nil, err
 	}
-	since := time.Time(au.EndTime).Add(time.Second * 43200) // 12 hours
+	since := time.Time(au.EndTime).Add(time.Second * 43200) // 12 hours after end
+	if props.HasResultFailed && !au.ReservePriceExceeded() {
+		// can be withdrawn immediately after end when bid is less than reserve
+		since = time.Time(au.EndTime)
+	}
 	if props.Withdraw2MonthsAfterStart {
-		sinceStart := time.Time(au.StartTime).Add(time.Second * 5184000) // 2 months
+		sinceStart := time.Time(au.StartTime).Add(time.Second * 5184000) // 2 months after start
 		if since.After(sinceStart) {
 			since = sinceStart
 		}
