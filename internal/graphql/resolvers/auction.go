@@ -7,6 +7,7 @@ import (
 	"context"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"time"
 )
 
 type Auction types.Auction
@@ -36,6 +37,26 @@ func (au *Auction) ReservePriceExceeded() bool {
 		return false
 	}
 	return au.ReservePrice.ToInt().Cmp(au.LastBid.ToInt()) <= 0
+}
+
+// WithdrawSince tells since when can the bidder withdraw the bid
+func (au *Auction) WithdrawSince() (*types.Time, error) {
+	if au.LastBid == nil || au.Resolved != nil {
+		return nil, nil
+	}
+	props, err := repository.R().GetAuctionProps(au.AuctionHall)
+	if err != nil {
+		return nil, err
+	}
+	since := time.Time(au.EndTime).Add(time.Second * 43200) // 12 hours
+	if props.Withdraw2MonthsAfterStart {
+		sinceStart := time.Time(au.StartTime).Add(time.Second * 5184000) // 2 months
+		if since.After(sinceStart) {
+			since = sinceStart
+		}
+	}
+	sinceTime := types.Time(since)
+	return &sinceTime, nil
 }
 
 // WatchAuction creates a client subscription for auction events.

@@ -59,6 +59,9 @@ type Auction {
 
     # Is the auction creator owner of the token yet?
     isActive: Boolean!
+
+    # Since when can be a bid withdrawn? (null if already resolved or no bid placed)
+    withdrawSince: Time
 }
 
 # Properties of auctions running on given auction contract
