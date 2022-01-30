@@ -39,3 +39,12 @@ func (o *Opera) AuctionGetMinBid(au *types.Auction) (*big.Int, error) {
 	}
 	return minBid, err
 }
+
+// GetAuctionProps provides properties of auctions running on given auction contract
+func (o *Opera) GetAuctionProps(auctionHall common.Address) (*types.AuctionProps, error) {
+	props, exists := o.auctionContractsProps[auctionHall]
+	if exists {
+		return &props, nil
+	}
+	return nil, fmt.Errorf("trying to obtain props of unknown auction contract %s", auctionHall.String())
+}

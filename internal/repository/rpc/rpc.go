@@ -53,6 +53,7 @@ type Opera struct {
 	abiMarketplace *abi.ABI
 
 	// contracts
+	auctionContractsProps      map[common.Address]types.AuctionProps
 	auctionContracts           map[common.Address]IAuctionContract
 	marketplaceContracts       map[common.Address]IMarketplaceContract
 	payTokenPriceContract      IMarketplaceContract // for token royalty or pay token price
@@ -84,6 +85,7 @@ func (o *Opera) RegisterContract(ct string, addr *common.Address) (err error) {
 			log.Noticef("loaded V1 auction contract at %s", addr.String())
 		}
 		o.auctionContracts[*addr] = &ac
+		o.auctionContractsProps[*addr] = types.AuctionV1Props
 
 	case "auction2":
 		var ac AuctionContractV2
@@ -92,6 +94,7 @@ func (o *Opera) RegisterContract(ct string, addr *common.Address) (err error) {
 			log.Noticef("loaded V2 auction contract at %s", addr.String())
 		}
 		o.auctionContracts[*addr] = &ac
+		o.auctionContractsProps[*addr] = types.AuctionV2Props
 
 	case "auction3":
 		var ac AuctionContractV2 // V3 use the same ABI as V2
@@ -100,6 +103,7 @@ func (o *Opera) RegisterContract(ct string, addr *common.Address) (err error) {
 			log.Noticef("loaded V3 auction contract at %s", addr.String())
 		}
 		o.auctionContracts[*addr] = &ac
+		o.auctionContractsProps[*addr] = types.AuctionV3Props
 		o.basicContracts.AuctionHall = *addr
 		log.Warningf("setting basic auction to %s", ct, addr.String())
 
@@ -171,6 +175,7 @@ func New() *Opera {
 		sigClose: make(chan bool, 1),
 		headers:  make(chan *eth.Header, headerObserverCapacity),
 
+		auctionContractsProps: make(map[common.Address]types.AuctionProps),
 		auctionContracts:     make(map[common.Address]IAuctionContract),
 		marketplaceContracts: make(map[common.Address]IMarketplaceContract),
 	}

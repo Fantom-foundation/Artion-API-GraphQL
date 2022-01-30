@@ -12,6 +12,9 @@ type Auction {
     # The FantomAuction contract
     auctionHall: Address!
 
+    # Properties of auctions running on given auction contract
+    props: AuctionProps!
+
     # The auctioned amount of tokens (always 1 for ERC-721)
     quantity: BigInt!
 
@@ -20,6 +23,9 @@ type Auction {
 
     # Starting price - minimal initial bid
     reservePrice: BigInt!
+
+    # Is the last bid greater or equal than the reserve price?
+    reservePriceExceeded: Boolean!
 
     # Minimal next bid (last bid + minimal increment, or the reserve price)
     minBidAmount: BigInt!
@@ -53,4 +59,19 @@ type Auction {
 
     # Is the auction creator owner of the token yet?
     isActive: Boolean!
+}
+
+# Properties of auctions running on given auction contract
+type AuctionProps {
+    # Can the winner result the auction instead of the seller?
+    winnerCanResult: Boolean!
+
+    # Can seller result auction when topBid is less than reserve price?
+    sellerCanResultUnderpriced: Boolean!
+
+    # Can seller cancel auction when topBid is more than reserve price?
+    canCancelSuccessful: Boolean!
+
+    # Has the contract "resultFailedAuction" method?
+    hasResultFailed: Boolean!
 }

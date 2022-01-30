@@ -20,6 +20,24 @@ func (au *Auction) MinBidAmount() (hexutil.Big, error) {
 	return (hexutil.Big)(*val), nil
 }
 
+// Props provides properties of auctions running on the auction contract
+func (au *Auction) Props() (*types.AuctionProps, error) {
+	props, err := repository.R().GetAuctionProps(au.AuctionHall)
+	if err != nil {
+		log.Errorf("unable to get auction props; %s", err)
+		return nil, err
+	}
+	return props, nil
+}
+
+// ReservePriceExceeded tells whether is the last bid greater or equal than the reserve price
+func (au *Auction) ReservePriceExceeded() bool {
+	if au.LastBid == nil {
+		return false
+	}
+	return au.ReservePrice.ToInt().Cmp(au.LastBid.ToInt()) <= 0
+}
+
 // WatchAuction creates a client subscription for auction events.
 func (rs *RootResolver) WatchAuction(ctx context.Context, args struct {
 	Contract common.Address

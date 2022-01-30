@@ -35,3 +35,8 @@ func (p *Proxy) ExtendAuctionDetailAt(au *types.Auction, block *big.Int) error {
 func (p *Proxy) AuctionGetMinBid(au *types.Auction) (*big.Int, error) {
 	return p.rpc.AuctionGetMinBid(au)
 }
+
+// GetAuctionProps provides properties of auctions running on given auction contract
+func (p *Proxy) GetAuctionProps(auctionHall common.Address) (*types.AuctionProps, error) {
+	return p.rpc.GetAuctionProps(auctionHall)
+}
