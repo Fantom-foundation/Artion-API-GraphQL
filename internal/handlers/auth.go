@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"artion-api-graphql/internal/auth"
+	"artion-api-graphql/internal/logger"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"net/http"
@@ -11,12 +12,12 @@ import (
 // AuthHandler creates a handler for chained HTTP requests resolving for validating
 // the request authenticity; the request context is extended with the User information
 // if the request is validated.
-func AuthHandler(h http.Handler) http.Handler {
+func AuthHandler(h http.Handler, log logger.Logger) http.Handler {
 	// validate JWT token, if it's present
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		id, err := authGetIdentity(r)
 		if err != nil {
-			fmt.Errorf("unauthorized API request; %s", err)
+			log.Debugf("unauthorized API request; %s", err)
 		}
 		if id != nil {
 			// set the user identity (account address) into the request context

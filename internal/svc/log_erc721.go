@@ -180,7 +180,7 @@ func queueMetadataUpdate(nft *types.Token, lo *logObserver) {
 	// if the updater queue is full, we just let the updater pick the token for update later
 	select {
 	case lo.outNftTokens <- nft:
-	default:
+	case <-time.After(100 * time.Millisecond):
 		log.Errorf("NFT token updater queue full, postponing token %s at %s metadata update", nft.TokenId.String(), nft.Contract.String())
 	}
 }
@@ -250,7 +250,7 @@ func setAuctionsListingsActive(contract *common.Address, tokenID *big.Int, from 
 	if err := repository.R().SetListingActive(contract, tokenID, from, false); err != nil {
 		log.Errorf("unable to update listing active status on ownership change; %s", err.Error())
 	}
-	if ! repository.R().IsEscrowContract(*to) { // only if this is not move into escrow
+	if !repository.R().IsEscrowContract(*to) { // only if this is not move into escrow
 		if err := repository.R().SetListingActive(contract, tokenID, to, true); err != nil {
 			log.Errorf("unable to update listing active status on ownership change; %s", err.Error())
 		}

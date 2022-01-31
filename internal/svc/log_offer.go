@@ -12,7 +12,7 @@ import (
 
 // marketNFTListed handles log event for NFT token to receive buy offer on the Marketplace.
 // Marketplace::OfferCreated(address indexed creator, address indexed nft, uint256 tokenId, uint256 quantity, address payToken, uint256 pricePerItem, uint256 deadline)
-func marketOfferCreated(evt *eth.Log, lo *logObserver) {
+func marketOfferCreated(evt *eth.Log, _ *logObserver) {
 	// sanity check: 1 + 2 topics; 4 x uint256 + 1 address = 5 x 32 bytes of data = 160 bytes
 	if len(evt.Data) != 160 || len(evt.Topics) != 3 {
 		log.Errorf("not Marketplace::OfferCreated() event #%d/#%d; expected 160 bytes of data, %d given; expected 3 topics, %d given",
@@ -162,7 +162,7 @@ func marketOfferCanceled(evt *eth.Log, _ *logObserver) {
 }
 
 // marketCloseOfferWithSale processes a listing wrap up by a sale.
-func marketCloseOfferWithSale(evt *eth.Log, offer *types.Offer, blk *eth.Header, lo *logObserver, seller *common.Address) {
+func marketCloseOfferWithSale(evt *eth.Log, offer *types.Offer, blk *eth.Header, _ *logObserver, seller *common.Address) {
 	up := time.Unix(int64(blk.Time), 0)
 	offer.Closed = (*types.Time)(&up)
 	offer.PayToken = common.BytesToAddress(evt.Data[64:96])

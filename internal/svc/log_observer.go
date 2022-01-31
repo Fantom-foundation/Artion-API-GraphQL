@@ -10,6 +10,9 @@ import (
 const (
 	// observedBlocksCapacity represents the capacity of channel for observed block IDs.
 	observedBlocksCapacity = 100
+
+	// nftQueueCapacity is the capacity of NFT updater queue.
+	nftQueueCapacity = 500
 )
 
 // EventHandler represents a function used to process event log record.
@@ -46,7 +49,7 @@ func newLogObserver(mgr *Manager) *logObserver {
 	return &logObserver{
 		mgr:               mgr,
 		sigStop:           make(chan bool, 1),
-		outNftTokens:      make(chan *types.Token, nftMetadataUpdaterQueueCapacity),
+		outNftTokens:      make(chan *types.Token, nftQueueCapacity),
 		outObservedBlocks: make(chan uint64, observedBlocksCapacity),
 		topics: map[common.Hash]EventHandler{
 			/* Factory::event ContractCreated(address creator, address nft) */
