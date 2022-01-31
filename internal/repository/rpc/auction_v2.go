@@ -70,7 +70,7 @@ func (ac *AuctionContractV2) GetMinBid(contract *common.Address, tokenId *big.In
 		}
 
 		// use MinBid instead (could be zero, or reserve price, based on auction config)
-		highest.Bid = auction.MinBid
+		return auction.MinBid, nil
 	}
 
 	minIncrement, err := ac.auctionV2Contract.MinBidIncrement(nil)
