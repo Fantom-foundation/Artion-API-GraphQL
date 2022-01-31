@@ -39,7 +39,7 @@ func (au *Auction) ReservePriceExceeded() bool {
 	return au.ReservePrice.ToInt().Cmp(au.LastBid.ToInt()) <= 0
 }
 
-// WithdrawSince tells since when can the bidder withdraw the bid
+// WithdrawSince tells since when can the bidder withdraw the bid (using withdraw() or resultFailedAuction() call)
 func (au *Auction) WithdrawSince() (*types.Time, error) {
 	if au.LastBid == nil || au.Resolved != nil {
 		return nil, nil
@@ -61,6 +61,14 @@ func (au *Auction) WithdrawSince() (*types.Time, error) {
 	}
 	sinceTime := types.Time(since)
 	return &sinceTime, nil
+}
+
+func (au *Auction) OwnerUser() (User, error) {
+	return getUserByAddress(au.Owner)
+}
+
+func (au *Auction) LastBidderUser() (*User, error) {
+	return getUserByAddressPtr(au.LastBidder)
 }
 
 // WatchAuction creates a client subscription for auction events.

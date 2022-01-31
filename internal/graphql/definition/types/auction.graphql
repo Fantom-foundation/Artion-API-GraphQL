@@ -9,6 +9,9 @@ type Auction {
     # The seller of the item
     owner: Address!
 
+    # The seller object
+    ownerUser: User!
+
     # The FantomAuction contract
     auctionHall: Address!
 
@@ -51,7 +54,10 @@ type Auction {
     # Who has placed the last bid
     lastBidder: Address
 
-    # Winner of the auction (null if not resolved)
+    # Who has placed the last bid
+    lastBidderUser: User
+
+    # Winner of the auction (null if not resolved) - DEPRECATED
     winner: Address
 
     # When was the auction resolved (null if not resolved)
@@ -61,8 +67,7 @@ type Auction {
     isActive: Boolean!
 
     # Since when can be a bid withdrawn? (null if already resolved or no bid placed)
-    # If the auction support resultFailedAuction() and the current bid is less than reserve price,
-    # this will be the time since when can be resultFailedAuction() called instead.
+    # (Using withdrawBid() or using resultFailedAuction() when possible - supported and less than reserve price.)
     withdrawSince: Time
 }
 
