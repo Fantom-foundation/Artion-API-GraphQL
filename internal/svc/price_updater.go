@@ -7,7 +7,7 @@ import (
 
 const (
 	// priceRefreshTick is the tick used to pull price refresh candidates.
-	priceRefreshTick = 5 * time.Minute
+	priceRefreshTick = 5 * time.Second
 
 	// priceRefreshSetSize is the max size of price refresh set pulled at once.
 	priceRefreshSetSize = 50
