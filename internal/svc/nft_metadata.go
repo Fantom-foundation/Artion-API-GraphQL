@@ -134,7 +134,7 @@ func (mu *nftMetadataUpdater) pullNext(tiPool *time.Ticker, tiRefresh *time.Tick
 		default:
 		}
 	}
-	return nft, false
+	return nft, true
 }
 
 // scheduleMetadataRefreshSet pulls new refresh set from repository and pushes it into the scheduler.
