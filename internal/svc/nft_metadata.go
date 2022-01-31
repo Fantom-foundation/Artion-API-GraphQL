@@ -7,11 +7,14 @@ import (
 )
 
 const (
-	// nftMetadataUpdaterQueueCapacity is the capacity of NFT metadata updater queue.
-	nftMetadataUpdaterQueueCapacity = 10000
+	// nftMetadataWorkerQueueCapacity is the capacity of NFT metadata worker queue.
+	nftMetadataWorkerQueueCapacity = 200
 
-	// nftMetadataRefreshTick is the tick used to pull NFT metadata refresh candidates.
+	// nftMetadataRefreshTick is the tick used to queue NFT metadata refresh candidates.
 	nftMetadataRefreshTick = 15 * time.Second
+
+	// nftMetadataRefreshPullTick is the tick used to pull NFT metadata refresh candidates.
+	nftMetadataRefreshPullTick = 200 * time.Millisecond
 
 	// nftMetadataRefreshSetSize is the max size of metadata refresh set pulled at once.
 	nftMetadataRefreshSetSize = 100
@@ -42,7 +45,7 @@ func newNFTMetadataUpdater(mgr *Manager) *nftMetadataUpdater {
 	return &nftMetadataUpdater{
 		mgr:          mgr,
 		sigStop:      make(chan bool, 1),
-		outTokens:    make(chan *types.Token, nftMetadataUpdaterQueueCapacity),
+		outTokens:    make(chan *types.Token, nftMetadataWorkerQueueCapacity),
 		refreshQueue: make(chan *types.Token, nftMetadataRefreshSetSize),
 	}
 }
@@ -71,9 +74,11 @@ func (mu *nftMetadataUpdater) close() {
 func (mu *nftMetadataUpdater) run() {
 	// make the metadata refresh ticker
 	refreshTick := time.NewTicker(nftMetadataRefreshTick)
+	refreshPullTick := time.NewTicker(nftMetadataRefreshPullTick)
 
 	defer func() {
 		refreshTick.Stop()
+		refreshPullTick.Stop()
 
 		close(mu.outTokens)
 		close(mu.refreshQueue)
@@ -82,22 +87,12 @@ func (mu *nftMetadataUpdater) run() {
 	}()
 
 	var (
-		ok  bool
+		ok  = true
 		nft *types.Token
 	)
-	for {
-		select {
-		case <-mu.sigStop:
-			return
-		case <-refreshTick.C:
-			mu.scheduleMetadataRefreshSet()
-		case nft, ok = <-mu.inTokens:
-			if !ok {
-				log.Noticef("input queue closed, terminating")
-				return
-			}
-		case nft = <-mu.refreshQueue:
-		}
+	for ok {
+		// pull next token
+		nft, ok = mu.pullNext(refreshTick, refreshPullTick)
 
 		// do we have a token to be pushed to the worker?
 		if nft != nil {
@@ -110,6 +105,36 @@ func (mu *nftMetadataUpdater) run() {
 			}
 		}
 	}
+}
+
+// pullNext pulls a next available NFT from one of the pools for metadata processing
+// It calls for refresh pool fill, if there is a time to do it.
+func (mu *nftMetadataUpdater) pullNext(tiPool *time.Ticker, tiRefresh *time.Ticker) (*types.Token, bool) {
+	var ok bool
+	var nft *types.Token
+
+	select {
+	case <-mu.sigStop:
+		return nil, false
+	case nft, ok = <-mu.inTokens:
+		if !ok {
+			log.Noticef("input queue closed, terminating")
+			return nil, false
+		}
+	case <-tiPool.C:
+		mu.scheduleMetadataRefreshSet()
+	case <-tiRefresh.C:
+		// try to pull from the refresh queue instead
+		select {
+		case nft, ok = <-mu.refreshQueue:
+			if !ok {
+				log.Noticef("NFT metadata refresh queue closed, terminating")
+				return nil, false
+			}
+		default:
+		}
+	}
+	return nft, false
 }
 
 // scheduleMetadataRefreshSet pulls new refresh set from repository and pushes it into the scheduler.

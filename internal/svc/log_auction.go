@@ -14,7 +14,7 @@ import (
 
 // auctionCreated processes an event for newly created auction on an ERC-721 token.
 // Auction::AuctionCreated(address indexed nftAddress, uint256 indexed tokenId, address payToken)
-func auctionCreated(evt *eth.Log, lo *logObserver) {
+func auctionCreated(evt *eth.Log, _ *logObserver) {
 	// sanity check: 1 + 2 topics; 1 x uint256 = 32 bytes
 	if len(evt.Data) != 32 || len(evt.Topics) != 3 {
 		log.Errorf("not Auction::AuctionCreated() event #%d/#%d; expected 32 bytes of data, %d given; expected 3 topics, %d given",
@@ -172,7 +172,7 @@ func auctionEndTimeUpdated(evt *eth.Log, lo *logObserver) {
 }
 
 // auctionTimeBoundaryUpdated processes given time boundary change event log.
-func auctionTimeBoundaryUpdated(evt *eth.Log, lo *logObserver, update func(*types.Auction, types.Time)) {
+func auctionTimeBoundaryUpdated(evt *eth.Log, _ *logObserver, update func(*types.Auction, types.Time)) {
 	// sanity check: 1 + 2 topics; 1 x uint256 = 32 bytes
 	if len(evt.Data) != 32 || len(evt.Topics) != 3 {
 		log.Errorf("not Auction::UpdateAuction-X-Time() event #%d/#%d; expected 32 bytes of data, %d given; expected 3 topics, %d given",
@@ -235,7 +235,7 @@ func auctionTimeBoundaryUpdated(evt *eth.Log, lo *logObserver, update func(*type
 
 // auctionReserveUpdated processes auction reserve price updated.
 // Auction::UpdateAuctionReservePrice(address indexed nftAddress, uint256 indexed tokenId, address payToken, uint256 reservePrice)
-func auctionReserveUpdated(evt *eth.Log, lo *logObserver) {
+func auctionReserveUpdated(evt *eth.Log, _ *logObserver) {
 	// sanity check: 1 + 2 topics; 1 x uint256 + 1 x address = 64 bytes
 	if len(evt.Data) != 64 || len(evt.Topics) != 3 {
 		log.Errorf("not Auction::UpdateAuctionReservePrice() event #%d/#%d; expected 64 bytes of data, %d given; expected 3 topics, %d given",

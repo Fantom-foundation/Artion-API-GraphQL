@@ -112,8 +112,8 @@ func (app *apiServer) makeHttpServer() {
 func (app *apiServer) setupHandlers(mux *http.ServeMux) {
 	// setup GraphQL API handler
 	h := //http.TimeoutHandler(
-		handlers.AuthHandler(handlers.Api(app.log))
-		//time.Second*time.Duration(app.cfg.Server.ResolverTimeout), "Service timeout.",
+		handlers.AuthHandler(handlers.Api(app.log), app.log)
+	//time.Second*time.Duration(app.cfg.Server.ResolverTimeout), "Service timeout.",
 	//)
 	mux.Handle("/api", h)
 	mux.Handle("/graphql", h)
@@ -127,10 +127,10 @@ func (app *apiServer) setupHandlers(mux *http.ServeMux) {
 	mux.Handle("/images/collection/", handlers.ImageHandler(app.log, handlers.CollectionImageResolver))
 
 	// handle image upload
-	mux.Handle("/upload-image/user-avatar", handlers.AuthHandler(handlers.UploadImageHandler(app.log, handlers.StoreUserAvatar)))
-	mux.Handle("/upload-image/user-banner", handlers.AuthHandler(handlers.UploadImageHandler(app.log, handlers.StoreUserBanner)))
-	mux.Handle("/upload-image/token", handlers.AuthHandler(handlers.UploadImageHandler(app.log, handlers.StoreToken)))
-	mux.Handle("/upload-image/collection", handlers.AuthHandler(handlers.UploadImageHandler(app.log, handlers.StoreCollection)))
+	mux.Handle("/upload-image/user-avatar", handlers.AuthHandler(handlers.UploadImageHandler(app.log, handlers.StoreUserAvatar), app.log))
+	mux.Handle("/upload-image/user-banner", handlers.AuthHandler(handlers.UploadImageHandler(app.log, handlers.StoreUserBanner), app.log))
+	mux.Handle("/upload-image/token", handlers.AuthHandler(handlers.UploadImageHandler(app.log, handlers.StoreToken), app.log))
+	mux.Handle("/upload-image/collection", handlers.AuthHandler(handlers.UploadImageHandler(app.log, handlers.StoreCollection), app.log))
 }
 
 // observeSignals setups terminate signals observation.

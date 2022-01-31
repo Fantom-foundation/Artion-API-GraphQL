@@ -12,7 +12,7 @@ import (
 
 // marketNFTListed handles log event for NFT token to get listed for sale on the Marketplace.
 // Marketplace::ItemListed(address indexed owner, address indexed nft, uint256 tokenId, uint256 quantity, address payToken, uint256 pricePerItem, uint256 startingTime)
-func marketNFTListed(evt *eth.Log, lo *logObserver) {
+func marketNFTListed(evt *eth.Log, _ *logObserver) {
 	// sanity check: 1 + 2 topics; 4 x uint256 + 1 address = 5 x 32 bytes of data = 160 bytes
 	if len(evt.Data) != 160 || len(evt.Topics) != 3 {
 		log.Errorf("not Marketplace::ItemListed() event #%d/#%d; expected 160 bytes of data, %d given; expected 3 topics, %d given",
@@ -89,7 +89,7 @@ func marketNFTListed(evt *eth.Log, lo *logObserver) {
 
 // marketNFTUpdated handles an update call on already listed NFT token.
 // Marketplace::ItemUpdated(address indexed owner, address indexed nft, uint256 tokenId, address payToken, uint256 newPrice)
-func marketNFTUpdated(evt *eth.Log, lo *logObserver) {
+func marketNFTUpdated(evt *eth.Log, _ *logObserver) {
 	// sanity check: 1 + 2 topics; 2 x uint256 + 1 address = 3 x 32 bytes of data = 96 bytes
 	if len(evt.Data) != 96 || len(evt.Topics) != 3 {
 		log.Errorf("not Marketplace::ItemUpdated() event #%d/#%d; expected 96 bytes of data, %d given; expected 3 topics, %d given",
@@ -260,7 +260,7 @@ func marketItemSold(evt *eth.Log, lo *logObserver) {
 }
 
 // marketCloseListingWithSale processes a listing wrap up by a sale.
-func marketCloseListingWithSale(evt *eth.Log, lst *types.Listing, blk *eth.Header, lo *logObserver, buyer *common.Address) {
+func marketCloseListingWithSale(evt *eth.Log, lst *types.Listing, blk *eth.Header, _ *logObserver, buyer *common.Address) {
 	up := time.Unix(int64(blk.Time), 0)
 	lst.Closed = (*types.Time)(&up)
 	lst.PayToken = common.BytesToAddress(evt.Data[64:96])

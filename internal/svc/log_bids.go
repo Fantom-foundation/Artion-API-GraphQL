@@ -12,7 +12,7 @@ import (
 
 // auctionBidPlaced processes an event for newly posted auction bid.
 // Auction::BidPlaced(address indexed nftAddress, uint256 indexed tokenId, address indexed bidder, uint256 bid)
-func auctionBidPlaced(evt *eth.Log, lo *logObserver) {
+func auctionBidPlaced(evt *eth.Log, _ *logObserver) {
 	// sanity check: 1 + 3 topics; 1 x uint256 = 32 bytes
 	if len(evt.Data) != 32 || len(evt.Topics) != 4 {
 		log.Errorf("not Auction::BidPlaced() event #%d/#%d; expected 32 bytes of data, %d given; expected 4 topics, %d given",
