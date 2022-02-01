@@ -273,218 +273,191 @@ func (db *MongoDbBridge) UpdateTokenMetadataRefreshSchedule(nft *types.Token) er
 }
 
 // TokenMarkOffered marks the given NFT as having offer for the given price.
-func (db *MongoDbBridge) TokenMarkOffered(contract *common.Address, tokenID *big.Int, price types.TokenPrice, ts *time.Time) error {
-	maxOfferPrice, maxOfferValid := db.MaxOfferPrice(contract, tokenID)
-	return db.UpdateToken(contract, tokenID, bson.D{
+func (db *MongoDbBridge) TokenMarkOffered(contract common.Address, tokenID hexutil.Big, price types.TokenPrice, ts *time.Time, priceCalc types.PriceCalcFunc) error {
+	t, err := db.GetToken(&contract, tokenID.ToInt())
+	if err != nil {
+		log.Errorf("unable to load token %s/%s; %s", contract.String(), tokenID.String(), err)
+		return err
+	}
+	if t == nil {
+		log.Criticalf("unknown token %s/%s", contract.String(), tokenID.String())
+		return nil
+	}
+
+	return db.UpdateTokenRecalcPrice(t, bson.D{
 		{Key: fiTokenLastOffer, Value: *ts},
-		{Key: fiTokenHasOfferUntil, Value: db.OpenOfferUntil(contract, tokenID)},
+		{Key: fiTokenHasOfferUntil, Value: db.OpenOfferUntil(&contract, tokenID.ToInt())},
 		{Key: fiTokenAmountLastOffer, Value: price},
-		{Key: fiTokenMaxOfferPrice, Value: maxOfferPrice},
-		{Key: fiTokenMaxOfferValid, Value: maxOfferValid},
-	})
+	}, priceCalc)
 }
 
 // TokenMarkListed marks the given NFT as listed for direct sale for the given price.
-func (db *MongoDbBridge) TokenMarkListed(contract *common.Address, tokenID *big.Int, price types.TokenPrice, ts *time.Time) error {
-	t, err := db.GetToken(contract, tokenID)
+func (db *MongoDbBridge) TokenMarkListed(contract common.Address, tokenID hexutil.Big, price types.TokenPrice, ts *time.Time, priceCalc types.PriceCalcFunc) error {
+	t, err := db.GetToken(&contract, tokenID.ToInt())
 	if err != nil {
-		log.Errorf("unable to load token %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
+		log.Errorf("unable to load token %s/%s; %s", contract.String(), tokenID.String(), err)
 		return err
 	}
 	if t == nil {
-		log.Criticalf("unknown token %s/%s", contract.String(), (*hexutil.Big)(tokenID).String())
+		log.Criticalf("unknown token %s/%s", contract.String(), tokenID.String())
 		return nil
 	}
 
-	t.HasListingSince = db.OpenListingSince(contract, tokenID)
-	t.MinListPrice, t.MinListValid = db.MinListingPrice(contract, tokenID)
-	t.AmountPrice, t.PriceValid = db.getTokenPrice(t)
+	t.HasListingSince = db.OpenListingSince(&contract, tokenID.ToInt())
 
-	return db.UpdateToken(contract, tokenID, bson.D{
+	return db.UpdateTokenRecalcPrice(t, bson.D{
 		{Key: fiTokenLastListing, Value: *ts},
 		{Key: fiTokenHasListingSince, Value: t.HasListingSince},
 		{Key: fiTokenAmountLastList, Value: price},
-		{Key: fiTokenMinListPrice, Value: t.MinListPrice},
-		{Key: fiTokenMinListValid, Value: t.MinListValid},
-		{Key: fiTokenPrice, Value: t.AmountPrice},
-		{Key: fiTokenPriceValid, Value: t.PriceValid},
-	})
+	}, priceCalc)
 }
 
 // TokenMarkAuctioned marks the given NFT as auctioned for the given price.
-func (db *MongoDbBridge) TokenMarkAuctioned(contract *common.Address, tokenID *big.Int, reservePrice types.TokenPrice, ts *time.Time) error {
-	t, err := db.GetToken(contract, tokenID)
+func (db *MongoDbBridge) TokenMarkAuctioned(contract common.Address, tokenID hexutil.Big, reservePrice types.TokenPrice, ts *time.Time, priceCalc types.PriceCalcFunc) error {
+	t, err := db.GetToken(&contract, tokenID.ToInt())
 	if err != nil {
-		log.Errorf("unable to load token %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
+		log.Errorf("unable to load token %s/%s; %s", contract.String(), tokenID.String(), err)
 		return err
 	}
 	if t == nil {
-		log.Criticalf("unknown token %s/%s", contract.String(), (*hexutil.Big)(tokenID).String())
+		log.Criticalf("unknown token %s/%s", contract.String(), tokenID.String())
 		return nil
 	}
 
-	t.HasAuctionSince, t.HasAuctionUntil = db.OpenAuctionRange(contract, tokenID)
-	t.HasBids = false
-	t.ReservePrice = reservePrice
-	t.AmountPrice, t.PriceValid = db.getTokenPrice(t)
-
-	return db.UpdateToken(contract, tokenID, bson.D{
+	auctionSince, auctionUntil := db.OpenAuctionRange(&contract, tokenID.ToInt())
+	return db.UpdateTokenRecalcPrice(t, bson.D{
 		{Key: fiTokenLastAuction, Value: *ts},
-		{Key: fiTokenHasAuctionSince, Value: t.HasAuctionSince},
-		{Key: fiTokenHasAuctionUntil, Value: t.HasAuctionUntil},
-		{Key: fiTokenHasBids, Value: t.HasBids},
-		{Key: fiTokenReservePrice, Value: t.ReservePrice},
-		{Key: fiTokenPrice, Value: t.AmountPrice},
-		{Key: fiTokenPriceValid, Value: t.PriceValid},
-	})
+		{Key: fiTokenHasAuctionSince, Value: auctionSince},
+		{Key: fiTokenHasAuctionUntil, Value: auctionUntil},
+		{Key: fiTokenHasBids, Value: false},
+		{Key: fiTokenReservePrice, Value: reservePrice},
+	}, priceCalc)
 }
 
 // TokenMarkBid marks the given NFT as having auction bid for the given price.
-func (db *MongoDbBridge) TokenMarkBid(contract *common.Address, tokenID *big.Int, price types.TokenPrice, ts *time.Time) error {
-	t, err := db.GetToken(contract, tokenID)
+func (db *MongoDbBridge) TokenMarkBid(contract common.Address, tokenID hexutil.Big, bidPrice types.TokenPrice, ts *time.Time, priceCalc types.PriceCalcFunc) error {
+	t, err := db.GetToken(&contract, tokenID.ToInt())
 	if err != nil {
-		log.Errorf("unable to load token %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
+		log.Errorf("unable to load token %s/%s; %s", contract.String(), tokenID.String(), err)
 		return err
 	}
 	if t == nil {
-		log.Criticalf("unknown token %s/%s", contract.String(), (*hexutil.Big)(tokenID).String())
+		log.Criticalf("unknown token %s/%s", contract.String(), tokenID.String())
 		return nil
 	}
 
-	t.HasBids = true
-	t.AmountLastBid = price
-	t.AmountPrice, t.PriceValid = db.getTokenPrice(t)
-
-	return db.UpdateToken(contract, tokenID, bson.D{
-		{Key: fiTokenHasBids, Value: t.HasBids},
-		{Key: fiTokenAmountLastBid, Value: t.AmountLastBid},
+	return db.UpdateTokenRecalcPrice(t, bson.D{
+		{Key: fiTokenHasBids, Value: true},
+		{Key: fiTokenAmountLastBid, Value: bidPrice},
 		{Key: fiTokenLastBid, Value: ts},
-		{Key: fiTokenPrice, Value: t.AmountPrice},
-		{Key: fiTokenPriceValid, Value: t.PriceValid},
-	})
+	}, priceCalc)
 }
 
 // TokenMarkUnlisted marks the given NFT as listed for direct sale for the given price.
-func (db *MongoDbBridge) TokenMarkUnlisted(contract *common.Address, tokenID *big.Int) error {
-	t, err := db.GetToken(contract, tokenID)
+func (db *MongoDbBridge) TokenMarkUnlisted(contract common.Address, tokenID hexutil.Big, priceCalc types.PriceCalcFunc) error {
+	t, err := db.GetToken(&contract, tokenID.ToInt())
 	if err != nil {
-		log.Errorf("unable to load token %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
+		log.Errorf("unable to load token %s/%s; %s", contract.String(), tokenID.String(), err)
 		return err
 	}
 	if t == nil {
-		log.Criticalf("unknown token %s/%s", contract.String(), (*hexutil.Big)(tokenID).String())
+		log.Criticalf("unknown token %s/%s", contract.String(), tokenID.String())
 		return nil
 	}
 
-	t.HasListingSince = db.OpenListingSince(contract, tokenID)
-	t.MinListPrice, t.MinListValid = db.MinListingPrice(contract, tokenID)
-	t.AmountPrice, t.PriceValid = db.getTokenPrice(t)
+	hasListingSince := db.OpenListingSince(&contract, tokenID.ToInt())
 
-	return db.UpdateToken(contract, tokenID, bson.D{
-		{Key: fiTokenHasListingSince, Value: t.HasListingSince},
-		{Key: fiTokenMinListPrice, Value: t.MinListPrice},
-		{Key: fiTokenMinListValid, Value: t.MinListValid},
-		{Key: fiTokenPrice, Value: t.AmountPrice},
-		{Key: fiTokenPriceValid, Value: t.PriceValid},
-	})
+	return db.UpdateTokenRecalcPrice(t, bson.D{
+		{Key: fiTokenHasListingSince, Value: hasListingSince},
+	}, priceCalc)
 }
 
 // TokenMarkUnOffered marks the given NFT as not having buy offers.
-func (db *MongoDbBridge) TokenMarkUnOffered(contract *common.Address, tokenID *big.Int) error {
-	maxOfferPrice, maxOfferValid := db.MaxOfferPrice(contract, tokenID)
-	return db.UpdateToken(contract, tokenID, bson.D{
-		{Key: fiTokenHasOfferUntil, Value: db.OpenOfferUntil(contract, tokenID)},
-		{Key: fiTokenMaxOfferPrice, Value: maxOfferPrice},
-		{Key: fiTokenMaxOfferValid, Value: maxOfferValid},
-	})
+func (db *MongoDbBridge) TokenMarkUnOffered(contract common.Address, tokenID hexutil.Big, priceCalc types.PriceCalcFunc) error {
+	t, err := db.GetToken(&contract, tokenID.ToInt())
+	if err != nil {
+		log.Errorf("unable to load token %s/%s; %s", contract.String(), tokenID.String(), err)
+		return err
+	}
+	if t == nil {
+		log.Criticalf("unknown token %s/%s", contract.String(), tokenID.String())
+		return nil
+	}
+
+	return db.UpdateTokenRecalcPrice(t, bson.D{
+		{Key: fiTokenHasOfferUntil, Value: db.OpenOfferUntil(&contract, tokenID.ToInt())},
+	}, priceCalc)
 }
 
 // TokenMarkUnAuctioned marks the given NFT as not having an active auction on.
-func (db *MongoDbBridge) TokenMarkUnAuctioned(contract *common.Address, tokenID *big.Int) error {
-	t, err := db.GetToken(contract, tokenID)
+func (db *MongoDbBridge) TokenMarkUnAuctioned(contract common.Address, tokenID hexutil.Big, priceCalc types.PriceCalcFunc) error {
+	t, err := db.GetToken(&contract, tokenID.ToInt())
 	if err != nil {
-		log.Errorf("unable to load token %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
+		log.Errorf("unable to load token %s/%s; %s", contract.String(), tokenID.String(), err)
 		return err
 	}
 	if t == nil {
-		log.Criticalf("unknown token %s/%s", contract.String(), (*hexutil.Big)(tokenID).String())
+		log.Criticalf("unknown token %s/%s", contract.String(), tokenID.String())
 		return nil
 	}
 
-	t.HasAuctionSince, t.HasAuctionUntil = db.OpenAuctionRange(contract, tokenID)
+	hasAuctionSince, hasAuctionUntil := db.OpenAuctionRange(&contract, tokenID.ToInt())
 	t.HasBids = false
-	t.AmountPrice, t.PriceValid = db.getTokenPrice(t)
 
-	return db.UpdateToken(contract, tokenID, bson.D{
-		{Key: fiTokenHasAuctionSince, Value: t.HasAuctionSince},
-		{Key: fiTokenHasAuctionUntil, Value: t.HasAuctionUntil},
-		{Key: fiTokenHasBids, Value: t.HasBids},
-		{Key: fiTokenPrice, Value: t.AmountPrice},
-		{Key: fiTokenPriceValid, Value: t.PriceValid},
-	})
+	return db.UpdateTokenRecalcPrice(t, bson.D{
+		{Key: fiTokenHasAuctionSince, Value: hasAuctionSince},
+		{Key: fiTokenHasAuctionUntil, Value: hasAuctionUntil},
+		{Key: fiTokenHasBids, Value: false},
+	}, priceCalc)
 }
 
 // TokenMarkUnBid marks the given NFT as not having a bid anymore.
-func (db *MongoDbBridge) TokenMarkUnBid(contract *common.Address, tokenID *big.Int) error {
-	t, err := db.GetToken(contract, tokenID)
+func (db *MongoDbBridge) TokenMarkUnBid(contract common.Address, tokenID hexutil.Big, priceCalc types.PriceCalcFunc) error {
+	t, err := db.GetToken(&contract, tokenID.ToInt())
 	if err != nil {
-		log.Errorf("unable to load token %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
+		log.Errorf("unable to load token %s/%s; %s", contract.String(), tokenID.String(), err)
 		return err
 	}
 	if t == nil {
-		log.Criticalf("unknown token %s/%s", contract.String(), (*hexutil.Big)(tokenID).String())
+		log.Criticalf("unknown token %s/%s", contract.String(), tokenID.String())
 		return nil
 	}
 
-	t.HasBids = false
-	t.AmountPrice, t.PriceValid = db.getTokenPrice(t)
-
-	return db.UpdateToken(contract, tokenID, bson.D{
+	return db.UpdateTokenRecalcPrice(t, bson.D{
 		{Key: fiTokenHasBids, Value: false},
-		{Key: fiTokenPrice, Value: t.AmountPrice},
-		{Key: fiTokenPriceValid, Value: t.PriceValid},
-	})
+	}, priceCalc)
 }
 
 // TokenMarkSold marks the given NFT as transferred OR sold on a listing/offer/auction for the given price.
-func (db *MongoDbBridge) TokenMarkSold(contract *common.Address, tokenID *big.Int, price *types.TokenPrice, tradeTime *time.Time) error {
-	t, err := db.GetToken(contract, tokenID)
+func (db *MongoDbBridge) TokenMarkSold(contract common.Address, tokenID hexutil.Big, price *types.TokenPrice, tradeTime *time.Time, priceCalc types.PriceCalcFunc) error {
+	t, err := db.GetToken(&contract, tokenID.ToInt())
 	if err != nil {
-		log.Errorf("unable to load token %s/%s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), err)
+		log.Errorf("unable to load token %s/%s; %s", contract.String(), tokenID.String(), err)
 		return err
 	}
 	if t == nil {
-		log.Criticalf("unknown token %s/%s", contract.String(), (*hexutil.Big)(tokenID).String())
+		log.Criticalf("unknown token %s/%s", contract.String(), tokenID.String())
 		return nil
 	}
 
-	t.HasAuctionSince, t.HasAuctionUntil = db.OpenAuctionRange(contract, tokenID)
-	t.HasListingSince = db.OpenListingSince(contract, tokenID)
-	t.MinListPrice, t.MinListValid = db.MinListingPrice(contract, tokenID)
-	t.MaxOfferPrice, t.MaxOfferValid = db.MaxOfferPrice(contract, tokenID)
-	t.HasOfferUntil = db.OpenOfferUntil(contract, tokenID)
+	t.HasAuctionSince, t.HasAuctionUntil = db.OpenAuctionRange(&contract, tokenID.ToInt())
+	t.HasListingSince = db.OpenListingSince(&contract, tokenID.ToInt())
+	t.HasOfferUntil = db.OpenOfferUntil(&contract, tokenID.ToInt())
+
 	if price != nil { // is this trade? (not free transfer only)
 		t.LastTrade = (*types.Time)(tradeTime)
 		t.AmountLastTrade = *price
 	}
-	t.HasBids = false
-	t.AmountPrice, t.PriceValid = db.getTokenPrice(t)
 
-	return db.UpdateToken(contract, tokenID, bson.D{
+	return db.UpdateTokenRecalcPrice(t, bson.D{
 		{Key: fiTokenLastTrade, Value: t.LastTrade},
+		{Key: fiTokenAmountLastTrade, Value: t.AmountLastTrade},
 		{Key: fiTokenHasListingSince, Value: t.HasListingSince},
-		{Key: fiTokenMinListPrice, Value: t.MinListPrice},
-		{Key: fiTokenMinListValid, Value: t.MinListValid},
-		{Key: fiTokenMaxOfferPrice, Value: t.MaxOfferPrice},
-		{Key: fiTokenMaxOfferValid, Value: t.MaxOfferValid},
 		{Key: fiTokenHasOfferUntil, Value: t.HasOfferUntil},
 		{Key: fiTokenHasAuctionSince, Value: t.HasAuctionSince},
 		{Key: fiTokenHasAuctionUntil, Value: t.HasAuctionUntil},
-		{Key: fiTokenAmountLastTrade, Value: t.AmountLastTrade},
-		{Key: fiTokenHasBids, Value: t.HasBids},
-		{Key: fiTokenPrice, Value: t.AmountPrice},
-		{Key: fiTokenPriceValid, Value: t.PriceValid},
-	})
+		{Key: fiTokenHasBids, Value: false},
+	}, priceCalc)
 }
 
 func (db *MongoDbBridge) TokenMarkBanned(contract *common.Address, tokenID *big.Int, banned bool) error {
@@ -554,14 +527,7 @@ func (db *MongoDbBridge) TokenPriceRefreshSet(setSize int64) ([]*types.Token, er
 	// load the set from database
 	cur, err := col.Find(
 		context.Background(),
-		bson.D{{
-			Key: "$or",
-			Value: bson.A{
-				bson.D{{Key: fiTokenPriceValid, Value: bson.D{{"$lt", now}}}},
-				bson.D{{Key: fiTokenMinListValid, Value: bson.D{{"$lt", now}}}},
-				bson.D{{Key: fiTokenMaxOfferValid, Value: bson.D{{"$lt", now}}}},
-			},
-		}},
+		bson.D{{Key: fiTokenPriceValid, Value: bson.D{{"$lt", now}}}},
 		options.Find().SetSort(bson.D{{Key: fiTokenPriceValid, Value: 1}}).SetLimit(setSize),
 	)
 	if err != nil {
@@ -584,72 +550,91 @@ func (db *MongoDbBridge) TokenPriceRefreshSet(setSize int64) ([]*types.Token, er
 }
 
 // TokenPriceRefresh recalculates token prices and updates them in database.
-func (db *MongoDbBridge) TokenPriceRefresh(t *types.Token) error {
-	now := time.Now()
-	updates := bson.D{}
-	minListUpdated := false
-
-	if t.MinListValid != nil && (*time.Time)(t.MinListValid).Before(now) {
-		t.MinListPrice, t.MinListValid = db.MinListingPrice(&t.Contract, t.TokenId.ToInt())
-		updates = append(updates,
-			bson.E{Key: fiTokenMinListPrice, Value: t.MinListPrice},
-			bson.E{Key: fiTokenMinListValid, Value: t.MinListValid})
-		minListUpdated = true
+func (db *MongoDbBridge) TokenPriceRefresh(t *types.Token, priceCalc types.PriceCalcFunc) (err error) {
+	update, err := db.getTokenPriceUpdate(t, priceCalc)
+	if err != nil {
+		return err
 	}
-
-	if t.MaxOfferValid != nil && (*time.Time)(t.MaxOfferValid).Before(now) {
-		t.MaxOfferPrice, t.MaxOfferValid = db.MaxOfferPrice(&t.Contract, t.TokenId.ToInt())
-		updates = append(updates,
-			bson.E{Key: fiTokenMaxOfferPrice, Value: t.MaxOfferPrice},
-			bson.E{Key: fiTokenMaxOfferValid, Value: t.MaxOfferValid})
-	}
-
-	if minListUpdated || (t.PriceValid != nil && (*time.Time)(t.PriceValid).Before(now)) {
-		t.AmountPrice, t.PriceValid = db.getTokenPrice(t)
-		updates = append(updates,
-			bson.E{Key: fiTokenPrice, Value: t.AmountPrice},
-			bson.E{Key: fiTokenPriceValid, Value: t.PriceValid})
-	}
-
-	return db.UpdateToken(&t.Contract, t.TokenId.ToInt(), updates)
+	return db.UpdateToken(&t.Contract, t.TokenId.ToInt(), update)
 }
 
-// getTokenPrice aggregates price fields in the token struct and provides price for tokens sorting
-func (db *MongoDbBridge) getTokenPrice(t *types.Token) (tokenPrice int64, priceValidUntil *types.Time) {
-	now := time.Now()
+// UpdateTokenRecalcPrice updates the token with given data and refresh the token prices
+func (db *MongoDbBridge) UpdateTokenRecalcPrice(t *types.Token, data bson.D, priceCalc types.PriceCalcFunc) error {
+	update, err := db.getTokenPriceUpdate(t, priceCalc)
+	if err != nil {
+		return fmt.Errorf("unable to refresh price of token %s/%s; %s", t.Contract.String(), t.TokenId.String(), err)
+	}
+	return db.UpdateToken(&t.Contract, t.TokenId.ToInt(), append(data, update...))
+}
+
+// getTokenPriceUpdate provides mongo-update for all token price fields
+func (db *MongoDbBridge) getTokenPriceUpdate(t *types.Token, priceCalc types.PriceCalcFunc) (update bson.D, err error) {
+
+	minListPrice, err := db.MinListingPrice(t.Contract, t.TokenId, priceCalc)
+	if err != nil {
+		return nil, err
+	}
+	minListValidity, err := db.MinListingPriceValidity(t.Contract, t.TokenId)
+	if err != nil {
+		return nil, err
+	}
+	maxOfferPrice, maxOfferValidity, err := db.MaxOfferPrice(t.Contract, t.TokenId, priceCalc)
+	if err != nil {
+		return nil, err
+	}
+	auctionPrice, bidPrice, reservePrice, auctionValidity, err := db.AuctionPrice(t.Contract, t.TokenId, priceCalc)
+	if err != nil {
+		return nil, err
+	}
+	lastTradePrice, err := priceCalc(t.AmountLastTrade.PayToken, t.AmountLastTrade.Amount)
+	if err != nil {
+		return nil, err
+	}
+
+	// one aggregated price for general sorting
+	var tokenPrice types.TokenPrice
+	var priceValidity *types.Time
 
 	// has auction - use auction top bid (or reserve price)
-	if t.HasAuctionSince != nil && t.HasAuctionUntil != nil {
-		if (*time.Time)(t.HasAuctionSince).Before(now) && (*time.Time)(t.HasAuctionUntil).After(now) {
-			if t.HasBids {
-				tokenPrice = t.AmountLastBid.Usd
-			} else {
-				tokenPrice = t.ReservePrice.Usd
-			}
-			priceValidUntil = t.HasAuctionUntil
-		}
+	if auctionValidity != nil { // reserve price can be zero - need to use validity in the condition
+		tokenPrice = auctionPrice
+		priceValidity = auctionValidity
 	}
 
 	// has listing
-	if t.MinListPrice.Usd != 0 {
+	if minListPrice.Usd != 0 {
 		// the listing is cheaper then auction
-		if tokenPrice == 0 || tokenPrice > t.MinListPrice.Usd {
-			tokenPrice = t.MinListPrice.Usd
+		if tokenPrice.Usd == 0 || tokenPrice.Usd > minListPrice.Usd {
+			tokenPrice = minListPrice
 
 			// if validity from auction is not shorter, set validity by listings validity
-			if t.MinListValid != nil && (priceValidUntil == nil || (*time.Time)(priceValidUntil).After(time.Time(*t.MinListValid))) {
-				priceValidUntil = t.MinListValid
+			if minListValidity != nil && (priceValidity == nil || (*time.Time)(priceValidity).After(time.Time(*minListValidity))) {
+				priceValidity = minListValidity
 			}
 		}
 	}
 
 	// no listing or auction? use last trade price
-	if tokenPrice == 0 {
-		tokenPrice = t.AmountLastTrade.Usd
-		priceValidUntil = nil
+	if tokenPrice.Usd == 0 {
+		tokenPrice = lastTradePrice
+		priceValidity = nil
 	}
 
-	return
+	return bson.D{
+		{Key: fiTokenMinListPrice, Value: minListPrice},
+		{Key: fiTokenMinListValid, Value: minListValidity},
+
+		{Key: fiTokenMaxOfferPrice, Value: maxOfferPrice},
+		{Key: fiTokenMaxOfferValid, Value: maxOfferValidity},
+
+		{Key: fiTokenAmountLastBid, Value: bidPrice},
+		{Key: fiTokenReservePrice, Value: reservePrice},
+
+		{Key: fiTokenAmountLastTrade, Value: lastTradePrice},
+
+		{Key: fiTokenPrice, Value: tokenPrice},
+		{Key: fiTokenPriceValid, Value: priceValidity},
+	}, nil
 }
 
 // TokenLikesViewsStore updates tokens views/likes from shared database.

@@ -8,7 +8,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"math/big"
 	"math/rand"
-	"strconv"
 	"time"
 )
 
@@ -76,16 +75,6 @@ type Token struct {
 	// metadata refresh helpers
 	MetaUpdate   Time  `bson:"meta_update"`
 	MetaFailures int32 `bson:"meta_failures"`
-}
-
-type TokenPrice struct {
-	Usd      int64          `bson:"usd"`
-	Amount   hexutil.Big    `bson:"amount"`
-	PayToken common.Address `bson:"token"`
-}
-
-func (tp *TokenPrice) UsdPrice() string {
-	return strconv.FormatInt(tp.Usd, 10)
 }
 
 // OrdinalIndex generates numeric ordinal index from block number and log record index.

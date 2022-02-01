@@ -92,8 +92,8 @@ func auctionCreated(evt *eth.Log, _ *logObserver) {
 
 	// mark the token as being auctioned
 	if err := repo.TokenMarkAuctioned(
-		&auction.Contract,
-		(*big.Int)(&auction.TokenId),
+		auction.Contract,
+		auction.TokenId,
 		price,
 		(*time.Time)(&auction.Created),
 	); err != nil {
@@ -200,8 +200,8 @@ func auctionTimeBoundaryUpdated(evt *eth.Log, _ *logObserver, update func(*types
 
 	// mark the token as being re-auctioned
 	if err := repo.TokenMarkAuctioned(
-		&auction.Contract,
-		(*big.Int)(&auction.TokenId),
+		auction.Contract,
+		auction.TokenId,
 		repo.GetUnifiedPriceAt(&auction.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&auction.ReservePrice)),
 		(*time.Time)(&auction.Created),
 	); err != nil {
@@ -265,8 +265,8 @@ func auctionReserveUpdated(evt *eth.Log, _ *logObserver) {
 
 	// mark the token as being re-auctioned
 	if err := repo.TokenMarkAuctioned(
-		&auction.Contract,
-		(*big.Int)(&auction.TokenId),
+		auction.Contract,
+		auction.TokenId,
 		price,
 		(*time.Time)(&auction.Created),
 	); err != nil {
@@ -343,7 +343,7 @@ func auctionCanceled(evt *eth.Log, _ *logObserver) {
 	}
 
 	// mark the token as being re-auctioned
-	if err := repo.TokenMarkUnAuctioned(&auction.Contract, (*big.Int)(&auction.TokenId)); err != nil {
+	if err := repo.TokenMarkUnAuctioned(auction.Contract, auction.TokenId); err != nil {
 		log.Errorf("could not mark token as not having auction; %s", err.Error())
 	}
 
@@ -478,8 +478,8 @@ func finishAuction(contract *common.Address, tokenID *big.Int, owner *common.Add
 
 	// mark the token as sold
 	if err := repo.TokenMarkSold(
-		&auction.Contract,
-		(*big.Int)(&auction.TokenId),
+		auction.Contract,
+		auction.TokenId,
 		&price,
 		(*time.Time)(&when),
 	); err != nil {

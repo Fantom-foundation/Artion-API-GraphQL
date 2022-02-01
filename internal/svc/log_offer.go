@@ -50,8 +50,8 @@ func marketOfferCreated(evt *eth.Log, _ *logObserver) {
 
 	// mark the token as listed
 	if err := repo.TokenMarkOffered(
-		&offer.Contract,
-		(*big.Int)(&offer.TokenId),
+		offer.Contract,
+		offer.TokenId,
 		tokenPrice,
 		(*time.Time)(&offer.Created),
 	); err != nil {
@@ -133,7 +133,7 @@ func marketOfferCanceled(evt *eth.Log, _ *logObserver) {
 	}
 
 	// mark the token as listed
-	if err := repo.TokenMarkUnOffered(&offer.Contract, tokenID); err != nil {
+	if err := repo.TokenMarkUnOffered(offer.Contract, hexutil.Big(*tokenID)); err != nil {
 		log.Errorf("could not mark token as not having offer; %s", err.Error())
 	}
 
@@ -177,8 +177,8 @@ func marketCloseOfferWithSale(evt *eth.Log, offer *types.Offer, blk *eth.Header,
 
 	// mark the token as sold
 	if err := repo.TokenMarkSold(
-		&offer.Contract,
-		(*big.Int)(&offer.TokenId),
+		offer.Contract,
+		offer.TokenId,
 		&tokenPrice,
 		&up,
 	); err != nil {

@@ -163,44 +163,56 @@ func (db *MongoDbBridge) OpenListingSince(contract *common.Address, tokenID *big
 }
 
 // MinListingPrice obtains minimal listed price of the token and time until when is the information valid.
-func (db *MongoDbBridge) MinListingPrice(contract *common.Address, tokenID *big.Int) (tokenPrice types.TokenPrice, minListValid *types.Time) {
+func (db *MongoDbBridge) MinListingPrice(contract common.Address, tokenID hexutil.Big, priceCalc types.PriceCalcFunc) (outPrice types.TokenPrice, err error) {
 	col := db.client.Database(db.dbName).Collection(coListings)
 	now := time.Now()
 
-	// get minimal price starting before now
-	var minListing types.Listing
-	sr := col.FindOne(context.Background(), bson.D{
-		{Key: fiListingContract, Value: *contract},
-		{Key: fiListingTokenId, Value: hexutil.Big(*tokenID)},
+	// get all valid listings of the token
+	ld, err := col.Find(context.Background(), bson.D{
+		{Key: fiListingContract, Value: contract},
+		{Key: fiListingTokenId, Value: tokenID},
 		{Key: fiListingClosed, Value: bson.D{{Key: "$type", Value: 10}}},    // closed=null = not closed (sold) yet
 		{Key: fiListingStartTime, Value: bson.D{{Key: "$lte", Value: now}}}, // already started
-		{Key: fiListingIsActive, Value: bson.D{{Key: "$ne", Value: false}}}, // listing creator own the token
-	}, options.FindOne().SetSort(bson.D{{Key: fiListingUnifiedPrice, Value: 1}}))
-	if sr.Err() != nil {
-		if sr.Err() != mongo.ErrNoDocuments {
-			log.Errorf("error loading min listing price; %s", sr.Err())
-		}
-		return
-	}
-	err := sr.Decode(&minListing)
+		{Key: fiListingIsActive, Value: true},                               // listing creator own the token
+	})
 	if err != nil {
-		log.Errorf("error decoding min listing price; %s", err)
+		log.Errorf("error loading token listings; %s", err)
 		return
 	}
-	tokenPrice = types.TokenPrice{
-		Usd:      minListing.UnifiedPrice,
-		Amount:   minListing.UnitPrice,
-		PayToken: minListing.PayToken,
+
+	defer closeFindCursor("listings", ld)
+
+	for ld.Next(context.Background()) {
+		var row types.Listing
+		if err = ld.Decode(&row); err != nil {
+			log.Errorf("can not decode listing; %s", err)
+			return
+		}
+
+		var price types.TokenPrice
+		price, err = priceCalc(row.PayToken, row.UnitPrice)
+		if err != nil {
+			return
+		}
+
+		if outPrice.Usd == 0 || price.Usd < outPrice.Usd {
+			outPrice = price
+		}
 	}
+	return
+}
+
+func (db *MongoDbBridge) MinListingPriceValidity(contract common.Address, tokenID hexutil.Big) (minListValid *types.Time, err error) {
+	col := db.client.Database(db.dbName).Collection(coListings)
+	now := time.Now()
 
 	// get end of validity - start of first future minimum (listing starting to be valid in future)
 	var nextStartingListing types.Listing
-	sr = col.FindOne(context.Background(), bson.D{
-		{Key: fiListingContract, Value: *contract},
-		{Key: fiListingTokenId, Value: hexutil.Big(*tokenID)},
+	sr := col.FindOne(context.Background(), bson.D{
+		{Key: fiListingContract, Value: contract},
+		{Key: fiListingTokenId, Value: tokenID},
 		{Key: fiListingClosed, Value: bson.D{{Key: "$type", Value: 10}}},   // not closed yet
-		{Key: fiListingStartTime, Value: bson.D{{Key: "$gt", Value: now}}}, // already started
-		{Key: fiListingUnifiedPrice, Value: bson.D{{Key: "$lt", Value: minListing.UnifiedPrice}}},
+		{Key: fiListingStartTime, Value: bson.D{{Key: "$gt", Value: now}}}, // starts in future
 	}, options.FindOne().SetSort(bson.D{{Key: fiListingStartTime, Value: 1}}))
 	if sr.Err() != nil {
 		if sr.Err() != mongo.ErrNoDocuments {

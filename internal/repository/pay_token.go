@@ -13,6 +13,27 @@ import (
 // Price come in 18 decimals, to preserve 6 decimals we remove 12 decimals.
 var tokenPriceDecimalsCorrection = big.NewInt(1_000_000_000_000)
 
+func (p *Proxy) CalculateTokenPrice(address common.Address, amount hexutil.Big) (out types.TokenPrice, err error) {
+	payToken, err := p.getPayToken(&address)
+	if err != nil {
+		return types.TokenPrice{}, err
+	}
+	out = types.TokenPrice{
+		Usd:      0,
+		Amount:   amount,
+		PayToken: address,
+	}
+
+	// calculate price for val wei in USD in 6-decimals fixed point
+	// val and unit is in 18-decimals, product is in 36 decimals - we need to remove 30 decimals to get 6-decimals
+	// val is D-decimals, unit 18-decimals, product is D+18 decimals - to get 6-decimals we need to remove D+12
+	out.Usd = mulTeenPower(new(big.Int).Mul(amount.ToInt(), payToken.UnitPrice), -(payToken.Decimals + 12)).Int64()
+	if out.Usd < 0 {
+		return out, fmt.Errorf("GetUnifiedPriceAt overflow - val: %s unit: %s decimals: %d", amount.String(), payToken.UnitPrice.String(), payToken.Decimals)
+	}
+	return out, nil
+}
+
 // CalculateUnifiedPrice calculates the unified price for the given params.
 func (p *Proxy) CalculateUnifiedPrice(payToken *common.Address, amount *big.Int, unitPrice *big.Int) types.TokenPrice {
 	// prep the struct
@@ -96,16 +117,24 @@ func (p *Proxy) ListPayTokens() ([]types.PayToken, error) {
 	return tokens.([]types.PayToken), err
 }
 
-// getPayTokenDecimals provides the number of decimals of the given pay token.
-func (p *Proxy) getPayTokenDecimals(address *common.Address) (int32, error) {
+func (p *Proxy) getPayToken(address *common.Address) (*types.PayToken, error) {
 	list, err := p.ListPayTokens() // cached
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	for _, payToken := range list {
 		if 0 == bytes.Compare(payToken.Contract.Bytes(), address.Bytes()) {
-			return payToken.Decimals, nil
+			return &payToken, nil
 		}
 	}
-	return 0, fmt.Errorf("unknown pay token %s", address)
+	return nil, fmt.Errorf("unknown pay token %s", address)
+}
+
+// getPayTokenDecimals provides the number of decimals of the given pay token.
+func (p *Proxy) getPayTokenDecimals(address *common.Address) (int32, error) {
+	payToken, err := p.getPayToken(address)
+	if err != nil {
+		return 0, err
+	}
+	return payToken.Decimals, nil
 }

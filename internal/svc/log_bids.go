@@ -64,8 +64,8 @@ func auctionBidPlaced(evt *eth.Log, _ *logObserver) {
 
 	// mark the token as being auctioned
 	if err := repo.TokenMarkBid(
-		&bid.Contract,
-		(*big.Int)(&bid.TokenId),
+		bid.Contract,
+		bid.TokenId,
 		price,
 		(*time.Time)(&bid.Placed),
 	); err != nil {
@@ -125,7 +125,7 @@ func auctionBidWithdrawn(evt *eth.Log, _ *logObserver) {
 	}
 
 	// mark the token as being re-auctioned
-	if err := repo.TokenMarkUnBid(&contract, tokenID); err != nil {
+	if err := repo.TokenMarkUnBid(contract, hexutil.Big(*tokenID)); err != nil {
 		log.Errorf("could not mark token as not having bid; %s", err.Error())
 	}
 

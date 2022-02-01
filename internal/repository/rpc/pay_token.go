@@ -49,5 +49,6 @@ func (o *Opera) getPayToken(address common.Address) (payToken types.PayToken, er
 		return
 	}
 	payToken.Decimals = int32(decimals)
+	payToken.UnitPrice, err = o.GetPayTokenPrice(&address, nil)
 	return
 }

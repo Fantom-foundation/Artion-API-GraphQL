@@ -163,35 +163,39 @@ func (db *MongoDbBridge) OpenOfferUntil(contract *common.Address, tokenID *big.I
 }
 
 // MaxOfferPrice obtains maximal offered price for the token and time until when is the information valid.
-func (db *MongoDbBridge) MaxOfferPrice(contract *common.Address, tokenID *big.Int) (tokenPrice types.TokenPrice, valid *types.Time) {
+func (db *MongoDbBridge) MaxOfferPrice(contract common.Address, tokenID hexutil.Big, priceCalc types.PriceCalcFunc) (outPrice types.TokenPrice, outValidity *types.Time, err error) {
 	col := db.client.Database(db.dbName).Collection(coOffers)
 	now := time.Now()
 
 	// get minimal price starting before now
-	var maxOffer types.Offer
-	sr := col.FindOne(context.Background(), bson.D{
-		{Key: fiOfferContract, Value: *contract},
-		{Key: fiOfferTokenId, Value: hexutil.Big(*tokenID)},
+	ld, err := col.Find(context.Background(), bson.D{
+		{Key: fiOfferContract, Value: contract},
+		{Key: fiOfferTokenId, Value: tokenID},
 		{Key: fiOfferClosed, Value: bson.D{{Key: "$type", Value: 10}}},   // not closed yet
 		{Key: fiOfferDeadline, Value: bson.D{{Key: "$gte", Value: now}}}, // before deadline
-	}, options.FindOne().SetSort(bson.D{{Key: fiOfferUnifiedPrice, Value: -1}}))
-	if sr.Err() != nil {
-		if sr.Err() != mongo.ErrNoDocuments {
-			log.Errorf("error loading max offer price; %s", sr.Err())
-		}
-		return
-	}
-	err := sr.Decode(&maxOffer)
+	})
 	if err != nil {
-		log.Errorf("error decoding max offer price; %s", err)
+		log.Errorf("error loading token offers; %s", err)
 		return
 	}
-	tokenPrice = types.TokenPrice{
-		Usd:      maxOffer.UnifiedPrice,
-		Amount:   maxOffer.UnitPrice,
-		PayToken: maxOffer.PayToken,
+
+	defer closeFindCursor("offers", ld)
+
+	for ld.Next(context.Background()) {
+		var row types.Offer
+		if err = ld.Decode(&row); err != nil {
+			log.Errorf("can not decode offer; %s", err)
+			return
+		}
+
+		var price types.TokenPrice
+		price, err = priceCalc(row.PayToken, row.UnitPrice)
+
+		if outPrice.Usd == 0 || price.Usd > outPrice.Usd {
+			outPrice = price
+			outValidity = &row.Deadline
+		}
 	}
-	valid = &maxOffer.Deadline
 	return
 }
 

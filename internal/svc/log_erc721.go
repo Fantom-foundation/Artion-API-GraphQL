@@ -264,8 +264,8 @@ func setAuctionsListingsActive(contract *common.Address, tokenID *big.Int, from 
 
 	// update the token price after listings/auction changes
 	if err := repo.TokenMarkSold(
-		contract,
-		tokenID,
+		*contract,
+		hexutil.Big(*tokenID),
 		nil,
 		nil,
 	); err != nil {

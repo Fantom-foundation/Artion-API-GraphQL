@@ -52,8 +52,8 @@ func marketNFTListed(evt *eth.Log, _ *logObserver) {
 
 	// mark the token as listed
 	if err := repo.TokenMarkListed(
-		&lst.Contract,
-		(*big.Int)(&lst.TokenId),
+		lst.Contract,
+		lst.TokenId,
 		tokenPrice,
 		(*time.Time)(&lst.Created),
 	); err != nil {
@@ -129,8 +129,8 @@ func marketNFTUpdated(evt *eth.Log, _ *logObserver) {
 
 	// mark the token as listed
 	if err := repo.TokenMarkListed(
-		&lst.Contract,
-		(*big.Int)(&lst.TokenId),
+		lst.Contract,
+		lst.TokenId,
 		tokenPrice,
 		(*time.Time)(&lst.Created),
 	); err != nil {
@@ -194,7 +194,7 @@ func marketNFTUnlisted(evt *eth.Log, _ *logObserver) {
 	}
 
 	// mark the token as listed
-	if err := repo.TokenMarkUnlisted(&lst.Contract, tokenID); err != nil {
+	if err := repo.TokenMarkUnlisted(lst.Contract, hexutil.Big(*tokenID)); err != nil {
 		log.Errorf("could not mark token as unlisted; %s", err.Error())
 	}
 
@@ -275,8 +275,8 @@ func marketCloseListingWithSale(evt *eth.Log, lst *types.Listing, blk *eth.Heade
 
 	// mark the token as sold
 	if err := repo.TokenMarkSold(
-		&lst.Contract,
-		(*big.Int)(&lst.TokenId),
+		lst.Contract,
+		lst.TokenId,
 		&tokenPrice,
 		&up,
 	); err != nil {
