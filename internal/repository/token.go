@@ -101,7 +101,7 @@ func (p *Proxy) TokenMetadataRefreshSet(setSize int64) ([]*types.Token, error) {
 }
 
 // TokenPriceRefreshSet pulls s set of NFT tokens scheduled to be updated their price.
-func (p *Proxy) TokenPriceRefreshSet(setSize int64) ([]*types.Token, error) {
+func (p *Proxy) TokenPriceRefreshSet(setSize int) ([]*types.Token, error) {
 	return p.db.TokenPriceRefreshSet(setSize)
 }
 

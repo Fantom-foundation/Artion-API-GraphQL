@@ -262,13 +262,13 @@ func setAuctionsListingsActive(contract *common.Address, tokenID *big.Int, from 
 		}
 	}
 
-	// update the token price after listings/auction changes
+	// update the token price and in-listing/in-auction status after listings/auction changes
 	if err := repo.TokenMarkSold(
 		*contract,
 		hexutil.Big(*tokenID),
 		nil,
 		nil,
 	); err != nil {
-		log.Errorf("could not update token price; %s", err.Error())
+		log.Errorf("could not mark token sold; %s", err.Error())
 	}
 }

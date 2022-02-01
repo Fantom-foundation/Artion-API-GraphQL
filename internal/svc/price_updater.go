@@ -99,7 +99,7 @@ func (mu *priceUpdater) schedulePriceRefreshSet() {
 	}
 
 	// log data
-	log.Infof("loaded %d tokens in price refresh set", len(rs))
+	log.Infof("price refresh set - loaded %d tokens", len(rs))
 
 	// push the refresh set into the refresh queue
 	// please note we don't wait for tokens to be stored

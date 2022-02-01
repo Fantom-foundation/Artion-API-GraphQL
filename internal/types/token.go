@@ -59,12 +59,11 @@ type Token struct {
 	AmountLastList  TokenPrice `bson:"amo_list"`
 	ReservePrice    TokenPrice `bson:"reserve"`
 	MinListPrice    TokenPrice `bson:"min_list"`
-	MinListValid    *Time      `bson:"min_list_valid"` // validity of MinListPrice until
 	MaxOfferPrice   TokenPrice `bson:"max_offer"`
-	MaxOfferValid   *Time      `bson:"max_offer_valid"` // validity of MaxOfferPrice until
 
-	AmountPrice int64 `bson:"price"`       // in USD
-	PriceValid  *Time `bson:"price_valid"` // validity of AmountPrice until
+	AmountPrice int64 `bson:"price"`        // in USD, 6 decimals
+	PriceValid  *Time `bson:"price_valid"`  // validity of AmountPrice / MinListPrice / MaxOfferPrice
+	PriceUpdate *Time `bson:"price_update"` // time of last price update
 
 	Categories []int32 `bson:"categories"`
 

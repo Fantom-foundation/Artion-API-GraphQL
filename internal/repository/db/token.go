@@ -110,20 +110,17 @@ const (
 	// fiTokenOfferUsdPrice is the column storing offered price of token in USD aggregated from listings.
 	fiTokenOfferUsdPrice = "max_offer.usd"
 
-	// fiTokenMinListValid is the column storing end of minimal listing price validity.
-	fiTokenMinListValid = "min_list_valid"
-
 	// fiTokenMaxOfferPrice is the column storing maximal offer price.
 	fiTokenMaxOfferPrice = "max_offer"
-
-	// fiTokenMaxOfferValid is the column storing end of minimal listing price validity.
-	fiTokenMaxOfferValid = "max_offer_valid"
 
 	// fiTokenPrice is the column storing price of token in USD aggregated from listings and auctions.
 	fiTokenPrice = "price"
 
-	// fiTokenPriceValid is the column storing end of fiTokenPrice validity
+	// fiTokenPriceValid is the column storing end of price validity, when the price should be updated
 	fiTokenPriceValid = "price_valid"
+
+	// fiTokenPriceUpdate is the column storing time of the last price update
+	fiTokenPriceUpdate = "price_update"
 
 	// fiTokenCategories is the column storing categories ids of the token.
 	fiTokenCategories = "categories"
@@ -284,7 +281,7 @@ func (db *MongoDbBridge) TokenMarkOffered(contract common.Address, tokenID hexut
 		return nil
 	}
 
-	return db.UpdateTokenRecalcPrice(t, bson.D{
+	return db.updateTokenAndRecalcPrice(t, bson.D{
 		{Key: fiTokenLastOffer, Value: *ts},
 		{Key: fiTokenHasOfferUntil, Value: db.OpenOfferUntil(&contract, tokenID.ToInt())},
 		{Key: fiTokenAmountLastOffer, Value: price},
@@ -305,7 +302,7 @@ func (db *MongoDbBridge) TokenMarkListed(contract common.Address, tokenID hexuti
 
 	t.HasListingSince = db.OpenListingSince(&contract, tokenID.ToInt())
 
-	return db.UpdateTokenRecalcPrice(t, bson.D{
+	return db.updateTokenAndRecalcPrice(t, bson.D{
 		{Key: fiTokenLastListing, Value: *ts},
 		{Key: fiTokenHasListingSince, Value: t.HasListingSince},
 		{Key: fiTokenAmountLastList, Value: price},
@@ -325,7 +322,7 @@ func (db *MongoDbBridge) TokenMarkAuctioned(contract common.Address, tokenID hex
 	}
 
 	auctionSince, auctionUntil := db.OpenAuctionRange(&contract, tokenID.ToInt())
-	return db.UpdateTokenRecalcPrice(t, bson.D{
+	return db.updateTokenAndRecalcPrice(t, bson.D{
 		{Key: fiTokenLastAuction, Value: *ts},
 		{Key: fiTokenHasAuctionSince, Value: auctionSince},
 		{Key: fiTokenHasAuctionUntil, Value: auctionUntil},
@@ -346,7 +343,7 @@ func (db *MongoDbBridge) TokenMarkBid(contract common.Address, tokenID hexutil.B
 		return nil
 	}
 
-	return db.UpdateTokenRecalcPrice(t, bson.D{
+	return db.updateTokenAndRecalcPrice(t, bson.D{
 		{Key: fiTokenHasBids, Value: true},
 		{Key: fiTokenAmountLastBid, Value: bidPrice},
 		{Key: fiTokenLastBid, Value: ts},
@@ -367,7 +364,7 @@ func (db *MongoDbBridge) TokenMarkUnlisted(contract common.Address, tokenID hexu
 
 	hasListingSince := db.OpenListingSince(&contract, tokenID.ToInt())
 
-	return db.UpdateTokenRecalcPrice(t, bson.D{
+	return db.updateTokenAndRecalcPrice(t, bson.D{
 		{Key: fiTokenHasListingSince, Value: hasListingSince},
 	}, priceCalc)
 }
@@ -384,7 +381,7 @@ func (db *MongoDbBridge) TokenMarkUnOffered(contract common.Address, tokenID hex
 		return nil
 	}
 
-	return db.UpdateTokenRecalcPrice(t, bson.D{
+	return db.updateTokenAndRecalcPrice(t, bson.D{
 		{Key: fiTokenHasOfferUntil, Value: db.OpenOfferUntil(&contract, tokenID.ToInt())},
 	}, priceCalc)
 }
@@ -404,7 +401,7 @@ func (db *MongoDbBridge) TokenMarkUnAuctioned(contract common.Address, tokenID h
 	hasAuctionSince, hasAuctionUntil := db.OpenAuctionRange(&contract, tokenID.ToInt())
 	t.HasBids = false
 
-	return db.UpdateTokenRecalcPrice(t, bson.D{
+	return db.updateTokenAndRecalcPrice(t, bson.D{
 		{Key: fiTokenHasAuctionSince, Value: hasAuctionSince},
 		{Key: fiTokenHasAuctionUntil, Value: hasAuctionUntil},
 		{Key: fiTokenHasBids, Value: false},
@@ -423,7 +420,7 @@ func (db *MongoDbBridge) TokenMarkUnBid(contract common.Address, tokenID hexutil
 		return nil
 	}
 
-	return db.UpdateTokenRecalcPrice(t, bson.D{
+	return db.updateTokenAndRecalcPrice(t, bson.D{
 		{Key: fiTokenHasBids, Value: false},
 	}, priceCalc)
 }
@@ -449,7 +446,7 @@ func (db *MongoDbBridge) TokenMarkSold(contract common.Address, tokenID hexutil.
 		t.AmountLastTrade = *price
 	}
 
-	return db.UpdateTokenRecalcPrice(t, bson.D{
+	return db.updateTokenAndRecalcPrice(t, bson.D{
 		{Key: fiTokenLastTrade, Value: t.LastTrade},
 		{Key: fiTokenAmountLastTrade, Value: t.AmountLastTrade},
 		{Key: fiTokenHasListingSince, Value: t.HasListingSince},
@@ -519,34 +516,58 @@ func (db *MongoDbBridge) TokenMetadataRefreshSet(setSize int64) ([]*types.Token,
 }
 
 // TokenPriceRefreshSet pulls s set of tokens scheduled to be their price updated.
-func (db *MongoDbBridge) TokenPriceRefreshSet(setSize int64) ([]*types.Token, error) {
+func (db *MongoDbBridge) TokenPriceRefreshSet(setSize int) ([]*types.Token, error) {
 	list := make([]*types.Token, setSize)
-	col := db.client.Database(db.dbName).Collection(coTokens)
 	now := time.Now()
 
-	// load the set from database
-	cur, err := col.Find(
-		context.Background(),
+	// load the set of expired prices (price changes because of timed event like end of auction)
+	count, err := db.addTokensIntoRefreshSet(
 		bson.D{{Key: fiTokenPriceValid, Value: bson.D{{"$lt", now}}}},
-		options.Find().SetSort(bson.D{{Key: fiTokenPriceValid, Value: 1}}).SetLimit(setSize),
-	)
+		options.Find().SetSort(bson.D{{Key: fiTokenPriceValid, Value: 1}}).SetLimit(int64(setSize)),
+		list,
+		)
 	if err != nil {
-		log.Errorf("can not pull price refresh set; %s", err.Error())
+		log.Errorf("failed to list invalid prices tokens; %s", err.Error())
 		return nil, err
 	}
-	defer closeFindCursor("TokenPriceRefreshSet", cur)
+
+	// when exhausted expired prices, complete the set with the oldest prices (regular exchange rate update)
+	count2 := 0
+	if count < setSize {
+		count, err = db.addTokensIntoRefreshSet(
+			bson.D{{Key: fiTokenPriceValid, Value: bson.D{{"$gte", now}}}},
+			options.Find().SetSort(bson.D{{Key: fiTokenPriceUpdate, Value: 1}}).SetLimit(int64(setSize - count)),
+			list,
+		)
+		if err != nil {
+			log.Errorf("failed to list old prices tokens; %s", err.Error())
+			return nil, err
+		}
+	}
+
+	return list[:count+count2], nil
+}
+
+func (db *MongoDbBridge) addTokensIntoRefreshSet(filter bson.D, opts *options.FindOptions, list []*types.Token) (int, error) {
+	col := db.client.Database(db.dbName).Collection(coTokens)
+	cur, err := col.Find(context.Background(), filter, opts)
+	if err != nil {
+		log.Errorf("can not pull refresh set; %s", err)
+		return 0, err
+	}
+	defer closeFindCursor("addIntoRefreshSet", cur)
 
 	var i int
 	for cur.Next(context.Background()) {
 		var row types.Token
-		if err := cur.Decode(&row); err != nil {
+		if err = cur.Decode(&row); err != nil {
 			log.Errorf("can not decode Token; %s", err.Error())
-			return nil, err
+			return i, err
 		}
 		list[i] = &row
 		i++
 	}
-	return list[:i], nil
+	return i, nil
 }
 
 // TokenPriceRefresh recalculates token prices and updates them in database.
@@ -558,8 +579,8 @@ func (db *MongoDbBridge) TokenPriceRefresh(t *types.Token, priceCalc types.Price
 	return db.UpdateToken(&t.Contract, t.TokenId.ToInt(), update)
 }
 
-// UpdateTokenRecalcPrice updates the token with given data and refresh the token prices
-func (db *MongoDbBridge) UpdateTokenRecalcPrice(t *types.Token, data bson.D, priceCalc types.PriceCalcFunc) error {
+// updateTokenAndRecalcPrice updates the token with given data and refresh the token prices
+func (db *MongoDbBridge) updateTokenAndRecalcPrice(t *types.Token, data bson.D, priceCalc types.PriceCalcFunc) error {
 	update, err := db.getTokenPriceUpdate(t, priceCalc)
 	if err != nil {
 		return fmt.Errorf("unable to refresh price of token %s/%s; %s", t.Contract.String(), t.TokenId.String(), err)
@@ -572,23 +593,23 @@ func (db *MongoDbBridge) getTokenPriceUpdate(t *types.Token, priceCalc types.Pri
 
 	minListPrice, err := db.MinListingPrice(t.Contract, t.TokenId, priceCalc)
 	if err != nil {
-		return nil, err
+		log.Errorf("obtaining listing price of %s/%s failed; %s", t.Contract.String(), t.TokenId.String(), err)
 	}
-	minListValidity, err := db.MinListingPriceValidity(t.Contract, t.TokenId)
+	minListValidity, err := db.MinListingPriceValidity(t.Contract, t.TokenId) // when starts next token listing
 	if err != nil {
-		return nil, err
+		log.Errorf("obtaining listing price validity of %s/%s failed; %s", t.Contract.String(), t.TokenId.String(), err)
 	}
 	maxOfferPrice, maxOfferValidity, err := db.MaxOfferPrice(t.Contract, t.TokenId, priceCalc)
 	if err != nil {
-		return nil, err
+		log.Errorf("obtaining offer price of %s/%s failed; %s", t.Contract.String(), t.TokenId.String(), err)
 	}
 	auctionPrice, bidPrice, reservePrice, auctionValidity, err := db.AuctionPrice(t.Contract, t.TokenId, priceCalc)
 	if err != nil {
-		return nil, err
+		log.Errorf("obtaining auction price of %s/%s failed; %s", t.Contract.String(), t.TokenId.String(), err)
 	}
 	lastTradePrice, err := priceCalc(t.AmountLastTrade.PayToken, t.AmountLastTrade.Amount)
 	if err != nil {
-		return nil, err
+		log.Errorf("obtaining last trade price of %s/%s failed; %s", t.Contract.String(), t.TokenId.String(), err)
 	}
 
 	// one aggregated price for general sorting
@@ -607,11 +628,16 @@ func (db *MongoDbBridge) getTokenPriceUpdate(t *types.Token, priceCalc types.Pri
 		if tokenPrice.Usd == 0 || tokenPrice.Usd > minListPrice.Usd {
 			tokenPrice = minListPrice
 
-			// if validity from auction is not shorter, set validity by listings validity
+			// if validity from listing is shorter, use it
 			if minListValidity != nil && (priceValidity == nil || (*time.Time)(priceValidity).After(time.Time(*minListValidity))) {
 				priceValidity = minListValidity
 			}
 		}
+	}
+
+	// if validity from offer is shorter, use it
+	if maxOfferValidity != nil && (priceValidity == nil || (*time.Time)(priceValidity).After(time.Time(*maxOfferValidity))) {
+		priceValidity = maxOfferValidity
 	}
 
 	// no listing or auction? use last trade price
@@ -622,18 +648,13 @@ func (db *MongoDbBridge) getTokenPriceUpdate(t *types.Token, priceCalc types.Pri
 
 	return bson.D{
 		{Key: fiTokenMinListPrice, Value: minListPrice},
-		{Key: fiTokenMinListValid, Value: minListValidity},
-
 		{Key: fiTokenMaxOfferPrice, Value: maxOfferPrice},
-		{Key: fiTokenMaxOfferValid, Value: maxOfferValidity},
-
 		{Key: fiTokenAmountLastBid, Value: bidPrice},
 		{Key: fiTokenReservePrice, Value: reservePrice},
-
 		{Key: fiTokenAmountLastTrade, Value: lastTradePrice},
-
 		{Key: fiTokenPrice, Value: tokenPrice},
 		{Key: fiTokenPriceValid, Value: priceValidity},
+		{Key: fiTokenPriceUpdate, Value: time.Now()},
 	}, nil
 }
 
