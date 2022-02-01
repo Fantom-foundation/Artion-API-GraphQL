@@ -522,7 +522,9 @@ func (db *MongoDbBridge) TokenPriceRefreshSet(setSize int) ([]*types.Token, erro
 
 	// load the set of expired prices (price changes because of timed event like end of auction)
 	count, err := db.addTokensIntoRefreshSet(
-		bson.D{{Key: fiTokenPriceValid, Value: bson.D{{"$lt", now}}}},
+		bson.M{
+			fiTokenPriceValid: bson.M{ "$lt": now },
+		},
 		options.Find().SetSort(bson.D{{Key: fiTokenPriceValid, Value: 1}}).SetLimit(int64(setSize)),
 		list,
 		)
@@ -534,10 +536,14 @@ func (db *MongoDbBridge) TokenPriceRefreshSet(setSize int) ([]*types.Token, erro
 	// when exhausted expired prices, complete the set with the oldest prices (regular exchange rate update)
 	count2 := 0
 	if count < setSize {
-		count, err = db.addTokensIntoRefreshSet(
-			bson.D{{Key: fiTokenPriceValid, Value: bson.D{{"$gte", now}}}},
+		count2, err = db.addTokensIntoRefreshSet(
+			bson.M{	"$or": bson.A{
+				bson.M{	fiTokenPriceValid: bson.M{ "$gte": now } },
+				bson.M{	fiTokenPriceValid: bson.M{ "$type": 10 } },
+				},
+			},
 			options.Find().SetSort(bson.D{{Key: fiTokenPriceUpdate, Value: 1}}).SetLimit(int64(setSize - count)),
-			list,
+			list[count:],
 		)
 		if err != nil {
 			log.Errorf("failed to list old prices tokens; %s", err.Error())
@@ -548,7 +554,7 @@ func (db *MongoDbBridge) TokenPriceRefreshSet(setSize int) ([]*types.Token, erro
 	return list[:count+count2], nil
 }
 
-func (db *MongoDbBridge) addTokensIntoRefreshSet(filter bson.D, opts *options.FindOptions, list []*types.Token) (int, error) {
+func (db *MongoDbBridge) addTokensIntoRefreshSet(filter bson.M, opts *options.FindOptions, list []*types.Token) (int, error) {
 	col := db.client.Database(db.dbName).Collection(coTokens)
 	cur, err := col.Find(context.Background(), filter, opts)
 	if err != nil {
@@ -585,7 +591,7 @@ func (db *MongoDbBridge) updateTokenAndRecalcPrice(t *types.Token, data bson.D, 
 	if err != nil {
 		return fmt.Errorf("unable to refresh price of token %s/%s; %s", t.Contract.String(), t.TokenId.String(), err)
 	}
-	return db.UpdateToken(&t.Contract, t.TokenId.ToInt(), append(data, update...))
+	return db.UpdateToken(&t.Contract, t.TokenId.ToInt(), mergeUpdates(data, update))
 }
 
 // getTokenPriceUpdate provides mongo-update for all token price fields
@@ -652,10 +658,29 @@ func (db *MongoDbBridge) getTokenPriceUpdate(t *types.Token, priceCalc types.Pri
 		{Key: fiTokenAmountLastBid, Value: bidPrice},
 		{Key: fiTokenReservePrice, Value: reservePrice},
 		{Key: fiTokenAmountLastTrade, Value: lastTradePrice},
-		{Key: fiTokenPrice, Value: tokenPrice},
+		{Key: fiTokenPrice, Value: tokenPrice.Usd},
 		{Key: fiTokenPriceValid, Value: priceValidity},
 		{Key: fiTokenPriceUpdate, Value: time.Now()},
 	}, nil
+}
+
+// mergeUpdates merges two inputs of mongo updates, updates1 have priority over updates2
+func mergeUpdates(updates1 bson.D, updates2 bson.D) bson.D {
+	for _, item := range updates2 {
+		if ! arrContains(updates1, item.Key) {
+			updates1 = append(updates1, item)
+		}
+	}
+	return updates1
+}
+
+func arrContains(arr bson.D, key string) bool {
+	for _, item := range arr {
+		if item.Key == key {
+			return true
+		}
+	}
+	return false
 }
 
 // TokenLikesViewsStore updates tokens views/likes from shared database.

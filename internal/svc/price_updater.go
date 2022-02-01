@@ -7,10 +7,10 @@ import (
 
 const (
 	// priceRefreshTick is the tick used to pull price refresh candidates.
-	priceRefreshTick = 5 * time.Second
+	priceRefreshTick = 2 * time.Second
 
 	// priceRefreshSetSize is the max size of price refresh set pulled at once.
-	priceRefreshSetSize = 50
+	priceRefreshSetSize = 500
 )
 
 // priceUpdater represents a service responsible for updating token prices when the price validity expires
@@ -88,7 +88,7 @@ func (mu *priceUpdater) run() {
 func (mu *priceUpdater) schedulePriceRefreshSet() {
 	defer func() {
 		if p := recover(); p != nil {
-			log.Errorf("could not collect price refresh set; ", p)
+			log.Errorf("could not collect price refresh set; %+v", p)
 		}
 	}()
 

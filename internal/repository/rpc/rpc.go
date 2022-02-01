@@ -105,7 +105,7 @@ func (o *Opera) RegisterContract(ct string, addr *common.Address) (err error) {
 		o.auctionContracts[*addr] = &ac
 		o.auctionContractsProps[*addr] = types.AuctionV3Props
 		o.basicContracts.AuctionHall = *addr
-		log.Warningf("setting basic auction to %s", ct, addr.String())
+		log.Warningf("setting basic auction to %s", addr.String())
 
 	case "market":
 		var mc MarketplaceContractV1
