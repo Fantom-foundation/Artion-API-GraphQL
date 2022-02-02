@@ -150,6 +150,7 @@ func (p *Proxy) getFileFromUri(uri string) (data []byte, mimetype string, err er
 	if ipfsUri := p.uri.GetIpfsUri(uri); ipfsUri != "" {
 		cachedContent := filecache.PullIpfsFile(getCidFromIpfsUri(ipfsUri))
 		if cachedContent != nil {
+			log.Infof("Loaded file %s from IPFS cache", ipfsUri)
 			return cachedContent, "", nil
 		}
 		return p.uri.GetFromIpfs(ipfsUri)
