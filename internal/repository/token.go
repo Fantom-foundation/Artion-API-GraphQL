@@ -4,7 +4,6 @@ package repository
 import (
 	"artion-api-graphql/internal/types"
 	"artion-api-graphql/internal/types/sorting"
-	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
@@ -198,69 +197,6 @@ func (p *Proxy) ListTokens(filter *types.TokenFilter, sorting sorting.TokenSorti
 
 func (p *Proxy) TokensCount(filter *types.TokenFilter) (count int64, err error) {
 	return p.db.TokensCount(filter)
-}
-
-func (p *Proxy) GetTokenJsonMetadata(uri string) (*types.JsonMetadata, error) {
-	var key strings.Builder
-	key.WriteString("GetTokenJsonMetadata")
-	key.WriteString(uri)
-
-	jsonMetadata, err, _ := p.callGroup.Do(key.String(), func() (interface{}, error) {
-		return p.uri.GetJsonMetadata(uri)
-	})
-	return jsonMetadata.(*types.JsonMetadata), err
-}
-
-// GetImage downloads an image expected on the given URI.
-func (p *Proxy) GetImage(imgUri string) (*types.Image, error) {
-	var key strings.Builder
-	key.WriteString("GetImage")
-	key.WriteString(imgUri)
-
-	data, err, _ := p.callGroup.Do(key.String(), func() (interface{}, error) {
-		return p.uri.GetImage(imgUri)
-	})
-	if err != nil {
-		log.Errorf("image can not be loaded from %s; %s", imgUri, err.Error())
-		return nil, err
-	}
-	if data == nil {
-		log.Errorf("image not found at %s", imgUri)
-		return nil, fmt.Errorf("image not found at given URI")
-	}
-	return data.(*types.Image), err
-}
-
-// GetImageThumbnail generates a thumbnail for an image expected to be downloadable from the given URI.
-func (p *Proxy) GetImageThumbnail(imgUri string) (*types.Image, error) {
-	var key strings.Builder
-	key.WriteString("GetImageThumbnail")
-	key.WriteString(imgUri)
-
-	data, err, _ := p.callGroup.Do(key.String(), func() (interface{}, error) {
-		image, err := p.GetImage(imgUri)
-		if err != nil {
-			return nil, fmt.Errorf("image loading failed for %s; %s", imgUri, err)
-		}
-		if nil == image {
-			return nil, fmt.Errorf("image %s not found", imgUri)
-		}
-
-		log.Infof("loaded %s of type %s", imgUri, image.Type.Mimetype())
-		thumb, err := createThumbnail(*image)
-		if err != nil {
-			return nil, fmt.Errorf("thumbnail creation failed; %s", err)
-		}
-		return &thumb, nil
-	})
-	if data == nil {
-		return nil, err
-	}
-	return data.(*types.Image), err
-}
-
-func (p *Proxy) UploadTokenData(metadata types.JsonMetadata, image types.Image) (uri string, err error) {
-	return p.pinner.PinTokenData(metadata, image)
 }
 
 type royaltyRecipient struct {

@@ -5,7 +5,6 @@ package uri
 import (
 	"artion-api-graphql/internal/config"
 	"artion-api-graphql/internal/logger"
-	"artion-api-graphql/internal/types"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -43,59 +42,6 @@ func New(cfg *config.Config, l logger.Logger) *Downloader {
 	return d
 }
 
-// GetJsonMetadata download and parse NFT token Metadata JSON from given URI
-func (d *Downloader) GetJsonMetadata(uri string) (*types.JsonMetadata, error) {
-	data, _, err := d.getFromUri(uri)
-	if err != nil {
-		return nil, fmt.Errorf("unable to download json; %s", err)
-	}
-	jsonMeta, err := types.DecodeJsonMetadata(data)
-	if err != nil {
-		return nil, fmt.Errorf("unable to decode json; %s", err)
-	}
-	return jsonMeta, nil
-}
-
-// GetImage downloads image from given URI and detect its mimetype
-func (d *Downloader) GetImage(uri string) (*types.Image, error) {
-	data, mimetype, err := d.getFromUri(uri)
-	if err != nil {
-		return nil, fmt.Errorf("unable to download image; %s", err)
-	}
-
-	if mimetype == "" {
-		mimetype = http.DetectContentType(data)
-	}
-
-	imgType := types.ImageTypeFromMimetype(mimetype)
-	if imgType == types.ImageTypeUnknown {
-		imgType = types.ImageTypeFromExtension(uri)
-	}
-
-	out := types.Image{
-		Data: data,
-		Type: imgType,
-	}
-	return &out, nil
-}
-
-// getFromUri resolves the URI and download file from the URI using appropriate protocol
-func (d *Downloader) getFromUri(uri string) (data []byte, mimetype string, err error) {
-	if strings.HasPrefix(uri, "data:") {
-		return d.getFromDataUri(uri)
-	}
-
-	if ipfsUri := d.getIpfsUri(uri); ipfsUri != "" {
-		return d.getFromIpfs(ipfsUri)
-	}
-
-	if strings.HasPrefix(uri, "http://") || strings.HasPrefix(uri, "https://") {
-		return d.getFromHttp(uri)
-	}
-
-	return nil, "", errors.New("Unexpected URI scheme for " + uri)
-}
-
 // unescapeIPFSUri decodes URL escaped address.
 func unescapeIPFSUri(uri string) string {
 	iUri, err := url.QueryUnescape(uri)
@@ -105,10 +51,10 @@ func unescapeIPFSUri(uri string) string {
 	return "/ipfs/" + iUri
 }
 
-// getIpfsUri try to obtain IPFS URI from the URI - returns empty string for non-ipfs uri
+// GetIpfsUri try to obtain IPFS URI from the URI - returns empty string for non-ipfs uri
 // This function is responsible for IPFS URI detection, unification and for conversion
 // of known IPFS HTTP gateways URI into IPFS URI.
-func (d *Downloader) getIpfsUri(uri string) string {
+func (d *Downloader) GetIpfsUri(uri string) string {
 	if strings.HasPrefix(uri, "/ipfs/") {
 		return uri
 	}
@@ -130,8 +76,8 @@ func (d *Downloader) getIpfsUri(uri string) string {
 	return ""
 }
 
-// getFromIpfs downloads the file from IPFS (URI is expected in "/ipfs/{CID}" form).
-func (d *Downloader) getFromIpfs(uri string) (data []byte, mimetype string, err error) {
+// GetFromIpfs downloads the file from IPFS (URI is expected in "/ipfs/{CID}" form).
+func (d *Downloader) GetFromIpfs(uri string) (data []byte, mimetype string, err error) {
 	if d.gateway == "" {
 		reader, err := d.ipfsShell.Cat(uri)
 		if err != nil {
@@ -143,12 +89,12 @@ func (d *Downloader) getFromIpfs(uri string) (data []byte, mimetype string, err 
 		}
 		return out, "", reader.Close()
 	} else {
-		return d.getFromIpfsGateway(uri)
+		return d.GetFromIpfsGateway(uri)
 	}
 }
 
-// getFromIpfsGateway downloads the file from IPFS HTTP gateway.
-func (d *Downloader) getFromIpfsGateway(uri string) (data []byte, mimetype string, err error) {
+// GetFromIpfsGateway downloads the file from IPFS HTTP gateway.
+func (d *Downloader) GetFromIpfsGateway(uri string) (data []byte, mimetype string, err error) {
 	client := http.Client{}
 	req, err := http.NewRequest("GET", d.gateway+uri, nil)
 	if err != nil {
@@ -174,8 +120,8 @@ func (d *Downloader) getFromIpfsGateway(uri string) (data []byte, mimetype strin
 	return out, mimetype, reader.Close()
 }
 
-// getFromHttp downloads the file from HTTP.
-func (d *Downloader) getFromHttp(uri string) (data []byte, mimetype string, err error) {
+// GetFromHttp downloads the file from HTTP.
+func (d *Downloader) GetFromHttp(uri string) (data []byte, mimetype string, err error) {
 	client := http.Client{
 		Timeout: 1 * time.Minute,
 	}
@@ -207,8 +153,8 @@ func (d *Downloader) getFromHttp(uri string) (data []byte, mimetype string, err 
 	return out, mimetype, nil
 }
 
-// getFromDataUri obtains the file encoded in "data:" URI.
-func (d *Downloader) getFromDataUri(uri string) (data []byte, mimetype string, err error) {
+// GetFromDataUri obtains the file encoded in "data:" URI.
+func (d *Downloader) GetFromDataUri(uri string) (data []byte, mimetype string, err error) {
 	parts := strings.Split(uri, ",")
 	if len(parts) < 2 {
 		return nil, "", errors.New("Invalid data uri - no comma: " + uri)
