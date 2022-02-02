@@ -131,6 +131,15 @@ func (p *Proxy) getImageFromUri(uri string) (*types.Image, error) {
 	return &out, nil
 }
 
+func getCidFromIpfsUri(uri string) string {
+	cid := uri[6:] // skip /ipfs/
+	slashIdx := strings.Index(cid, "/")
+	if slashIdx != -1 {
+		cid = cid[0:slashIdx]
+	}
+	return cid
+}
+
 // getFileFromUri resolves the URI and download file from the URI using appropriate protocol
 func (p *Proxy) getFileFromUri(uri string) (data []byte, mimetype string, err error) {
 	if strings.HasPrefix(uri, "data:") {
@@ -138,7 +147,7 @@ func (p *Proxy) getFileFromUri(uri string) (data []byte, mimetype string, err er
 	}
 
 	if ipfsUri := p.uri.GetIpfsUri(uri); ipfsUri != "" {
-		cachedContent := filecache.PullIpfsFile(ipfsUri[6:])
+		cachedContent := filecache.PullIpfsFile(getCidFromIpfsUri(uri))
 		if cachedContent != nil {
 			return cachedContent, "", nil
 		}
