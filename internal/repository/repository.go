@@ -7,6 +7,7 @@ import (
 	"artion-api-graphql/internal/repository/cache"
 	"artion-api-graphql/internal/repository/db"
 	"artion-api-graphql/internal/repository/email"
+	"artion-api-graphql/internal/repository/filecache"
 	"artion-api-graphql/internal/repository/pinner"
 	"artion-api-graphql/internal/repository/rpc"
 	"artion-api-graphql/internal/repository/uri"
@@ -112,6 +113,9 @@ func passEnvironment() {
 
 	// pinner
 	pinner.SetLogger(log)
+
+	// file-cache
+	filecache.SetLogger(log)
 }
 
 // newProxy creates new instance of Proxy, implementing the Repository interface.

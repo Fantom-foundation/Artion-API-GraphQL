@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"artion-api-graphql/internal/repository/filecache"
 	"artion-api-graphql/internal/types"
 	"encoding/json"
 	"errors"
@@ -102,7 +103,7 @@ func (p *Proxy) UploadTokenData(metadata types.JsonMetadata, image types.Image) 
 func (p *Proxy) pinFile(filename string, content []byte) (cid string, err error) {
 	cid, err = p.pinner.PinFile(filename, content)
 	if err == nil {
-		err = p.cache.PushIpfsFile(cid, content)
+		err = filecache.PushIpfsFile(cid, content)
 	}
 	return
 }
@@ -137,7 +138,7 @@ func (p *Proxy) getFileFromUri(uri string) (data []byte, mimetype string, err er
 	}
 
 	if ipfsUri := p.uri.GetIpfsUri(uri); ipfsUri != "" {
-		cachedContent := p.cache.PullIpfsFile(ipfsUri[6:])
+		cachedContent := filecache.PullIpfsFile(ipfsUri[6:])
 		if cachedContent != nil {
 			return cachedContent, "", nil
 		}
