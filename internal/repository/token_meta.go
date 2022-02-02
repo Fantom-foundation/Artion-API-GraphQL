@@ -137,6 +137,7 @@ func getCidFromIpfsUri(uri string) string {
 	if slashIdx != -1 {
 		cid = cid[0:slashIdx]
 	}
+	log.Infof("getCidFromIpfsUri(%s)=>(%s)", uri, cid)
 	return cid
 }
 
