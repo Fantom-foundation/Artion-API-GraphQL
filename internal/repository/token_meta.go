@@ -25,6 +25,9 @@ func (p *Proxy) GetTokenJsonMetadata(uri string) (*types.JsonMetadata, error) {
 		}
 		return jsonMeta, nil
 	})
+	if err != nil {
+		return nil, err
+	}
 	return jsonMetadata.(*types.JsonMetadata), err
 }
 
