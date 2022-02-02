@@ -2,6 +2,7 @@ package filecache
 
 import (
 	"artion-api-graphql/internal/logger"
+	"errors"
 	"os"
 )
 
@@ -17,7 +18,7 @@ const fileCacheDir = "/tmp/artion/"
 
 func PullIpfsFile(cid string) (content []byte) {
 	content, err := os.ReadFile(fileCacheDir + cid)
-	if err != os.ErrNotExist {
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		log.Errorf("unable to read filecache; %s", err)
 	}
 	return content
