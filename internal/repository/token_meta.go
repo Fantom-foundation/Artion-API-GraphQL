@@ -137,7 +137,7 @@ func getCidFromIpfsUri(uri string) string {
 	if slashIdx != -1 {
 		cid = cid[0:slashIdx]
 	}
-	log.Infof("getCidFromIpfsUri(%s)=>(%s)", uri, cid)
+	log.Debugf("getCidFromIpfsUri(%s)=>(%s)", uri, cid)
 	return cid
 }
 
@@ -148,7 +148,7 @@ func (p *Proxy) getFileFromUri(uri string) (data []byte, mimetype string, err er
 	}
 
 	if ipfsUri := p.uri.GetIpfsUri(uri); ipfsUri != "" {
-		cachedContent := filecache.PullIpfsFile(getCidFromIpfsUri(uri))
+		cachedContent := filecache.PullIpfsFile(getCidFromIpfsUri(ipfsUri))
 		if cachedContent != nil {
 			return cachedContent, "", nil
 		}
