@@ -47,12 +47,15 @@ func (i ImageType) Extension() string {
 func ImageTypeFromMimetype(mimetype string) ImageType {
 	switch mimetype {
 	case "image/svg+xml": return ImageTypeSvg
-	case "text/xml": return ImageTypeSvg // workaround of https://github.com/golang/go/issues/15888
 	case "image/gif": return ImageTypeGif
 	case "image/jpeg": return ImageTypeJpeg
 	case "image/png": return ImageTypePng
 	case "image/webp": return ImageTypeWebp
 	case "video/mp4": return ImageTypeMp4
+	}
+	// workaround of https://github.com/golang/go/issues/15888
+	if strings.HasPrefix(mimetype, "text/xml") {
+		return ImageTypeSvg
 	}
 	return ImageTypeUnknown
 }
