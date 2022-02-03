@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"math/big"
 	"strings"
 )
@@ -19,6 +20,8 @@ const (
 	fiLegacyTokenTokenId = "tokenID"
 
 	fiLegacyTokenViewed = "viewed"
+
+	fiLegacyTokenAppropriate = "isAppropriate"
 )
 
 func (sdb *SharedMongoDbBridge) GetTokenViews(contract common.Address, tokenId big.Int) (views *big.Int, err error) {
@@ -60,10 +63,10 @@ func (sdb *SharedMongoDbBridge) IncrementTokenViews(contract common.Address, tok
 			{Key: "$setOnInsert", Value: bson.D{
 				{Key: fiLegacyTokenContract, Value: strings.ToLower(contract.String())},
 				{Key: fiLegacyTokenTokenId, Value: int32(tokenId.Int64())},
+				{Key: fiLegacyTokenAppropriate, Value: false},
 			}},
 		},
-		// TODO: uncomment when Artion 1.0 will be down
-		//options.Update().SetUpsert(true),
+		options.Update().SetUpsert(true),
 	); err != nil {
 		log.Errorf("can not update LegacyToken views; %s", err)
 		return err
