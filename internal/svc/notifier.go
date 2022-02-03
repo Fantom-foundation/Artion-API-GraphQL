@@ -84,7 +84,7 @@ func (nop *notificationProcessor) run() {
 		case <-nop.sigStop:
 			return
 		case <-ticker.C:
-			if !nop.nextNotify() {
+			if !nop.nextNotify(ticker) {
 				return
 			}
 		}
@@ -92,7 +92,7 @@ func (nop *notificationProcessor) run() {
 }
 
 // process the given notification request, if it has not been processed before.
-func (nop *notificationProcessor) nextNotify() bool {
+func (nop *notificationProcessor) nextNotify(t *time.Ticker) bool {
 	select {
 	case <-nop.sigStop:
 		return false
@@ -102,6 +102,8 @@ func (nop *notificationProcessor) nextNotify() bool {
 			return false
 		}
 		nop.process(&evt)
+	case <-t.C:
+		// nothing arrived; skip a beat
 	}
 	return true
 }
