@@ -55,9 +55,6 @@ func erc721TokenMinted(evt *eth.Log, lo *logObserver) {
 		log.Errorf("could not store token %s at %s; %s", tok.TokenId.String(), tok.Contract.String(), err.Error())
 		return
 	}
-
-	// schedule metadata update on the token (do not wait for result)
-	queueMetadataUpdate(tok, lo)
 }
 
 // erc721TokenMustExist ensures ERC-721 token existence in the local database.

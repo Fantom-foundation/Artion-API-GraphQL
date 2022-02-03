@@ -4,13 +4,15 @@ import (
 	"artion-api-graphql/internal/repository/filecache"
 	"artion-api-graphql/internal/types"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
+	neturl "net/url"
 	"strings"
 )
 
+// GetTokenJsonMetadata provides decoded JSON metadata for the given token metadata URI.
 func (p *Proxy) GetTokenJsonMetadata(uri string) (*types.JsonMetadata, error) {
+	// make sure to do this only once, if parallel requests were fired
 	var key strings.Builder
 	key.WriteString("GetTokenJsonMetadata")
 	key.WriteString(uri)
@@ -20,15 +22,18 @@ func (p *Proxy) GetTokenJsonMetadata(uri string) (*types.JsonMetadata, error) {
 		if err != nil {
 			return nil, fmt.Errorf("unable to download json; %s", err)
 		}
+
 		jsonMeta, err := types.DecodeJsonMetadata(data)
 		if err != nil {
 			return nil, fmt.Errorf("unable to decode json; %s", err)
 		}
+
 		return jsonMeta, nil
 	})
 	if err != nil {
 		return nil, err
 	}
+
 	return jsonMetadata.(*types.JsonMetadata), err
 }
 
@@ -80,11 +85,13 @@ func (p *Proxy) GetImageThumbnail(imgUri string) (*types.Image, error) {
 	return data.(*types.Image), err
 }
 
+// UploadTokenData stores JSON metadata along with the token image into the IPFS storage.
 func (p *Proxy) UploadTokenData(metadata types.JsonMetadata, image types.Image) (uri string, err error) {
 	cid, err := p.pinFile("token-image", image.Data)
 	if err != nil {
 		return "", fmt.Errorf("uploading token image failed; %s", err)
 	}
+
 	imageUri := "https://artion.mypinata.cloud/ipfs/" + cid
 	metadata.Image = &imageUri
 
@@ -100,6 +107,7 @@ func (p *Proxy) UploadTokenData(metadata types.JsonMetadata, image types.Image) 
 	return "https://artion.mypinata.cloud/ipfs/" + cid, nil
 }
 
+// pinFile requests pinning of the given file generating IPFS CID of the stored file.
 func (p *Proxy) pinFile(filename string, content []byte) (cid string, err error) {
 	cid, err = p.pinner.PinFile(filename, content)
 	if err == nil {
@@ -131,6 +139,7 @@ func (p *Proxy) getImageFromUri(uri string) (*types.Image, error) {
 	return &out, nil
 }
 
+// getCidFromIpfsUri extracts IPFS CID from the given URI.
 func getCidFromIpfsUri(uri string) string {
 	cid := uri[6:] // skip /ipfs/
 	slashIdx := strings.Index(cid, "/")
@@ -142,21 +151,36 @@ func getCidFromIpfsUri(uri string) string {
 
 // getFileFromUri resolves the URI and download file from the URI using appropriate protocol
 func (p *Proxy) getFileFromUri(uri string) (data []byte, mimetype string, err error) {
+	// the URI contains the data directly as BASE64 encoded data stream
 	if strings.HasPrefix(uri, "data:") {
 		return p.uri.GetFromDataUri(uri)
 	}
 
+	// do we have an IPFS URI to get the data for?
 	if ipfsUri := p.uri.GetIpfsUri(uri); ipfsUri != "" {
+		// try the local cache first
 		cachedContent := filecache.PullIpfsFile(getCidFromIpfsUri(ipfsUri))
 		if cachedContent != nil {
 			return cachedContent, "", nil
 		}
-		return p.uri.GetFromIpfs(ipfsUri)
+
+		// extract data from IPFS, if possible
+		data, mimetype, err = p.uri.GetFromIpfs(ipfsUri)
+		if err == nil {
+			return data, mimetype, err
+		}
 	}
 
-	if strings.HasPrefix(uri, "http://") || strings.HasPrefix(uri, "https://") {
+	// try to decode the URI to validate the format
+	url, err := neturl.Parse(uri)
+	if err != nil {
+		return nil, "", fmt.Errorf("invalid URI format at %s; %s", uri, err.Error())
+	}
+
+	// check the schema for known access methods
+	if url.Scheme == "http" || url.Scheme == "https" {
 		return p.uri.GetFromHttp(uri)
 	}
 
-	return nil, "", errors.New("Unexpected URI scheme for " + uri)
+	return nil, "", fmt.Errorf("invalid URI scheme; file not available at %s", uri)
 }

@@ -17,7 +17,7 @@ import (
 )
 
 // ipfsRequestTimeout represents the timeout applied to IPFS requests.
-const ipfsRequestTimeout = 30 * time.Second
+const ipfsRequestTimeout = 60 * time.Second
 
 type Downloader struct {
 	ipfsShell        *ipfsapi.Shell
@@ -78,19 +78,26 @@ func (d *Downloader) GetIpfsUri(uri string) string {
 
 // GetFromIpfs downloads the file from IPFS (URI is expected in "/ipfs/{CID}" form).
 func (d *Downloader) GetFromIpfs(uri string) (data []byte, mimetype string, err error) {
-	if d.gateway == "" {
-		reader, err := d.ipfsShell.Cat(uri)
-		if err != nil {
-			return nil, "", err
-		}
-		out, err := io.ReadAll(reader)
-		if err != nil {
-			return nil, "", err
-		}
-		return out, "", reader.Close()
-	} else {
+	if d.gateway != "" {
 		return d.GetFromIpfsGateway(uri)
 	}
+
+	reader, err := d.ipfsShell.Cat(uri)
+	if err != nil {
+		return nil, "", err
+	}
+
+	defer func(r io.ReadCloser) {
+		if e := r.Close(); e != nil {
+			d.log.Errorf("could not close IPFS shell reader; %s", e.Error())
+		}
+	}(reader)
+
+	out, err := io.ReadAll(reader)
+	if err != nil {
+		return nil, "", err
+	}
+	return out, "", nil
 }
 
 // GetFromIpfsGateway downloads the file from IPFS HTTP gateway.
@@ -100,24 +107,34 @@ func (d *Downloader) GetFromIpfsGateway(uri string) (data []byte, mimetype strin
 	if err != nil {
 		return nil, "", err
 	}
+
+	// add access authorization header with pre-shared bearer token
 	if d.gatewayBearer != "" {
 		req.Header.Set("Authorization", "Bearer "+d.gatewayBearer)
 	}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, "", err
 	}
+
+	defer func(r io.ReadCloser) {
+		if e := r.Close(); e != nil {
+			d.log.Errorf("could not close IPFS gateway response reader; %s", e.Error())
+		}
+	}(resp.Body)
+
 	if resp.StatusCode != 200 {
 		return nil, "", fmt.Errorf("HTTP gateway returned %s", resp.Status)
 	}
-	reader := resp.Body
-	out, err := io.ReadAll(reader)
+
+	out, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, "", err
 	}
 
 	mimetype = resp.Header.Get("Content-Type")
-	return out, mimetype, reader.Close()
+	return out, mimetype, nil
 }
 
 // GetFromHttp downloads the file from HTTP.
