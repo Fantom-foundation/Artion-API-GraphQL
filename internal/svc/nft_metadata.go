@@ -8,10 +8,10 @@ import (
 
 const (
 	// nftMetadataWorkerQueueCapacity is the capacity of NFT metadata worker queue.
-	nftMetadataWorkerQueueCapacity = 200
+	nftMetadataWorkerQueueCapacity = 250
 
 	// nftMetadataRefreshTick is the tick used to queue NFT metadata refresh candidates.
-	nftMetadataRefreshTick = 15 * time.Second
+	nftMetadataRefreshTick = 20 * time.Second
 
 	// nftMetadataRefreshPullTick is the tick used to pull NFT metadata refresh candidates.
 	nftMetadataRefreshPullTick = 200 * time.Millisecond
@@ -122,7 +122,7 @@ func (mu *nftMetadataUpdater) pullNext(tiPool *time.Ticker, tiRefresh *time.Tick
 			return nil, false
 		}
 	case <-tiPool.C:
-		mu.scheduleMetadataRefreshSet()
+		go mu.scheduleMetadataRefreshSet()
 	case <-tiRefresh.C:
 		// try to pull from the refresh queue instead
 		select {

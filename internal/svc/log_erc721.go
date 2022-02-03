@@ -17,7 +17,7 @@ var zeroAddress = common.Address{}
 
 // erc721TokenMinted handles log event for new NFT token minted on an observed ERC721 contract.
 // ERC721::Minted(uint256 tokenId, address beneficiary, string tokenUri, address minter)
-func erc721TokenMinted(evt *eth.Log, lo *logObserver) {
+func erc721TokenMinted(evt *eth.Log, _ *logObserver) {
 	// sanity check: no extra topics; tokenId + 2 x Address + URI >= 3 x 32 bytes
 	if len(evt.Data) < 96 || len(evt.Topics) != 1 {
 		log.Errorf("not ERC721::Minted() event #%d/#%d; expected at least 96 bytes of data, %d given; expected 1 topic, %d given",
@@ -177,8 +177,8 @@ func queueMetadataUpdate(nft *types.Token, lo *logObserver) {
 	// if the updater queue is full, we just let the updater pick the token for update later
 	select {
 	case lo.outNftTokens <- nft:
-	case <-time.After(100 * time.Millisecond):
-		log.Errorf("NFT token updater queue full, postponing token %s at %s metadata update", nft.TokenId.String(), nft.Contract.String())
+	case <-time.After(500 * time.Millisecond):
+		log.Criticalf("NFT token updater queue full, postponing token %s at %s metadata update", nft.TokenId.String(), nft.Contract.String())
 	}
 }
 

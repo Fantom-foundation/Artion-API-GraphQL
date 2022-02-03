@@ -12,7 +12,7 @@ const (
 	observedBlocksCapacity = 100
 
 	// nftQueueCapacity is the capacity of NFT updater queue.
-	nftQueueCapacity = 500
+	nftQueueCapacity = 1000
 )
 
 // EventHandler represents a function used to process event log record.

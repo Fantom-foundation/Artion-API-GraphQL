@@ -9,7 +9,7 @@ import (
 )
 
 // nftMetadataWorkerThreads is the number of threads working on NFT metadata updates.
-const nftMetadataWorkerThreads = 50
+const nftMetadataWorkerThreads = 100
 
 // nftMetadataWorker represents a service responsible for processing NFT token metadata
 // update queue from the metadata updater service.
@@ -91,7 +91,6 @@ func (mwt *nftMetadataWorkerThread) run(id int) {
 		mwt.wg.Done()
 	}()
 
-	log.Infof("metadata worker #%d ready", id)
 	for {
 		// pull next token
 		select {
