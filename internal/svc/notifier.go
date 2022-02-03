@@ -12,6 +12,9 @@ const (
 
 	// notificationQueueTerminateDelay is the delay we let the queue clear out before forced termination.
 	notificationQueueTerminateDelay = 2 * time.Second
+
+	// notificationQueueTick is the speed of draining the notification
+	notificationQueueTick = 200 * time.Millisecond
 )
 
 // represents a function callback for notification delivery
@@ -75,18 +78,32 @@ func (nop *notificationProcessor) run() {
 		nop.mgr.closed(nop)
 	}()
 
+	ticker := time.NewTicker(notificationQueueTick)
 	for {
 		select {
 		case <-nop.sigStop:
 			return
-		case evt, ok := <-nop.inNotify:
-			if !ok {
-				log.Noticef("no more notification are coming")
+		case <-ticker.C:
+			if !nop.nextNotify() {
 				return
 			}
-			nop.process(&evt)
 		}
 	}
+}
+
+// process the given notification request, if it has not been processed before.
+func (nop *notificationProcessor) nextNotify() bool {
+	select {
+	case <-nop.sigStop:
+		return false
+	case evt, ok := <-nop.inNotify:
+		if !ok {
+			log.Noticef("no more notification are coming")
+			return false
+		}
+		nop.process(&evt)
+	}
+	return true
 }
 
 // process the given notification request, if it has not been processed before.

@@ -7,6 +7,9 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
+// maxFollowerNotificationSize defines the max size of followers pool we handle with notifications
+const maxFollowerNotificationSize = 50
+
 // notifyEventToOwner queues token notification to the NFT owner.
 func notifyEventToOwner(ntt int32, contract common.Address, tokenID hexutil.Big, owner common.Address, from *common.Address, ts types.Time) {
 	repo.QueueNotificationForProcessing(&types.Notification{
@@ -22,6 +25,12 @@ func notifyEventToOwner(ntt int32, contract common.Address, tokenID hexutil.Big,
 // notifyEventToFollowers notifies followers of an NFT owner about an event.
 func notifyEventToFollowers(ntt int32, contract common.Address, tokenID hexutil.Big, owner common.Address, ts types.Time) {
 	list := repo.MustFollowers(owner)
+	if len(list) > maxFollowerNotificationSize {
+		log.Criticalf("too many followers on %s/%s, owner %s [%d], notifications #%d not sent", contract.String(), tokenID.String(), owner.String(), len(list), ntt)
+		return
+	}
+
+	// queue notifications
 	for _, fo := range list {
 		repo.QueueNotificationForProcessing(&types.Notification{
 			Type:       ntt,
