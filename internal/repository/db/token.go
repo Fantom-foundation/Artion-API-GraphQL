@@ -217,7 +217,7 @@ func (db *MongoDbBridge) StoreToken(token *types.Token) error {
 }
 
 // UpdateToken updates the token data i the database using provided update data set.
-func (db *MongoDbBridge) UpdateToken(contract *common.Address, tokenID *big.Int, data bson.D) error {
+func (db *MongoDbBridge) UpdateToken(contract *common.Address, tokenID *big.Int, data bson.M) error {
 	// get the collection
 	col := db.client.Database(db.dbName).Collection(coTokens)
 	rs, err := col.UpdateOne(
@@ -241,19 +241,19 @@ func (db *MongoDbBridge) UpdateTokenMetadata(nft *types.Token) error {
 		return fmt.Errorf("no value to store")
 	}
 
-	return db.UpdateToken(&nft.Contract, (*big.Int)(&nft.TokenId), bson.D{
-		{Key: fiTokenName, Value: nft.Name},
-		{Key: fiTokenDescription, Value: nft.Description},
-		{Key: fiTokenImageURI, Value: nft.ImageURI},
-		{Key: fiTokenImageType, Value: nft.ImageType},
-		{Key: fiTokenIpRights, Value: nft.IpRights},
-		{Key: fiTokenSymbol, Value: nft.Symbol},
-		{Key: fiTokenCategories, Value: nft.Categories},
-		{Key: fiTokenRoyalty, Value: nft.Royalty},
-		{Key: fiTokenFeeRecipient, Value: nft.FeeRecipient},
-		{Key: fiTokenMetadataUpdate, Value: nft.MetaUpdate},
-		{Key: fiTokenMetadataUpdateFailures, Value: nft.MetaFailures},
-		{Key: fiTokenIsActive, Value: nft.IsActive},
+	return db.UpdateToken(&nft.Contract, (*big.Int)(&nft.TokenId), bson.M{
+		fiTokenName: nft.Name,
+		fiTokenDescription: nft.Description,
+		fiTokenImageURI: nft.ImageURI,
+		fiTokenImageType: nft.ImageType,
+		fiTokenIpRights: nft.IpRights,
+		fiTokenSymbol: nft.Symbol,
+		fiTokenCategories: nft.Categories,
+		fiTokenRoyalty: nft.Royalty,
+		fiTokenFeeRecipient: nft.FeeRecipient,
+		fiTokenMetadataUpdate: nft.MetaUpdate,
+		fiTokenMetadataUpdateFailures: nft.MetaFailures,
+		fiTokenIsActive: nft.IsActive,
 	})
 }
 
@@ -263,9 +263,9 @@ func (db *MongoDbBridge) UpdateTokenMetadataRefreshSchedule(nft *types.Token) er
 		return fmt.Errorf("no value to store")
 	}
 
-	return db.UpdateToken(&nft.Contract, (*big.Int)(&nft.TokenId), bson.D{
-		{Key: fiTokenMetadataUpdate, Value: nft.MetaUpdate},
-		{Key: fiTokenMetadataUpdateFailures, Value: nft.MetaFailures},
+	return db.UpdateToken(&nft.Contract, (*big.Int)(&nft.TokenId), bson.M{
+		fiTokenMetadataUpdate: nft.MetaUpdate,
+		fiTokenMetadataUpdateFailures: nft.MetaFailures,
 	})
 }
 
@@ -281,10 +281,10 @@ func (db *MongoDbBridge) TokenMarkOffered(contract common.Address, tokenID hexut
 		return nil
 	}
 
-	return db.updateTokenAndRecalcPrice(t, bson.D{
-		{Key: fiTokenLastOffer, Value: *ts},
-		{Key: fiTokenHasOfferUntil, Value: db.OpenOfferUntil(&contract, tokenID.ToInt())},
-		{Key: fiTokenAmountLastOffer, Value: price},
+	return db.updateTokenAndRecalcPrice(t, bson.M{
+		fiTokenLastOffer: *ts,
+		fiTokenHasOfferUntil: db.OpenOfferUntil(&contract, tokenID.ToInt()),
+		fiTokenAmountLastOffer: price,
 	}, priceCalc)
 }
 
@@ -302,10 +302,10 @@ func (db *MongoDbBridge) TokenMarkListed(contract common.Address, tokenID hexuti
 
 	t.HasListingSince = db.OpenListingSince(&contract, tokenID.ToInt())
 
-	return db.updateTokenAndRecalcPrice(t, bson.D{
-		{Key: fiTokenLastListing, Value: *ts},
-		{Key: fiTokenHasListingSince, Value: t.HasListingSince},
-		{Key: fiTokenAmountLastList, Value: price},
+	return db.updateTokenAndRecalcPrice(t, bson.M{
+		fiTokenLastListing: *ts,
+		fiTokenHasListingSince: t.HasListingSince,
+		fiTokenAmountLastList: price,
 	}, priceCalc)
 }
 
@@ -322,12 +322,12 @@ func (db *MongoDbBridge) TokenMarkAuctioned(contract common.Address, tokenID hex
 	}
 
 	auctionSince, auctionUntil := db.OpenAuctionRange(&contract, tokenID.ToInt())
-	return db.updateTokenAndRecalcPrice(t, bson.D{
-		{Key: fiTokenLastAuction, Value: *ts},
-		{Key: fiTokenHasAuctionSince, Value: auctionSince},
-		{Key: fiTokenHasAuctionUntil, Value: auctionUntil},
-		{Key: fiTokenHasBids, Value: false},
-		{Key: fiTokenReservePrice, Value: reservePrice},
+	return db.updateTokenAndRecalcPrice(t, bson.M{
+		fiTokenLastAuction: *ts,
+		fiTokenHasAuctionSince: auctionSince,
+		fiTokenHasAuctionUntil: auctionUntil,
+		fiTokenHasBids: false,
+		fiTokenReservePrice: reservePrice,
 	}, priceCalc)
 }
 
@@ -343,10 +343,10 @@ func (db *MongoDbBridge) TokenMarkBid(contract common.Address, tokenID hexutil.B
 		return nil
 	}
 
-	return db.updateTokenAndRecalcPrice(t, bson.D{
-		{Key: fiTokenHasBids, Value: true},
-		{Key: fiTokenAmountLastBid, Value: bidPrice},
-		{Key: fiTokenLastBid, Value: ts},
+	return db.updateTokenAndRecalcPrice(t, bson.M{
+		fiTokenHasBids: true,
+		fiTokenAmountLastBid: bidPrice,
+		fiTokenLastBid: ts,
 	}, priceCalc)
 }
 
@@ -364,8 +364,8 @@ func (db *MongoDbBridge) TokenMarkUnlisted(contract common.Address, tokenID hexu
 
 	hasListingSince := db.OpenListingSince(&contract, tokenID.ToInt())
 
-	return db.updateTokenAndRecalcPrice(t, bson.D{
-		{Key: fiTokenHasListingSince, Value: hasListingSince},
+	return db.updateTokenAndRecalcPrice(t, bson.M{
+		fiTokenHasListingSince: hasListingSince,
 	}, priceCalc)
 }
 
@@ -381,8 +381,8 @@ func (db *MongoDbBridge) TokenMarkUnOffered(contract common.Address, tokenID hex
 		return nil
 	}
 
-	return db.updateTokenAndRecalcPrice(t, bson.D{
-		{Key: fiTokenHasOfferUntil, Value: db.OpenOfferUntil(&contract, tokenID.ToInt())},
+	return db.updateTokenAndRecalcPrice(t, bson.M{
+		fiTokenHasOfferUntil: db.OpenOfferUntil(&contract, tokenID.ToInt()),
 	}, priceCalc)
 }
 
@@ -401,10 +401,10 @@ func (db *MongoDbBridge) TokenMarkUnAuctioned(contract common.Address, tokenID h
 	hasAuctionSince, hasAuctionUntil := db.OpenAuctionRange(&contract, tokenID.ToInt())
 	t.HasBids = false
 
-	return db.updateTokenAndRecalcPrice(t, bson.D{
-		{Key: fiTokenHasAuctionSince, Value: hasAuctionSince},
-		{Key: fiTokenHasAuctionUntil, Value: hasAuctionUntil},
-		{Key: fiTokenHasBids, Value: false},
+	return db.updateTokenAndRecalcPrice(t, bson.M{
+		fiTokenHasAuctionSince: hasAuctionSince,
+		fiTokenHasAuctionUntil: hasAuctionUntil,
+		fiTokenHasBids: false,
 	}, priceCalc)
 }
 
@@ -420,8 +420,8 @@ func (db *MongoDbBridge) TokenMarkUnBid(contract common.Address, tokenID hexutil
 		return nil
 	}
 
-	return db.updateTokenAndRecalcPrice(t, bson.D{
-		{Key: fiTokenHasBids, Value: false},
+	return db.updateTokenAndRecalcPrice(t, bson.M{
+		fiTokenHasBids: false,
 	}, priceCalc)
 }
 
@@ -446,20 +446,20 @@ func (db *MongoDbBridge) TokenMarkSold(contract common.Address, tokenID hexutil.
 		t.AmountLastTrade = *price
 	}
 
-	return db.updateTokenAndRecalcPrice(t, bson.D{
-		{Key: fiTokenLastTrade, Value: t.LastTrade},
-		{Key: fiTokenAmountLastTrade, Value: t.AmountLastTrade},
-		{Key: fiTokenHasListingSince, Value: t.HasListingSince},
-		{Key: fiTokenHasOfferUntil, Value: t.HasOfferUntil},
-		{Key: fiTokenHasAuctionSince, Value: t.HasAuctionSince},
-		{Key: fiTokenHasAuctionUntil, Value: t.HasAuctionUntil},
-		{Key: fiTokenHasBids, Value: false},
+	return db.updateTokenAndRecalcPrice(t, bson.M{
+		fiTokenLastTrade: t.LastTrade,
+		fiTokenAmountLastTrade: t.AmountLastTrade,
+		fiTokenHasListingSince: t.HasListingSince,
+		fiTokenHasOfferUntil: t.HasOfferUntil,
+		fiTokenHasAuctionSince: t.HasAuctionSince,
+		fiTokenHasAuctionUntil: t.HasAuctionUntil,
+		fiTokenHasBids: false,
 	}, priceCalc)
 }
 
 func (db *MongoDbBridge) TokenMarkBanned(contract *common.Address, tokenID *big.Int, banned bool) error {
-	return db.UpdateToken(contract, tokenID, bson.D{
-		{Key: fiTokenIsBanned, Value: banned},
+	return db.UpdateToken(contract, tokenID, bson.M{
+		fiTokenIsBanned: banned,
 	})
 }
 
@@ -586,16 +586,20 @@ func (db *MongoDbBridge) TokenPriceRefresh(t *types.Token, priceCalc types.Price
 }
 
 // updateTokenAndRecalcPrice updates the token with given data and refresh the token prices
-func (db *MongoDbBridge) updateTokenAndRecalcPrice(t *types.Token, data bson.D, priceCalc types.PriceCalcFunc) error {
+func (db *MongoDbBridge) updateTokenAndRecalcPrice(t *types.Token, data bson.M, priceCalc types.PriceCalcFunc) error {
 	update, err := db.getTokenPriceUpdate(t, priceCalc)
 	if err != nil {
 		return fmt.Errorf("unable to refresh price of token %s/%s; %s", t.Contract.String(), t.TokenId.String(), err)
 	}
-	return db.UpdateToken(&t.Contract, t.TokenId.ToInt(), mergeUpdates(data, update))
+	// merge update set from parameter with price update set
+	for key, value := range data {
+		update[key] = value
+	}
+	return db.UpdateToken(&t.Contract, t.TokenId.ToInt(), update)
 }
 
 // getTokenPriceUpdate provides mongo-update for all token price fields
-func (db *MongoDbBridge) getTokenPriceUpdate(t *types.Token, priceCalc types.PriceCalcFunc) (update bson.D, err error) {
+func (db *MongoDbBridge) getTokenPriceUpdate(t *types.Token, priceCalc types.PriceCalcFunc) (update bson.M, err error) {
 
 	minListPrice, err := db.MinListingPrice(t.Contract, t.TokenId, priceCalc)
 	if err != nil {
@@ -652,43 +656,24 @@ func (db *MongoDbBridge) getTokenPriceUpdate(t *types.Token, priceCalc types.Pri
 		priceValidity = nil
 	}
 
-	return bson.D{
-		{Key: fiTokenMinListPrice, Value: minListPrice},
-		{Key: fiTokenMaxOfferPrice, Value: maxOfferPrice},
-		{Key: fiTokenAmountLastBid, Value: bidPrice},
-		{Key: fiTokenReservePrice, Value: reservePrice},
-		{Key: fiTokenAmountLastTrade, Value: lastTradePrice},
-		{Key: fiTokenPrice, Value: tokenPrice.Usd},
-		{Key: fiTokenPriceValid, Value: priceValidity},
-		{Key: fiTokenPriceUpdate, Value: time.Now()},
+	return bson.M{
+		fiTokenMinListPrice: minListPrice,
+		fiTokenMaxOfferPrice: maxOfferPrice,
+		fiTokenAmountLastBid: bidPrice,
+		fiTokenReservePrice: reservePrice,
+		fiTokenAmountLastTrade: lastTradePrice,
+		fiTokenPrice: tokenPrice.Usd,
+		fiTokenPriceValid: priceValidity,
+		fiTokenPriceUpdate: time.Now(),
 	}, nil
-}
-
-// mergeUpdates merges two inputs of mongo updates, updates1 have priority over updates2
-func mergeUpdates(updates1 bson.D, updates2 bson.D) bson.D {
-	for _, item := range updates2 {
-		if ! arrContains(updates1, item.Key) {
-			updates1 = append(updates1, item)
-		}
-	}
-	return updates1
-}
-
-func arrContains(arr bson.D, key string) bool {
-	for _, item := range arr {
-		if item.Key == key {
-			return true
-		}
-	}
-	return false
 }
 
 // TokenLikesViewsStore updates tokens views/likes from shared database.
 func (db *MongoDbBridge) TokenLikesViewsStore(t *types.Token) error {
-	return db.UpdateToken(&t.Contract, t.TokenId.ToInt(), bson.D{
-		bson.E{Key: fiTokenCachedLikes, Value: t.CachedLikes},
-		bson.E{Key: fiTokenCachedViews, Value: t.CachedViews},
-		bson.E{Key: fiTokenLikesUpdate, Value: t.LikesUpdate},
+	return db.UpdateToken(&t.Contract, t.TokenId.ToInt(), bson.M{
+		fiTokenCachedLikes: t.CachedLikes,
+		fiTokenCachedViews: t.CachedViews,
+		fiTokenLikesUpdate: t.LikesUpdate,
 	})
 }
 
