@@ -13,7 +13,7 @@ type PayToken struct {
 	Name     string
 	Symbol string
 	Decimals int32
-	UnitPrice *big.Int // 6 decimals USD
+	UnitPrice *big.Int // 18 decimals USD
 }
 
 type TokenPrice struct {

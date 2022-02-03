@@ -4,6 +4,7 @@ import (
 	"artion-api-graphql/internal/repository"
 	"artion-api-graphql/internal/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"math/big"
 )
 
 type PayToken types.PayToken
@@ -20,6 +21,7 @@ func (rs *RootResolver) PayTokens() (out []PayToken, err error) {
 	return out, nil
 }
 
+// Price returns current price of the token in 6-decimals USD
 func (pt PayToken) Price() (hexutil.Uint64, error) {
-	return hexutil.Uint64(pt.UnitPrice.Uint64()), nil
+	return hexutil.Uint64(new(big.Int).Div(pt.UnitPrice, big.NewInt(1_000_000_000_000)).Uint64()), nil
 }
