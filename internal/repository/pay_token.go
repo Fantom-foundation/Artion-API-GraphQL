@@ -16,15 +16,18 @@ var tokenPriceDecimalsCorrection = big.NewInt(1_000_000_000_000)
 var zeroAddress = common.Address{}
 var wFtmAddress = common.HexToAddress("0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83")
 
-func (p *Proxy) CalculateTokenPrice(address common.Address, amount hexutil.Big) (out types.TokenPrice, err error) {
-	payToken, err := p.getPayToken(&address)
-	if err != nil {
-		return types.TokenPrice{}, err
-	}
+// GetUnifiedPrice converts token price in pay-tokens to value in unified units for storing in database.
+func (p *Proxy) GetUnifiedPrice(address common.Address, amount hexutil.Big) (out types.TokenPrice, err error) {
 	out = types.TokenPrice{
 		Usd:      0,
 		Amount:   amount,
 		PayToken: address,
+	}
+
+	// load pay token price and decimals from cache
+	payToken, err := p.getPayToken(&address)
+	if err != nil {
+		return types.TokenPrice{}, err
 	}
 
 	// calculate price for val wei in USD in 6-decimals fixed point
@@ -35,65 +38,6 @@ func (p *Proxy) CalculateTokenPrice(address common.Address, amount hexutil.Big) 
 		return out, fmt.Errorf("GetUnifiedPriceAt overflow - val: %s unit: %s decimals: %d", amount.String(), payToken.UnitPrice.String(), payToken.Decimals)
 	}
 	return out, nil
-}
-
-// CalculateUnifiedPrice calculates the unified price for the given params.
-func (p *Proxy) CalculateUnifiedPrice(payToken *common.Address, amount *big.Int, unitPrice *big.Int) types.TokenPrice {
-	// prep the struct
-	out := types.TokenPrice{
-		Usd:      0,
-		Amount:   hexutil.Big(*amount),
-		PayToken: *payToken,
-	}
-
-	// get amount of pay-token decimals
-	decimals, err := p.getPayTokenDecimals(payToken)
-	if err != nil {
-		log.Warningf("unable to get decimals of pay token %s; %s", payToken.String(), err.Error())
-		return out
-	}
-
-	// calculate price for val wei in USD in 6-decimals fixed point
-	// val and unit is in 18-decimals, product is in 36 decimals - we need to remove 30 decimals to get 6-decimals
-	// val is D-decimals, unit 18-decimals, product is D+18 decimals - to get 6-decimals we need to remove D+12
-	out.Usd = mulTeenPower(new(big.Int).Mul(amount, unitPrice), -(decimals + 12)).Int64()
-	if out.Usd < 0 {
-		log.Warningf("GetUnifiedPriceAt overflow - val: %s unit: %s decimals: %d", amount.String(), unitPrice.String(), decimals)
-		out.Usd = 0
-	}
-	return out
-}
-
-// GetUnifiedPriceAt converts token price in pay-tokens to value in unified units for storing in database.
-func (p *Proxy) GetUnifiedPriceAt(payToken *common.Address, block *big.Int, amount *big.Int) types.TokenPrice {
-	// get price of 1 whole payToken in USD in 18-decimals fixed point
-	unit, err := p.rpc.GetPayTokenPrice(payToken, block)
-	if err != nil {
-		log.Warningf("unable to get price of pay token %s; %s", payToken.String(), err.Error())
-		return types.TokenPrice{
-			Usd:      0,
-			Amount:   hexutil.Big(*amount),
-			PayToken: *payToken,
-		}
-	}
-
-	return p.CalculateUnifiedPrice(payToken, amount, unit)
-}
-
-// GetUnifiedUnitPrice obtains price of pay-token in unified units (USD with 6 decimals) for storing in database.
-func (p *Proxy) GetUnifiedUnitPrice(payToken *common.Address) (uint64, error) {
-	price, err, _ := p.callGroup.Do("GetUnifiedUnitPrice"+payToken.String(), func() (interface{}, error) {
-		// get price of 1 whole payToken in USD in 18-decimals fixed point
-		unit, err := p.rpc.GetPayTokenPrice(payToken, nil)
-		if err != nil {
-			return 0, err
-		}
-
-		// calculate price for 1 whole token in USD in 6-decimals fixed point
-		// unit is in 18-decimals - we need to remove 12 decimals to get 6 decimals
-		return new(big.Int).Div(unit, tokenPriceDecimalsCorrection).Uint64(), nil
-	})
-	return price.(uint64), err
 }
 
 // mulTeenPower adjusts the given number by the given number of decimals.
@@ -135,13 +79,4 @@ func (p *Proxy) getPayToken(address *common.Address) (*types.PayToken, error) {
 		}
 	}
 	return nil, fmt.Errorf("unknown pay token %s", address)
-}
-
-// getPayTokenDecimals provides the number of decimals of the given pay token.
-func (p *Proxy) getPayTokenDecimals(address *common.Address) (int32, error) {
-	payToken, err := p.getPayToken(address)
-	if err != nil {
-		return 0, err
-	}
-	return payToken.Decimals, nil
 }

@@ -107,7 +107,7 @@ func (p *Proxy) TokenPriceRefreshSet(setSize int) ([]*types.Token, error) {
 
 // TokenPriceRefresh recalculates token prices and updates them in database.
 func (p *Proxy) TokenPriceRefresh(t *types.Token) error {
-	return p.db.TokenPriceRefresh(t, p.CalculateTokenPrice)
+	return p.db.TokenPriceRefresh(t, p.GetUnifiedPrice)
 }
 
 func (p *Proxy) TokenLikesViewsRefresh(t *types.Token) error {
@@ -139,47 +139,47 @@ func (p *Proxy) TokenLikesViewsRefreshSet(setSize int64) ([]*types.Token, error)
 
 // TokenMarkListed marks the given NFT as listed for direct sale for the given price.
 func (p *Proxy) TokenMarkListed(contract common.Address, tokenID hexutil.Big, price types.TokenPrice, ts *time.Time) error {
-	return p.db.TokenMarkListed(contract, tokenID, price, ts, p.CalculateTokenPrice)
+	return p.db.TokenMarkListed(contract, tokenID, price, ts, p.GetUnifiedPrice)
 }
 
 // TokenMarkOffered marks the given NFT as having offer for the given price.
 func (p *Proxy) TokenMarkOffered(contract common.Address, tokenID hexutil.Big, price types.TokenPrice, ts *time.Time) error {
-	return p.db.TokenMarkOffered(contract, tokenID, price, ts, p.CalculateTokenPrice)
+	return p.db.TokenMarkOffered(contract, tokenID, price, ts, p.GetUnifiedPrice)
 }
 
 // TokenMarkAuctioned marks the given NFT as having auction for the given price.
 func (p *Proxy) TokenMarkAuctioned(contract common.Address, tokenID hexutil.Big, price types.TokenPrice, ts *time.Time) error {
-	return p.db.TokenMarkAuctioned(contract, tokenID, price, ts, p.CalculateTokenPrice)
+	return p.db.TokenMarkAuctioned(contract, tokenID, price, ts, p.GetUnifiedPrice)
 }
 
 // TokenMarkBid marks the given NFT as having auction bid for the given price.
 func (p *Proxy) TokenMarkBid(contract common.Address, tokenID hexutil.Big, price types.TokenPrice, ts *time.Time) error {
-	return p.db.TokenMarkBid(contract, tokenID, price, ts, p.CalculateTokenPrice)
+	return p.db.TokenMarkBid(contract, tokenID, price, ts, p.GetUnifiedPrice)
 }
 
 // TokenMarkUnlisted marks the given NFT as not listed for direct sale.
 func (p *Proxy) TokenMarkUnlisted(contract common.Address, tokenID hexutil.Big) error {
-	return p.db.TokenMarkUnlisted(contract, tokenID, p.CalculateTokenPrice)
+	return p.db.TokenMarkUnlisted(contract, tokenID, p.GetUnifiedPrice)
 }
 
 // TokenMarkUnOffered marks the given NFT as not having offer anymore.
 func (p *Proxy) TokenMarkUnOffered(contract common.Address, tokenID hexutil.Big) error {
-	return p.db.TokenMarkUnOffered(contract, tokenID, p.CalculateTokenPrice)
+	return p.db.TokenMarkUnOffered(contract, tokenID, p.GetUnifiedPrice)
 }
 
 // TokenMarkUnAuctioned marks the given NFT as not auctioned.
 func (p *Proxy) TokenMarkUnAuctioned(contract common.Address, tokenID hexutil.Big) error {
-	return p.db.TokenMarkUnAuctioned(contract, tokenID, p.CalculateTokenPrice)
+	return p.db.TokenMarkUnAuctioned(contract, tokenID, p.GetUnifiedPrice)
 }
 
 // TokenMarkUnBid marks the given NFT as not having a bid anymore.
 func (p *Proxy) TokenMarkUnBid(contract common.Address, tokenID hexutil.Big) error {
-	return p.db.TokenMarkUnBid(contract, tokenID, p.CalculateTokenPrice)
+	return p.db.TokenMarkUnBid(contract, tokenID, p.GetUnifiedPrice)
 }
 
 // TokenMarkSold marks the given NFT as transferred OR sold on a listing/offer/auction for the given price.
 func (p *Proxy) TokenMarkSold(contract common.Address, tokenID hexutil.Big, price *types.TokenPrice, tradeTime *time.Time) error {
-	return p.db.TokenMarkSold(contract, tokenID, price, tradeTime, p.CalculateTokenPrice)
+	return p.db.TokenMarkSold(contract, tokenID, price, tradeTime, p.GetUnifiedPrice)
 }
 
 func (p *Proxy) TokenMarkBanned(contract *common.Address, tokenID *big.Int, banned bool) error {

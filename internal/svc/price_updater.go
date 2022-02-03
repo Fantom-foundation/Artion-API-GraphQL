@@ -10,7 +10,7 @@ const (
 	priceRefreshTick = 2 * time.Second
 
 	// priceRefreshSetSize is the max size of price refresh set pulled at once.
-	priceRefreshSetSize = 500
+	priceRefreshSetSize = 50
 )
 
 // priceUpdater represents a service responsible for updating token prices when the price validity expires

@@ -60,7 +60,10 @@ func auctionBidPlaced(evt *eth.Log, _ *logObserver) {
 		log.Errorf("could not store auction; %s", err.Error())
 	}
 
-	price := repo.GetUnifiedPriceAt(&auction.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&bid.Amount))
+	price, err := repo.GetUnifiedPrice(auction.PayToken, bid.Amount)
+	if err != nil {
+		log.Errorf("could not convert price; %s", err.Error())
+	}
 
 	// mark the token as being auctioned
 	if err := repo.TokenMarkBid(

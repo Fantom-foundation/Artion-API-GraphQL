@@ -21,9 +21,5 @@ func (rs *RootResolver) PayTokens() (out []PayToken, err error) {
 }
 
 func (pt PayToken) Price() (hexutil.Uint64, error) {
-	price, err := repository.R().GetUnifiedUnitPrice(&pt.Contract)
-	if err != nil {
-		return hexutil.Uint64(0), err
-	}
-	return hexutil.Uint64(price), nil
+	return hexutil.Uint64(pt.UnitPrice.Uint64()), nil
 }

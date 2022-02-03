@@ -88,7 +88,10 @@ func auctionCreated(evt *eth.Log, _ *logObserver) {
 		log.Errorf("could not store auction; %s", err.Error())
 	}
 
-	price := repo.GetUnifiedPriceAt(&auction.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&auction.ReservePrice))
+	price, err := repo.GetUnifiedPrice(auction.PayToken, auction.ReservePrice)
+	if err != nil {
+		log.Errorf("could not convert price; %s", err.Error())
+	}
 
 	// mark the token as being auctioned
 	if err := repo.TokenMarkAuctioned(
@@ -198,11 +201,16 @@ func auctionTimeBoundaryUpdated(evt *eth.Log, _ *logObserver, update func(*types
 		log.Errorf("could not store auction; %s", err.Error())
 	}
 
+	price, err := repo.GetUnifiedPrice(auction.PayToken, auction.ReservePrice)
+	if err != nil {
+		log.Errorf("could not convert price; %s", err.Error())
+	}
+
 	// mark the token as being re-auctioned
 	if err := repo.TokenMarkAuctioned(
 		auction.Contract,
 		auction.TokenId,
-		repo.GetUnifiedPriceAt(&auction.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&auction.ReservePrice)),
+		price,
 		(*time.Time)(&auction.Created),
 	); err != nil {
 		log.Errorf("could not mark token as having auction; %s", err.Error())
@@ -261,7 +269,10 @@ func auctionReserveUpdated(evt *eth.Log, _ *logObserver) {
 		log.Errorf("could not store auction; %s", err.Error())
 	}
 
-	price := repo.GetUnifiedPriceAt(&auction.PayToken, new(big.Int).SetUint64(evt.BlockNumber), (*big.Int)(&auction.ReservePrice))
+	price, err := repo.GetUnifiedPrice(auction.PayToken, auction.ReservePrice)
+	if err != nil {
+		log.Errorf("could not convert price; %s", err.Error())
+	}
 
 	// mark the token as being re-auctioned
 	if err := repo.TokenMarkAuctioned(
@@ -474,7 +485,10 @@ func finishAuction(contract *common.Address, tokenID *big.Int, owner *common.Add
 	}
 
 	// what's the unified price the NFT was sold for
-	price := repo.CalculateUnifiedPrice(payToken, amount, tokenPrice)
+	price, err := repo.GetUnifiedPrice(*payToken, hexutil.Big(*amount))
+	if err != nil {
+		log.Errorf("could not convert price; %s", err.Error())
+	}
 
 	// mark the token as sold
 	if err := repo.TokenMarkSold(
