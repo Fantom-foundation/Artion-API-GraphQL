@@ -5,6 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
+	"strings"
 	"time"
 )
 
@@ -41,25 +42,34 @@ func (p *Proxy) ListUserTokenLikes(user *common.Address, cursor types.Cursor, co
 // updateTokenLikesViews updates likes/views in tokens collection from shared db.
 // To be called when likes/views are updated locally.
 func (p *Proxy) updateTokenLikesViews(contract *common.Address, token *big.Int) {
-	likes, err := p.shared.GetTokenLikesCount(contract, token)
-	if err != nil {
-		log.Errorf("unable to get token likes from shared db; %s", err)
-	}
+	var key strings.Builder
+	key.WriteString("TokenLikesViewsRefresh")
+	key.WriteString(contract.String())
+	key.WriteString(token.String())
 
-	views, err := p.shared.GetTokenViews(*contract, *token)
-	if err != nil {
-		log.Errorf("unable to get token views from shared db; %s", err)
-	}
+	_, _, _ = p.callGroup.Do(key.String(), func() (interface{}, error) {
+		likes, err := p.shared.GetTokenLikesCount(contract, token)
+		if err != nil {
+			log.Errorf("unable to get token likes from shared db; %s", err)
+		}
 
-	tok := types.Token{
-		Contract:    *contract,
-		TokenId:     *(*hexutil.Big)(token),
-		CachedLikes: likes,
-		CachedViews: views.Int64(),
-		LikesUpdate: types.Time(time.Now()),
-	}
-	err = p.db.TokenLikesViewsStore(&tok)
-	if err != nil {
-		log.Errorf("unable to store token likes/views; %s", err)
-	}
+		views, err := p.shared.GetTokenViews(*contract, *token)
+		if err != nil {
+			log.Errorf("unable to get token views from shared db; %s", err)
+		}
+
+		tok := types.Token{
+			Contract:    *contract,
+			TokenId:     *(*hexutil.Big)(token),
+			CachedLikes: likes,
+			CachedViews: views.Int64(),
+			LikesUpdate: types.Time(time.Now()),
+		}
+		err = p.db.TokenLikesViewsStore(&tok)
+		if err != nil {
+			log.Errorf("unable to store token likes/views; %s", err)
+		}
+
+		return nil, nil
+	})
 }

@@ -19,5 +19,9 @@ func (p *Proxy) GetTokenViews(contract common.Address, tokenId big.Int) (*big.In
 }
 
 func (p *Proxy) IncrementTokenViews(contract common.Address, tokenId big.Int) (err error) {
-	return p.shared.IncrementTokenViews(contract, tokenId)
+	err = p.shared.IncrementTokenViews(contract, tokenId)
+	if err == nil {
+		p.updateTokenLikesViews(&contract, &tokenId)
+	}
+	return err
 }
