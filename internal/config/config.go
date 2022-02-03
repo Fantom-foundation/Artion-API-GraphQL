@@ -82,6 +82,9 @@ type Ipfs struct {
 
 	// GatewayBearer represents API key (JWT) to be used for Gateway auth
 	GatewayBearer string `mapstructure:"gateway_bearer"`
+
+	// FileCacheDir is a directory, where can be uploaded files cached
+	FileCacheDir string `mapstructure:"file_cache_dir"`
 }
 
 // Database represents the database access configuration.

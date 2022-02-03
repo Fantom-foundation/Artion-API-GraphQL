@@ -43,6 +43,7 @@ type Proxy struct {
 	db        *db.MongoDbBridge
 	shared    *db.SharedMongoDbBridge
 	cache     *cache.MemCache
+	filecache *filecache.FileCache
 	callGroup *singleflight.Group
 
 	observedContracts []common.Address
@@ -131,6 +132,7 @@ func newProxy() *Proxy {
 		db:        db.New(),
 		shared:    db.NewShared(),
 		cache:     cache.New(),
+		filecache: filecache.New(cfg),
 		callGroup: new(singleflight.Group),
 
 		// NFT contracts info
