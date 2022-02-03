@@ -25,7 +25,8 @@
     "url": "localhost:5001",
     "gateway": "https://artion.mypinata.cloud",
     "gateway_bearer": "xyz.abc.def",
-    "skip_http_gateways": true
+    "skip_http_gateways": true,
+    "file_cache_dir": "/tmp/artion/"
   },
   "auth": {
     "bearer_secret": "0x0123456789",
