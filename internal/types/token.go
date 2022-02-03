@@ -23,30 +23,30 @@ const (
 
 // Token represents item list-able in the marketplace.
 type Token struct {
-	Contract        common.Address `bson:"contract"`
-	TokenId         hexutil.Big    `bson:"token"`
-	IsActive        bool           `bson:"is_active"` // the metadata are loaded
-	IsBanned        bool           `bson:"is_banned"` // the NFT is in bannednfts
-	IsColBanned     bool           `bson:"is_col_banned"` // the collection has IsAppropriate = false
-	OrdinalIndex    int64          `bson:"index"`
-	Uri             string         `bson:"uri"`
-	Name            string         `bson:"name"`
-	Description     string         `bson:"desc"`
-	Symbol          string         `bson:"symbol"`
-	IpRights        string         `bson:"ip_rights"`
-	ImageURI        string         `bson:"image"`
-	ImageType       ImageType      `bson:"image_type"`
-	Created         Time           `bson:"created"`
-	CreatedBy       common.Address `bson:"created_by"`
+	Contract     common.Address `bson:"contract"`
+	TokenId      hexutil.Big    `bson:"token"`
+	IsActive     bool           `bson:"is_active"`     // the metadata are loaded
+	IsBanned     bool           `bson:"is_banned"`     // the NFT is in bannednfts
+	IsColBanned  bool           `bson:"is_col_banned"` // the collection has IsAppropriate = false
+	OrdinalIndex int64          `bson:"index"`
+	Uri          string         `bson:"uri"`
+	Name         string         `bson:"name"`
+	Description  string         `bson:"desc"`
+	Symbol       string         `bson:"symbol"`
+	IpRights     string         `bson:"ip_rights"`
+	ImageURI     string         `bson:"image"`
+	ImageType    ImageType      `bson:"image_type"`
+	Created      Time           `bson:"created"`
+	CreatedBy    common.Address `bson:"created_by"`
 
 	Royalty      *int32          `bson:"royalty"` // percents with 2 decimals
 	FeeRecipient *common.Address `bson:"fee_recipient"`
 
-	HasListingSince *Time          `bson:"listed_since"` // earliest start of listing
-	HasAuctionSince *Time          `bson:"auction_since"`
-	HasAuctionUntil *Time          `bson:"auction_until"`
-	HasOfferUntil   *Time          `bson:"offer_until"`
-	HasBids         bool           `bson:"has_bid"`
+	HasListingSince *Time `bson:"listed_since"` // earliest start of listing
+	HasAuctionSince *Time `bson:"auction_since"`
+	HasAuctionUntil *Time `bson:"auction_until"`
+	HasOfferUntil   *Time `bson:"offer_until"`
+	HasBids         bool  `bson:"has_bid"`
 
 	LastTrade       *Time      `bson:"last_trade"`
 	LastListing     *Time      `bson:"last_list"` // last creation of listing
@@ -90,7 +90,7 @@ func NewToken(con *common.Address, tokenId *big.Int, uri string, ts int64, block
 		Uri:          uri,
 		Created:      Time(time.Unix(ts, 0)),
 		OrdinalIndex: OrdinalIndex(int64(block), int64(index)),
-		MetaUpdate:   Time(time.Now().Add(TokenDefaultMetadataUpdateDelay)),
+		MetaUpdate:   Time(time.Now()),
 	}
 }
 
@@ -115,7 +115,12 @@ func (t *Token) ID() primitive.ObjectID {
 // ScheduleMetaUpdateOnFailure sets new metadata update time after failed attempt.
 // Every failure makes the next delay longer since we expect the failure to happen again.
 func (t *Token) ScheduleMetaUpdateOnFailure() {
-	t.MetaUpdate = Time(time.Now().Add(time.Duration((rand.Int63n(60)+int64(t.MetaFailures))*int64(t.MetaFailures)*int64(time.Minute)) + TokenDefaultMetadataUpdateDelay))
+	// repeat quickly for the first few tries
+	if t.MetaFailures < 3 {
+		t.MetaUpdate = Time(time.Now())
+	}
+
+	t.MetaUpdate = Time(time.Now().Add(time.Duration(t.MetaFailures) * TokenDefaultMetadataUpdateDelay))
 	t.MetaFailures++
 }
 

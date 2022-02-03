@@ -156,11 +156,15 @@ func (mu *nftMetadataUpdater) scheduleMetadataRefreshSet() {
 
 	// push the refresh set into the refresh queue
 	// please note we don't wait for tokens to be stored
+	tick := time.NewTicker(200 * time.Millisecond)
+	defer tick.Stop()
+
 	for _, nft := range rs {
 		select {
 		case mu.refreshQueue <- nft:
 			log.Debugf("scheduled metadata refresh on %s/%s", nft.Contract.String(), nft.TokenId.String())
-		default:
+		case <-tick.C:
+			log.Debugf("metadata refresh postponed on %s/%s", nft.Contract.String(), nft.TokenId.String())
 		}
 	}
 }
