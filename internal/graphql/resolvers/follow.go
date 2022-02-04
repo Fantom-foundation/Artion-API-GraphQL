@@ -5,6 +5,7 @@ import (
 	"artion-api-graphql/internal/repository"
 	"artion-api-graphql/internal/types"
 	"artion-api-graphql/internal/types/sorting"
+	"bytes"
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
@@ -66,6 +67,9 @@ func (rs *RootResolver) FollowUser(ctx context.Context, args struct {
 	logged, err := auth.GetIdentityOrErr(ctx)
 	if err != nil {
 		return false, err
+	}
+	if bytes.Equal(logged.Bytes(), args.User.Bytes()) {
+		return false, fmt.Errorf("your cannot follow yourself")
 	}
 	balance, err := repository.R().GetBalance(*logged)
 	if err != nil {
