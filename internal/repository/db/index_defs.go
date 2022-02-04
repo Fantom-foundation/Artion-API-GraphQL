@@ -9,7 +9,7 @@ import (
 
 // IndexDefinitionTokens provides a list of indexes expected to exist on tokens' collection.
 func IndexDefinitionTokens() []mongo.IndexModel {
-	ix := make([]mongo.IndexModel, 16)
+	ix := make([]mongo.IndexModel, 17)
 
 	ixContractToken := "ix_contract_token"
 	ix[0] = mongo.IndexModel{Keys: bson.D{{Key: "contract", Value: 1}, {Key: "token", Value: 1}}, Options: &options.IndexOptions{Name: &ixContractToken}}
@@ -58,11 +58,14 @@ func IndexDefinitionTokens() []mongo.IndexModel {
 	ixLikes := "ix_likes_index"
 	ix[13] = mongo.IndexModel{Keys: bson.D{{Key: "likes", Value: 1}, {Key: "index", Value: 1}}, Options: &options.IndexOptions{Name: &ixLikes}}
 
-	ixPriceValid := "ix_price_valid" // prevents RAM exhaustion in TokenPriceRefreshSet
+	ixPriceValid := "ix_price_valid" // reduce RAM usage of TokenPriceRefreshSet
 	ix[14] = mongo.IndexModel{Keys: bson.D{{Key: "price_valid", Value: 1}}, Options: &options.IndexOptions{Name: &ixPriceValid}}
 
-	ixPriceUpdate := "ix_price_update" // prevents RAM exhaustion in TokenPriceRefreshSet
+	ixPriceUpdate := "ix_price_update" // reduce RAM usage of TokenPriceRefreshSet
 	ix[15] = mongo.IndexModel{Keys: bson.D{{Key: "price_update", Value: 1}}, Options: &options.IndexOptions{Name: &ixPriceUpdate}}
+
+	ixLikesUpdate := "ix_likes_update" // reduce RAM usage of TokenLikesViewsRefreshSet
+	ix[16] = mongo.IndexModel{Keys: bson.D{{Key: "likes_update", Value: 1}}, Options: &options.IndexOptions{Name: &ixLikesUpdate}}
 
 	return ix
 }

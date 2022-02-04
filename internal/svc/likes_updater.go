@@ -5,12 +5,14 @@ import (
 	"time"
 )
 
+// 50 items per 15 seconds = 300_000 items per 25 hours
+// 50 items per 10 seconds = 300_000 items per 16.6 hours
 const (
 	// likesRefreshTick is the tick used to pull likes refresh candidates.
-	likesRefreshTick = 2 * time.Minute
+	likesRefreshTick = 10 * time.Second
 
 	// likesRefreshSetSize is the max size of likes refresh set pulled at once.
-	likesRefreshSetSize = 100
+	likesRefreshSetSize = 50
 )
 
 // likesViewsUpdater represents a service responsible for updating token views/likes in local tokens collection.

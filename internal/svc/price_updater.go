@@ -5,9 +5,11 @@ import (
 	"time"
 )
 
+// 50 items per 15 seconds = 300_000 items per 25 hours
+// 50 items per 10 seconds = 300_000 items per 16.6 hours
 const (
 	// priceRefreshTick is the tick used to pull price refresh candidates.
-	priceRefreshTick = 2 * time.Second
+	priceRefreshTick = 16 * time.Second
 
 	// priceRefreshSetSize is the max size of price refresh set pulled at once.
 	priceRefreshSetSize = 50
