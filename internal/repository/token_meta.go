@@ -46,11 +46,11 @@ func (p *Proxy) GetImage(imgUri string) (*types.Image, error) {
 		return p.getImageFromUri(imgUri)
 	})
 	if err != nil {
-		log.Errorf("image can not be loaded from %s; %s", imgUri, err.Error())
+		log.Warningf("image can not be loaded from %s; %s", imgUri, err.Error())
 		return nil, err
 	}
 	if data == nil {
-		log.Errorf("image not found at %s", imgUri)
+		log.Warningf("image not found at %s", imgUri)
 		return nil, fmt.Errorf("image not found at given URI")
 	}
 	return data.(*types.Image), err
@@ -155,7 +155,7 @@ func (p *Proxy) getFileFromUri(uri string) (data []byte, mimetype string, err er
 		return p.uri.GetFromDataUri(uri)
 	}
 
-	// do we have an IPFS URI to get the data for?
+	// serve IPFS (or IPFS gateway) URIs
 	if ipfsUri := p.uri.GetIpfsUri(uri); ipfsUri != "" {
 		// try the local cache first
 		cachedContent := p.filecache.PullIpfsFile(getCidFromIpfsUri(ipfsUri))
@@ -165,8 +165,11 @@ func (p *Proxy) getFileFromUri(uri string) (data []byte, mimetype string, err er
 
 		// extract data from IPFS, if possible
 		data, mimetype, err = p.uri.GetFromIpfs(ipfsUri)
-		if err == nil {
+		if err == nil || strings.HasPrefix(uri, "ipfs:") || strings.HasPrefix(uri, "/ipfs/") {
 			return data, mimetype, err
+		} else {
+			// if err, but it is http ipfs proxy uri, only log and continue to process as a http uri
+			log.Warningf("failed to download file %s from IPFS, will try http; %s", ipfsUri, err)
 		}
 	}
 
