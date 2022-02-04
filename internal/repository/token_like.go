@@ -25,6 +25,11 @@ func (p *Proxy) RemoveTokenLike(tokenLike *types.TokenLike) (err error) {
 	return err
 }
 
+// GetBalance provides current native token balance of the account (used to check an account existence)
+func (p *Proxy) GetBalance(address common.Address) (*big.Int, error) {
+	return p.rpc.GetBalance(address)
+}
+
 // GetTokenLikesCount get amount of likes for given token
 func (p *Proxy) GetTokenLikesCount(contract *common.Address, token *big.Int) (count int64, err error) {
 	return p.shared.GetTokenLikesCount(contract, token)

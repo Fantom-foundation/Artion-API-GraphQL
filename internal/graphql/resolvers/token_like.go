@@ -6,6 +6,7 @@ import (
 	"artion-api-graphql/internal/types"
 	"artion-api-graphql/internal/types/sorting"
 	"context"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"math/big"
@@ -66,6 +67,13 @@ func (rs *RootResolver) LikeToken(ctx context.Context, args struct {
 	user, err := auth.GetIdentityOrErr(ctx)
 	if err != nil {
 		return false, err
+	}
+	balance, err := repository.R().GetBalance(*user)
+	if err != nil {
+		return false, err
+	}
+	if balance.Int64() == 0 {
+		return false, fmt.Errorf("your account needs to have a non-zero balance before you can like tokens")
 	}
 	tokenLike := types.TokenLike{
 		User:      *user,
