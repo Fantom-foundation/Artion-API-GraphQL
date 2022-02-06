@@ -71,11 +71,9 @@ func processImageUpload(req *http.Request, process uploadProcessor, log logger.L
 	}
 	content := buf.Bytes()
 
-	contentType := http.DetectContentType(content)
-	log.Infof("Content type from DetectContentType: %s", contentType)
-	imgType := types.ImageTypeFromMimetype(contentType)
-	if imgType == types.ImageTypeUnknown {
-		return 500, "Unrecognized image type " + contentType
+	imgType, err := types.ImageTypeFromMimetype(content)
+	if err != nil {
+		return 500, err.Error()
 	}
 
 	image := types.Image{

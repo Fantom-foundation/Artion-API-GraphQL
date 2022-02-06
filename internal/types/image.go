@@ -1,6 +1,11 @@
 package types
 
-import "strings"
+import (
+	"fmt"
+	svg "github.com/h2non/go-is-svg"
+	"net/http"
+	"strings"
+)
 
 // Image represents image of NFT downloaded from specified URI
 type Image struct {
@@ -44,20 +49,22 @@ func (i ImageType) Extension() string {
 	return ""
 }
 
-func ImageTypeFromMimetype(mimetype string) ImageType {
+func ImageTypeFromMimetype(data []byte) (ImageType, error) {
+	mimetype := http.DetectContentType(data)
 	switch mimetype {
-	case "image/svg+xml": return ImageTypeSvg
-	case "image/gif": return ImageTypeGif
-	case "image/jpeg": return ImageTypeJpeg
-	case "image/png": return ImageTypePng
-	case "image/webp": return ImageTypeWebp
-	case "video/mp4": return ImageTypeMp4
+	case "image/svg+xml": return ImageTypeSvg, nil
+	case "image/gif": return ImageTypeGif, nil
+	case "image/jpeg": return ImageTypeJpeg, nil
+	case "image/png": return ImageTypePng, nil
+	case "image/webp": return ImageTypeWebp, nil
+	case "video/mp4": return ImageTypeMp4, nil
 	}
-	// workaround of https://github.com/golang/go/issues/15888
-	if strings.HasPrefix(mimetype, "text/xml") {
-		return ImageTypeSvg
+	if strings.HasPrefix(mimetype, "text/xml") || strings.HasPrefix(mimetype, "text/plain") {
+		if svg.Is(data) {
+			return ImageTypeSvg, nil
+		}
 	}
-	return ImageTypeUnknown
+	return ImageTypeUnknown, fmt.Errorf("unrecognized image type %s", mimetype)
 }
 
 func ImageTypeFromExtension(uri string) (mimetype ImageType) {

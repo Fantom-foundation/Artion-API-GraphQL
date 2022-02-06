@@ -4,7 +4,6 @@ import (
 	"artion-api-graphql/internal/types"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	neturl "net/url"
 	"strings"
 )
@@ -117,16 +116,12 @@ func (p *Proxy) pinFile(filename string, content []byte) (cid string, err error)
 
 // getImageFromUri downloads image from given URI and detect its mimetype
 func (p *Proxy) getImageFromUri(uri string) (*types.Image, error) {
-	data, mimetype, err := p.getFileFromUri(uri)
+	data, _, err := p.getFileFromUri(uri)
 	if err != nil {
 		return nil, fmt.Errorf("unable to download image; %s", err)
 	}
 
-	if mimetype == "" {
-		mimetype = http.DetectContentType(data)
-	}
-
-	imgType := types.ImageTypeFromMimetype(mimetype)
+	imgType, err := types.ImageTypeFromMimetype(data)
 	if imgType == types.ImageTypeUnknown {
 		imgType = types.ImageTypeFromExtension(uri)
 	}
