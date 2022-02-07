@@ -46,12 +46,14 @@ func cursorToFilter(cursor types.Cursor, sort sorting.Sorting, backward bool) (b
 		return bson.E{ Key: ordinalField, Value: bson.D{{cmpOp, curParams[ordinalField] }} }, nil
 	}
 
-	return bson.E{ Key: "$or", Value: bson.A{
-		bson.D{{sortedField, bson.D{{cmpOp, curParams[sortedField] }} }},
-		bson.E{ Key: "$and", Value: bson.A{
-			bson.D{{sortedField, bson.D{{"$eq", curParams[sortedField] }} }},
-			bson.D{{ordinalField, bson.D{{cmpOp, curParams[ordinalField] }} }},
-		}},
+	return bson.E{ Key: "$or", Value: []bson.M{
+		{
+			sortedField: bson.M{ cmpOp: curParams[sortedField] },
+		},
+		{
+			sortedField: curParams[sortedField],
+			ordinalField: bson.M{ cmpOp: curParams[ordinalField] },
+		},
 	}}, nil
 }
 
