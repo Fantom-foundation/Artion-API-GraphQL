@@ -51,20 +51,24 @@ func NewActivityConnection(list *types.ActivityList) (con *ActivityConnection, e
 	return con, err
 }
 
-func (activity Activity) Type() (string, error) {
+func (activity *Activity) Type() (string, error) {
 	return ActivityTypeToString(activity.ActType), nil
 }
 
-func (activity Activity) Token() (*Token, error) {
+func (activity *Activity) Token() (*Token, error) {
 	return NewToken(&activity.Contract, &activity.TokenId)
 }
 
-func (activity Activity) FromUser() (User, error) {
+func (activity *Activity) FromUser() (User, error) {
 	return getUserByAddress(activity.From)
 }
 
-func (activity Activity) ToUser() (*User, error) {
+func (activity *Activity) ToUser() (*User, error) {
 	return getUserByAddressPtr(activity.To)
+}
+
+func (activity *Activity) TrxHash() (string, error) {
+	return activity.Transaction.String(), nil
 }
 
 func ActivityTypeToString(t types.ActivityType) string {
