@@ -49,12 +49,6 @@ func (db *MongoDbBridge) GetListing(contract *common.Address, tokenID *big.Int, 
 
 	sr := col.FindOne(context.Background(), bson.D{{Key: fieldId, Value: types.ListingID(contract, tokenID, owner, marketplace)}})
 	if sr.Err() != nil {
-		if sr.Err() == mongo.ErrNoDocuments {
-			log.Warningf("could not find listing %s/%s of owner %s; %s",
-				contract.String(), (*hexutil.Big)(tokenID).String(), owner.String(), sr.Err().Error())
-			return nil, sr.Err()
-		}
-
 		log.Errorf("failed to lookup listing %s/%s of owner %s; %s",
 			contract.String(), (*hexutil.Big)(tokenID).String(), owner.String(), sr.Err().Error())
 		return nil, sr.Err()

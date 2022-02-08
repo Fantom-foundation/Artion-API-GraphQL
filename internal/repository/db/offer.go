@@ -48,12 +48,6 @@ func (db *MongoDbBridge) GetOffer(contract *common.Address, tokenID *big.Int, pr
 
 	sr := col.FindOne(context.Background(), bson.D{{Key: fieldId, Value: types.OfferID(contract, tokenID, proposer, marketplace)}})
 	if sr.Err() != nil {
-		if sr.Err() == mongo.ErrNoDocuments {
-			log.Warningf("could not find offer %s/%s proposed by %s",
-				contract.String(), (*hexutil.Big)(tokenID).String(), proposer.String())
-			return nil, sr.Err()
-		}
-
 		log.Errorf("failed to lookup offer %s/%s proposed by %s; %s",
 			contract.String(), (*hexutil.Big)(tokenID).String(), proposer.String(), sr.Err().Error())
 		return nil, sr.Err()

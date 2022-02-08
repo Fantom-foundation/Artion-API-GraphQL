@@ -8,7 +8,7 @@ import (
 	"math/big"
 )
 
-// GetOffer provides the token offer stored in the database, if available.
+// GetOffer provides the token offer stored in the database, if available, err otherwise.
 func (p *Proxy) GetOffer(contract *common.Address, tokenID *big.Int, proposer *common.Address, marketplace *common.Address) (*types.Offer, error) {
 	return p.db.GetOffer(contract, tokenID, proposer, marketplace)
 }

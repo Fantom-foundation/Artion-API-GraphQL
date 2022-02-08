@@ -20,10 +20,10 @@ const (
 
 var (
 	// itemSoldAcceptOfferCall represents Solidity call ID for acceptOffer call
-	itemSoldAcceptOfferCall = hexutils.HexToBytes("0x3bbb2806")
+	itemSoldAcceptOfferCall = hexutils.HexToBytes("3bbb2806")
 
 	// itemSoldBuyItemCall represents the call ID for buyItem call
-	itemSoldBuyItemCall = hexutils.HexToBytes("0x85f9d345")
+	itemSoldBuyItemCall = hexutils.HexToBytes("85f9d345")
 )
 
 // marketNFTListed handles log event for NFT token to get listed for sale on the Marketplace.
@@ -123,7 +123,7 @@ func marketNFTUpdated(evt *eth.Log, _ *logObserver) {
 
 	// try to get the listing
 	lst, err := repo.GetListing(&contract, tokenID, &owner, &evt.Address)
-	if lst == nil {
+	if err != nil {
 		log.Errorf("update listing not found; %s", err)
 		return
 	}
@@ -199,7 +199,7 @@ func marketNFTUnlisted(evt *eth.Log, _ *logObserver) {
 
 	// try to get the listing
 	lst, err := repo.GetListing(&contract, tokenID, &owner, &evt.Address)
-	if lst == nil {
+	if err != nil {
 		log.Errorf("listing not found; %s", err)
 		return
 	}
@@ -296,11 +296,7 @@ func marketItemSold(evt *eth.Log, lo *logObserver) {
 			log.Errorf("expected listing not found %s/%s by %s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), owner.String(), err.Error())
 			return
 		}
-
-		if lst != nil {
-			marketCloseListingWithSale(evt, lst, blk, lo, &buyer)
-			return
-		}
+		marketCloseListingWithSale(evt, lst, blk, lo, &buyer)
 
 	case itemSoldOfferAccepted:
 		// try to get an offer
@@ -309,11 +305,7 @@ func marketItemSold(evt *eth.Log, lo *logObserver) {
 			log.Errorf("expected offer not found %s/%s by %s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), buyer.String(), err.Error())
 			return
 		}
-
-		if offer != nil {
-			marketCloseOfferWithSale(evt, offer, blk, lo, &owner)
-			return
-		}
+		marketCloseOfferWithSale(evt, offer, blk, lo, &owner)
 
 	default:
 		notifyEventToOwner(types.NotifyNFTSold, contract, (hexutil.Big)(*tokenID), owner, &buyer, types.Time(time.Unix(int64(blk.Time), 0)))

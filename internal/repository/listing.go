@@ -8,7 +8,7 @@ import (
 	"math/big"
 )
 
-// GetListing provides an NFT listing stored in the database, if available.
+// GetListing provides an NFT listing stored in the database, if available, err otherwise.
 func (p *Proxy) GetListing(contract *common.Address, tokenID *big.Int, owner *common.Address, marketplace *common.Address) (*types.Listing, error) {
 	return p.db.GetListing(contract, tokenID, owner, marketplace)
 }
