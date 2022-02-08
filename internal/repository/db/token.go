@@ -632,17 +632,14 @@ func (db *MongoDbBridge) getTokenPriceUpdate(t *types.Token, priceCalc types.Pri
 		priceValidity = auctionValidity
 	}
 
-	// has listing
-	if minListPrice.Usd != 0 {
-		// the listing is cheaper then auction
-		if tokenPrice.Usd == 0 || tokenPrice.Usd > minListPrice.Usd {
-			tokenPrice = minListPrice
+	// has listing and the listing is cheaper than auction
+	if minListPrice.Usd != 0 && (tokenPrice.Usd == 0 || tokenPrice.Usd > minListPrice.Usd) {
+		tokenPrice = minListPrice
+	}
 
-			// if validity from listing is shorter, use it
-			if minListValidity != nil && (priceValidity == nil || (*time.Time)(priceValidity).After(time.Time(*minListValidity))) {
-				priceValidity = minListValidity
-			}
-		}
+	// if validity from listing is shorter, use it
+	if minListValidity != nil && (priceValidity == nil || (*time.Time)(priceValidity).After(time.Time(*minListValidity))) {
+		priceValidity = minListValidity
 	}
 
 	// if validity from offer is shorter, use it
@@ -653,7 +650,6 @@ func (db *MongoDbBridge) getTokenPriceUpdate(t *types.Token, priceCalc types.Pri
 	// no listing or auction? use last trade price
 	if tokenPrice.Usd == 0 {
 		tokenPrice = lastTradePrice
-		priceValidity = nil
 	}
 
 	return bson.M{
