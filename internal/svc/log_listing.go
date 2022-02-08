@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	eth "github.com/ethereum/go-ethereum/core/types"
 	"github.com/status-im/keycard-go/hexutils"
+	"go.mongodb.org/mongo-driver/mongo"
 	"math/big"
 	"time"
 )
@@ -204,23 +205,7 @@ func marketNFTUnlisted(evt *eth.Log, _ *logObserver) {
 		return
 	}
 
-	blk, err := repo.GetHeader(evt.BlockNumber)
-	if err != nil {
-		log.Errorf("could not get header #%d, %s", evt.BlockNumber, err.Error())
-		return
-	}
-	up := time.Unix(int64(blk.Time), 0)
-	lst.Closed = (*types.Time)(&up)
-
-	// store the listing into database
-	if err := repo.StoreListing(lst); err != nil {
-		log.Errorf("could not store listing; %s", err.Error())
-	}
-
-	// mark the token as listed
-	if err := repo.TokenMarkUnlisted(lst.Contract, hexutil.Big(*tokenID)); err != nil {
-		log.Errorf("could not mark token as unlisted; %s", err.Error())
-	}
+	marketCloseListing(evt, lst)
 
 	// log activity
 	activity := types.Activity{
@@ -240,6 +225,27 @@ func marketNFTUnlisted(evt *eth.Log, _ *logObserver) {
 
 	notifyEventToOwner(types.NotifyListingCanceled, lst.Contract, lst.TokenId, lst.Owner, nil, *lst.Closed)
 	log.Infof("canceled and closed listing of %s/%s owner %s", lst.Contract.String(), lst.TokenId.String(), lst.Owner.String())
+}
+
+// marketCloseListing processes a listing closing without using it for a sale
+func marketCloseListing(evt *eth.Log, lst *types.Listing) {
+	blk, err := repo.GetHeader(evt.BlockNumber)
+	if err != nil {
+		log.Errorf("could not get header #%d, %s", evt.BlockNumber, err.Error())
+		return
+	}
+	up := time.Unix(int64(blk.Time), 0)
+	lst.Closed = (*types.Time)(&up)
+
+	// store the listing into database
+	if err := repo.StoreListing(lst); err != nil {
+		log.Errorf("could not store listing; %s", err.Error())
+	}
+
+	// mark the token as not listed
+	if err := repo.TokenMarkUnlisted(lst.Contract, lst.TokenId); err != nil {
+		log.Errorf("could not mark token as unlisted; %s", err.Error())
+	}
 }
 
 // itemSoldHow detects the call which was used to sell an NFT item by comparing known transaction call IDs
@@ -278,7 +284,7 @@ func marketItemSold(evt *eth.Log, lo *logObserver) {
 	}
 
 	// how was the item sold?
-	owner := common.BytesToAddress(evt.Topics[1].Bytes())
+	seller := common.BytesToAddress(evt.Topics[1].Bytes())
 	buyer := common.BytesToAddress(evt.Topics[2].Bytes())
 	contract := common.BytesToAddress(evt.Topics[3].Bytes())
 	tokenID := new(big.Int).SetBytes(evt.Data[:32])
@@ -291,9 +297,9 @@ func marketItemSold(evt *eth.Log, lo *logObserver) {
 
 	switch itemSoldHow(evt.TxHash) {
 	case itemSoldListingAccepted:
-		lst, err := repo.GetListing(&contract, tokenID, &owner, &evt.Address)
+		lst, err := repo.GetListing(&contract, tokenID, &seller, &evt.Address)
 		if err != nil {
-			log.Errorf("expected listing not found %s/%s by %s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), owner.String(), err.Error())
+			log.Errorf("expected listing not found %s/%s by %s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), seller.String(), err.Error())
 			return
 		}
 		marketCloseListingWithSale(evt, lst, blk, lo, &buyer)
@@ -305,13 +311,22 @@ func marketItemSold(evt *eth.Log, lo *logObserver) {
 			log.Errorf("expected offer not found %s/%s by %s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), buyer.String(), err.Error())
 			return
 		}
-		marketCloseOfferWithSale(evt, offer, blk, lo, &owner)
+		marketCloseOfferWithSale(evt, offer, blk, lo, &seller)
+
+		// offer sale closes unused listing of the former owner
+		lst, err := repo.GetListing(&contract, tokenID, &seller, &evt.Address)
+		if err != nil && err != mongo.ErrNoDocuments {
+			log.Errorf("unable to get listing %s/%s by %s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), seller.String(), err.Error())
+		}
+		if lst != nil {
+			marketCloseListing(evt, lst)
+		}
 
 	default:
-		notifyEventToOwner(types.NotifyNFTSold, contract, (hexutil.Big)(*tokenID), owner, &buyer, types.Time(time.Unix(int64(blk.Time), 0)))
-		notifyEventToOwner(types.NotifyNFTPurchased, contract, (hexutil.Big)(*tokenID), buyer, &owner, types.Time(time.Unix(int64(blk.Time), 0)))
+		notifyEventToOwner(types.NotifyNFTSold, contract, (hexutil.Big)(*tokenID), seller, &buyer, types.Time(time.Unix(int64(blk.Time), 0)))
+		notifyEventToOwner(types.NotifyNFTPurchased, contract, (hexutil.Big)(*tokenID), buyer, &seller, types.Time(time.Unix(int64(blk.Time), 0)))
 
-		log.Errorf("could not process sale of %s/%s by %s to %s", contract.String(), (*hexutil.Big)(tokenID).String(), owner.String(), buyer.String())
+		log.Errorf("could not process sale of %s/%s by %s to %s", contract.String(), (*hexutil.Big)(tokenID).String(), seller.String(), buyer.String())
 	}
 }
 
