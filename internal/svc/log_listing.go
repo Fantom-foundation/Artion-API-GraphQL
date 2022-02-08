@@ -3,11 +3,27 @@ package svc
 
 import (
 	"artion-api-graphql/internal/types"
+	"bytes"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	eth "github.com/ethereum/go-ethereum/core/types"
+	"github.com/status-im/keycard-go/hexutils"
 	"math/big"
 	"time"
+)
+
+const (
+	itemSoldUnknown = iota
+	itemSoldListingAccepted
+	itemSoldOfferAccepted
+)
+
+var (
+	// itemSoldAcceptOfferCall represents Solidity call ID for acceptOffer call
+	itemSoldAcceptOfferCall = hexutils.HexToBytes("0x3bbb2806")
+
+	// itemSoldBuyItemCall represents the call ID for buyItem call
+	itemSoldBuyItemCall = hexutils.HexToBytes("0x85f9d345")
 )
 
 // marketNFTListed handles log event for NFT token to get listed for sale on the Marketplace.
@@ -226,6 +242,31 @@ func marketNFTUnlisted(evt *eth.Log, _ *logObserver) {
 	log.Infof("canceled and closed listing of %s/%s owner %s", lst.Contract.String(), lst.TokenId.String(), lst.Owner.String())
 }
 
+// itemSoldHow detects the call which was used to sell an NFT item by comparing known transaction call IDs
+// with the actual transaction involved with the sale.
+func itemSoldHow(tx common.Hash) int {
+	// get transaction data
+	_, _, data := repo.MustTransactionData(tx)
+	if len(data) < 5 {
+		log.Errorf("invalid transaction data for %s", tx.String())
+		return itemSoldUnknown
+	}
+
+	// Solidity: function acceptOffer(address _nftAddress, uint256 _tokenId, address _creator) returns()
+	if bytes.Equal(data[:4], itemSoldAcceptOfferCall[:]) {
+		return itemSoldOfferAccepted
+	}
+
+	// Solidity: function buyItem(address _nftAddress, uint256 _tokenId, address _payToken, address _owner) returns()
+	if bytes.Equal(data[:4], itemSoldBuyItemCall[:]) {
+		return itemSoldListingAccepted
+	}
+
+	// log the issue we have
+	log.Errorf("unknown Solidity call %s on trx %s", hexutils.BytesToHex(data[:4]), tx.String())
+	return itemSoldUnknown
+}
+
 // marketItemSold processes NFT listing being finished with sale event; an offer is resulted by the same event.
 // Marketplace::ItemSold(address indexed seller, address indexed buyer, address indexed nft, uint256 tokenId, uint256 quantity, address payToken, int256 unitPrice, uint256 pricePerItem)
 func marketItemSold(evt *eth.Log, lo *logObserver) {
@@ -236,6 +277,7 @@ func marketItemSold(evt *eth.Log, lo *logObserver) {
 		return
 	}
 
+	// how was the item sold?
 	owner := common.BytesToAddress(evt.Topics[1].Bytes())
 	buyer := common.BytesToAddress(evt.Topics[2].Bytes())
 	contract := common.BytesToAddress(evt.Topics[3].Bytes())
@@ -247,24 +289,38 @@ func marketItemSold(evt *eth.Log, lo *logObserver) {
 		return
 	}
 
-	// try to get the listing
-	lst, err := repo.GetListing(&contract, tokenID, &owner, &evt.Address)
-	if lst != nil {
-		marketCloseListingWithSale(evt, lst, blk, lo, &buyer)
-		return
+	switch itemSoldHow(evt.TxHash) {
+	case itemSoldListingAccepted:
+		lst, err := repo.GetListing(&contract, tokenID, &owner, &evt.Address)
+		if err != nil {
+			log.Errorf("expected listing not found %s/%s by %s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), owner.String(), err.Error())
+			return
+		}
+
+		if lst != nil {
+			marketCloseListingWithSale(evt, lst, blk, lo, &buyer)
+			return
+		}
+
+	case itemSoldOfferAccepted:
+		// try to get an offer
+		offer, err := repo.GetOffer(&contract, tokenID, &buyer, &evt.Address)
+		if err != nil {
+			log.Errorf("expected offer not found %s/%s by %s; %s", contract.String(), (*hexutil.Big)(tokenID).String(), buyer.String(), err.Error())
+			return
+		}
+
+		if offer != nil {
+			marketCloseOfferWithSale(evt, offer, blk, lo, &owner)
+			return
+		}
+
+	default:
+		notifyEventToOwner(types.NotifyNFTSold, contract, (hexutil.Big)(*tokenID), owner, &buyer, types.Time(time.Unix(int64(blk.Time), 0)))
+		notifyEventToOwner(types.NotifyNFTPurchased, contract, (hexutil.Big)(*tokenID), buyer, &owner, types.Time(time.Unix(int64(blk.Time), 0)))
+
+		log.Errorf("could not process sale of %s/%s by %s to %s", contract.String(), (*hexutil.Big)(tokenID).String(), owner.String(), buyer.String())
 	}
-
-	// try to get an offer
-	offer, err := repo.GetOffer(&contract, tokenID, &buyer, &evt.Address)
-	if offer != nil {
-		marketCloseOfferWithSale(evt, offer, blk, lo, &owner)
-		return
-	}
-
-	notifyEventToOwner(types.NotifyNFTSold, contract, (hexutil.Big)(*tokenID), owner, &buyer, types.Time(time.Unix(int64(blk.Time), 0)))
-	notifyEventToOwner(types.NotifyNFTPurchased, contract, (hexutil.Big)(*tokenID), buyer, &owner, types.Time(time.Unix(int64(blk.Time), 0)))
-
-	log.Errorf("could not process sale of %s/%s by %s to %s", contract.String(), (*hexutil.Big)(tokenID).String(), owner.String(), buyer.String())
 }
 
 // marketCloseListingWithSale processes a listing wrap up by a sale.
