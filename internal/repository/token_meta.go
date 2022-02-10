@@ -10,29 +10,35 @@ import (
 
 // GetTokenJsonMetadata provides decoded JSON metadata for the given token metadata URI.
 func (p *Proxy) GetTokenJsonMetadata(uri string) (*types.JsonMetadata, error) {
+	data, err := p.GetRawTokenJsonMetadata(uri)
+	if err != nil {
+		return nil, err
+	}
+	jsonMeta, err := types.DecodeJsonMetadata(data)
+	if err != nil {
+		return nil, fmt.Errorf("unable to decode json; %s", err)
+	}
+	return jsonMeta, err
+}
+
+// GetRawTokenJsonMetadata provides decoded JSON metadata for the given token metadata URI.
+func (p *Proxy) GetRawTokenJsonMetadata(uri string) ([]byte, error) {
 	// make sure to do this only once, if parallel requests were fired
 	var key strings.Builder
-	key.WriteString("GetTokenJsonMetadata")
+	key.WriteString("GetRawTokenJsonMetadata")
 	key.WriteString(uri)
 
-	jsonMetadata, err, _ := p.callGroup.Do(key.String(), func() (interface{}, error) {
+	data, err, _ := p.callGroup.Do(key.String(), func() (interface{}, error) {
 		data, _, err := p.getFileFromUri(uri)
 		if err != nil {
 			return nil, fmt.Errorf("unable to download json; %s", err)
 		}
-
-		jsonMeta, err := types.DecodeJsonMetadata(data)
-		if err != nil {
-			return nil, fmt.Errorf("unable to decode json; %s", err)
-		}
-
-		return jsonMeta, nil
+		return data, err
 	})
 	if err != nil {
 		return nil, err
 	}
-
-	return jsonMetadata.(*types.JsonMetadata), err
+	return data.([]byte), err
 }
 
 // GetImage downloads an image expected on the given URI.
