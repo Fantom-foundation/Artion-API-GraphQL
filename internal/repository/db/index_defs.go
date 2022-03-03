@@ -9,7 +9,7 @@ import (
 
 // IndexDefinitionTokens provides a list of indexes expected to exist on tokens' collection.
 func IndexDefinitionTokens() []mongo.IndexModel {
-	ix := make([]mongo.IndexModel, 17)
+	ix := make([]mongo.IndexModel, 18)
 
 	ixContractToken := "ix_contract_token"
 	ix[0] = mongo.IndexModel{Keys: bson.D{{Key: "contract", Value: 1}, {Key: "token", Value: 1}}, Options: &options.IndexOptions{Name: &ixContractToken}}
@@ -66,6 +66,9 @@ func IndexDefinitionTokens() []mongo.IndexModel {
 
 	ixLikesUpdate := "ix_likes_update" // reduce RAM usage of TokenLikesViewsRefreshSet
 	ix[16] = mongo.IndexModel{Keys: bson.D{{Key: "likes_update", Value: 1}}, Options: &options.IndexOptions{Name: &ixLikesUpdate}}
+
+	ixMetaUpdate := "ix_meta_update" // reduce RAM usage of TokenLikesViewsRefreshSet
+	ix[17] = mongo.IndexModel{Keys: bson.D{{Key: "meta_update", Value: 1}}, Options: &options.IndexOptions{Name: &ixMetaUpdate}}
 
 	return ix
 }
