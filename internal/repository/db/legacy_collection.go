@@ -220,7 +220,10 @@ func (sdb *SharedMongoDbBridge) ListLegacyCollections(collectionFilter types.Col
 
 	filter := bson.D{}
 	if collectionFilter.InReview {
-		filter = append(filter, bson.E{Key: fiLegacyCollectionIsReviewed, Value: false})
+		filter = append(filter,
+			bson.E{Key: fiLegacyCollectionIsReviewed, Value: false},
+			bson.E{Key: fiLegacyCollectionIsAppropriate, Value: false},
+		)
 	} else if collectionFilter.Banned {
 		filter = append(filter,
 			bson.E{Key: fiLegacyCollectionIsReviewed, Value: true},
