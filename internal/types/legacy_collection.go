@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/json"
 	"github.com/ethereum/go-ethereum/common"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"strconv"
 	"time"
 )
@@ -10,6 +11,7 @@ import (
 // LegacyCollection represents token collection from old Artion.
 // Keeps off-chain data about the collection.
 type LegacyCollection struct {
+	Id              primitive.ObjectID `bson:"_id"`
 	Address         common.Address  `bson:"erc721Address"` // unique index
 	Name            string          `bson:"collectionName"`
 	Description     string          `bson:"description"`

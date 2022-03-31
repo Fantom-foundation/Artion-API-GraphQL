@@ -177,6 +177,18 @@ func (t *Collection) Medium() string {
 	return ""
 }
 
+func (t *Collection) CreatedTime() types.Time {
+	return types.Time(t.Id.Timestamp())
+}
+
+func (t *Collection) ChangedTime() *types.Time {
+	if t.AppropriateUpdate.Unix() <= 0 {
+		return nil
+	}
+	tm := types.Time(t.AppropriateUpdate)
+	return &tm
+}
+
 func (t *Collection) OwnerUser() (*User, error) {
 	return getUserByAddressPtr(t.Owner)
 }

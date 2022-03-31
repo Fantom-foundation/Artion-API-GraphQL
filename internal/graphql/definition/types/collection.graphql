@@ -51,6 +51,12 @@ type Collection {
     # Social: Instagram URL
     instagram: String!
 
+    # Time when was the collection registered
+    createdTime: Time!
+
+    # Time when was the collection approved/banned/unbanned
+    changedTime: Time
+
     # canMint checks if the given user address can create new tokens on the collection
     canMint(user:Address!, fee: BigInt): Boolean!
 }
