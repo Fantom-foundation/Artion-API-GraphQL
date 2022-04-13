@@ -10,7 +10,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/status-im/keycard-go/hexutils"
 	"math/big"
 	"strings"
 )
@@ -82,7 +81,7 @@ func (o *Opera) MustPlatformFee(contract *common.Address) *big.Int {
 	data, err := o.ftm.CallContract(context.Background(), ethereum.CallMsg{
 		From: common.Address{},
 		To:   contract,
-		Data: hexutils.HexToBytes("26232a2e"),
+		Data: common.Hex2Bytes("26232a2e"),
 	}, nil)
 	if err != nil {
 		log.Errorf("can not get platform fee from %s; %s", contract.String(), err.Error())

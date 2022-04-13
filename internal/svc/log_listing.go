@@ -7,7 +7,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	eth "github.com/ethereum/go-ethereum/core/types"
-	"github.com/status-im/keycard-go/hexutils"
 	"go.mongodb.org/mongo-driver/mongo"
 	"math/big"
 	"time"
@@ -21,10 +20,10 @@ const (
 
 var (
 	// itemSoldAcceptOfferCall represents Solidity call ID for acceptOffer call
-	itemSoldAcceptOfferCall = hexutils.HexToBytes("3bbb2806")
+	itemSoldAcceptOfferCall = common.Hex2Bytes("3bbb2806")
 
 	// itemSoldBuyItemCall represents the call ID for buyItem call
-	itemSoldBuyItemCall = hexutils.HexToBytes("85f9d345")
+	itemSoldBuyItemCall = common.Hex2Bytes("85f9d345")
 )
 
 // marketNFTListed handles log event for NFT token to get listed for sale on the Marketplace.
@@ -269,7 +268,7 @@ func itemSoldHow(tx common.Hash) int {
 	}
 
 	// log the issue we have
-	log.Errorf("unknown Solidity call %s on trx %s", hexutils.BytesToHex(data[:4]), tx.String())
+	log.Errorf("unknown Solidity call %s on trx %s", common.Bytes2Hex(data[:4]), tx.String())
 	return itemSoldUnknown
 }
 

@@ -7,7 +7,6 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/status-im/keycard-go/hexutils"
 )
 
 // CollectionName provides a name of an Artion ERC721 and/or ERC1155 token.
@@ -16,7 +15,7 @@ func (o *Opera) CollectionName(adr *common.Address) (string, error) {
 	data, err := o.ftm.CallContract(context.Background(), ethereum.CallMsg{
 		From: common.Address{},
 		To:   adr,
-		Data: hexutils.HexToBytes("06fdde03"),
+		Data: common.Hex2Bytes("06fdde03"),
 	}, nil)
 	if err != nil {
 		log.Errorf("contract %s name not found", adr.String())
@@ -36,7 +35,7 @@ func (o *Opera) CollectionSymbol(adr *common.Address) (string, error) {
 	data, err := o.ftm.CallContract(context.Background(), ethereum.CallMsg{
 		From: common.Address{},
 		To:   adr,
-		Data: hexutils.HexToBytes("95d89b41"),
+		Data: common.Hex2Bytes("95d89b41"),
 	}, nil)
 	if err != nil {
 		log.Errorf("contract %s symbol not found", adr.String())
@@ -60,7 +59,7 @@ func (o *Opera) SupportsInterface(adr *common.Address, in string) bool {
 	if in[0:2] == "0x" {
 		in = in[2:]
 	}
-	copy(call[4:], hexutils.HexToBytes(in)[:4])
+	copy(call[4:], common.Hex2Bytes(in)[:4])
 
 	data, err := o.ftm.CallContract(context.Background(), ethereum.CallMsg{
 		From: common.Address{},
@@ -83,7 +82,7 @@ func (o *Opera) CollectionOwner(contract *common.Address) *common.Address {
 	data, err := o.ftm.CallContract(context.Background(), ethereum.CallMsg{
 		From: common.Address{},
 		To:   contract,
-		Data: hexutils.HexToBytes("8da5cb5b"),
+		Data: common.Hex2Bytes("8da5cb5b"),
 	}, nil)
 	if err != nil {
 		log.Warningf("owner of %s not available; %s", contract.String(), err.Error())

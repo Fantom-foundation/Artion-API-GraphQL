@@ -7,7 +7,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	eth "github.com/ethereum/go-ethereum/core/types"
-	"github.com/status-im/keycard-go/hexutils"
 	"math/big"
 	"time"
 )
@@ -144,7 +143,7 @@ func extendAuctionFromTransaction(auction *types.Auction, tx common.Hash) {
 
 	// is this the right function call?
 	// createAuction(address _nftAddress, uint256 _tokenId, address _payToken, uint256 _reservePrice, uint256 _startTimestamp, uint256 _endTimestamp)
-	if 0 != bytes.Compare(data[:4], hexutils.HexToBytes("14ec4106")) {
+	if 0 != bytes.Compare(data[:4], common.Hex2Bytes("14ec4106")) {
 		log.Criticalf("invalid function call at %s", tx.String())
 		return
 	}
@@ -454,7 +453,7 @@ func auctionResolvedV2(evt *eth.Log, lo *logObserver) {
 }
 
 // finishAuction finalises auction on the given NFT token.
-func finishAuction(contract *common.Address, tokenID *big.Int, owner *common.Address, winner *common.Address, amount *big.Int, tokenPrice *big.Int, payToken *common.Address, evt *eth.Log, _ *logObserver) {
+func finishAuction(contract *common.Address, tokenID *big.Int, owner *common.Address, winner *common.Address, amount *big.Int, _ *big.Int, payToken *common.Address, evt *eth.Log, _ *logObserver) {
 	blk, err := repo.GetHeader(evt.BlockNumber)
 	if err != nil {
 		log.Errorf("could not get header #%d, %s", evt.BlockNumber, err.Error())

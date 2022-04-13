@@ -6,7 +6,6 @@ import (
 	"encoding/binary"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/status-im/keycard-go/hexutils"
 	"time"
 )
 
@@ -142,5 +141,5 @@ func NotificationID(no *Notification) string {
 	binary.BigEndian.PutUint64(id[:], uint64(time.Time(no.TimeStamp).Unix()))
 	hash.Write(id[:])
 
-	return hexutils.BytesToHex(hash.Sum(nil))
+	return common.Bytes2Hex(hash.Sum(nil))
 }
