@@ -11,12 +11,16 @@ const (
 	Erc721BaseInterfaceID = "0x80ac58cd"
 
 	// Erc721MetadataInterfaceID represents an identifier of the ERC-721 Metadata interface in ERC-165 encoding.
-	// Erc721MetadataInterfaceID = "0x5b5e139f"
+	Erc721MetadataInterfaceID = "0x5b5e139f"
 )
 
 // IsErc721Contract checks if the given address is a contract with ERC-721 interface support.
 func (p *Proxy) IsErc721Contract(adr *common.Address) bool {
-	return p.rpc.SupportsInterface(adr, Erc721BaseInterfaceID) //  && p.rpc.SupportsInterface(adr, Erc721MetadataInterfaceID)
+	base := p.rpc.SupportsInterface(adr, Erc721BaseInterfaceID)
+	if ext := p.rpc.SupportsInterface(adr, Erc721MetadataInterfaceID); !ext {
+		log.Warningf("contract %s may not support ERC-721 Metadata extension", adr.String())
+	}
+	return base
 }
 
 // Erc721StartingBlockNumber provides the first important block number for the ERC-721 contract.
