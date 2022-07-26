@@ -5,6 +5,7 @@ import (
 	"artion-api-graphql/internal/logger"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -85,6 +86,10 @@ func (p Pinner) PinFile(filename string, content []byte) (cid string, err error)
 	if errStr, hasErr := dat["error"].(string); hasErr {
 		log.Errorf("pinata error: %s", errStr)
 		return "", errors.New(errStr)
+	}
+	if _, hasErrObj := dat["error"].(map[string]interface{}); hasErrObj {
+		log.Errorf("pinata error: %s", data)
+		return "", fmt.Errorf("pinata error: %s", data)
 	}
 	if hash, ok := dat["IpfsHash"].(string); ok {
 		log.Infof("file pinned as " + hash)
