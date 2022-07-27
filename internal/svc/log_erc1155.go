@@ -16,7 +16,7 @@ import (
 // ERC1155::TransferSingle(address indexed _operator, address indexed _from, address indexed _to, uint256 _id, uint256 _amount)
 func erc1155TokenTransfer(evt *eth.Log, lo *logObserver) {
 	// sanity check: 1 + 3 topics; 2 x uint256 = 2 x 32 bytes of data
-	if len(evt.Data) != 34 || len(evt.Topics) != 4 {
+	if len(evt.Data) != 64 || len(evt.Topics) != 4 {
 		log.Errorf("not ERC1155::TransferSingle() event #%d / #%d; expected 64 bytes of data, %d given; expected 4 topics, %d given",
 			evt.BlockNumber, evt.Index, len(evt.Data), len(evt.Topics))
 		return
