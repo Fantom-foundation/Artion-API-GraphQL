@@ -166,12 +166,6 @@ func (lo *logObserver) run() {
 
 // process an incoming event
 func (lo *logObserver) process(evt *eth.Log) {
-	// is this an event from an observed contract?
-	if !repo.IsObservedContract(&evt.Address) {
-		log.Debugf("event #%d / %d on foreign contract %s skipped", evt.BlockNumber, evt.Index, evt.Address.String())
-		return
-	}
-
 	// get the handler
 	handler, ok := lo.topics[evt.Topics[0]]
 	if !ok {

@@ -57,7 +57,7 @@ func erc721TokenMinted(evt *eth.Log, _ *logObserver) {
 	}
 }
 
-// erc721TokenMustExist ensures ERC-721 token existence in the local database.
+// erc721TokenMustExist ensures ERC-721 token existence in the local database - create if not exists.
 func erc721TokenMustExist(contract *common.Address, tokenID *big.Int, blk *eth.Header, evt *eth.Log, lo *logObserver) {
 	log.Debugf("checking %s / #%d", contract.String(), tokenID.Uint64())
 	if repo.TokenKnown(contract, tokenID) {
