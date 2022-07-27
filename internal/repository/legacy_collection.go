@@ -86,3 +86,8 @@ func (p *Proxy) UnbanCollection(address common.Address) (err error) {
 func (p *Proxy) ListCollectionsWithAppropriateUpdate(after time.Time, maxAmount int64) (out []*types.LegacyCollection, err error) {
 	return p.shared.ListCollectionsWithAppropriateUpdate(after, maxAmount)
 }
+
+// IsCollectionAppropriate checks if given collection is approved/not banned collection.
+func (p *Proxy) IsCollectionAppropriate(contract *common.Address) bool {
+	return p.shared.IsCollectionAppropriate(contract)
+}

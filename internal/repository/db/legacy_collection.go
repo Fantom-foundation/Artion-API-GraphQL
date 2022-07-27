@@ -212,6 +212,24 @@ func (sdb *SharedMongoDbBridge) ListCollectionsWithAppropriateUpdate(after time.
 	return list[:i], nil
 }
 
+// IsCollectionAppropriate checks if given collection is approved/not banned collection.
+func (sdb *SharedMongoDbBridge) IsCollectionAppropriate(contract *common.Address) bool {
+	col := sdb.client.Database(sdb.dbName).Collection(coLegacyCollection)
+
+	res := col.FindOne(
+		context.Background(),
+		bson.D{
+			{Key: fiLegacyCollectionAddress, Value: strings.ToLower(contract.String())},
+			{Key: fiLegacyCollectionIsAppropriate, Value: true},
+		},
+		options.FindOne().SetProjection(bson.D{{Key: fieldId, Value: 1}}),
+	)
+	if res.Err() != nil {
+		return false
+	}
+	return true
+}
+
 func (sdb *SharedMongoDbBridge) ListLegacyCollections(collectionFilter types.CollectionFilter, cursor types.Cursor, count int, backward bool) (out *types.LegacyCollectionList, err error) {
 	db := (*MongoDbBridge)(sdb)
 	var list types.LegacyCollectionList

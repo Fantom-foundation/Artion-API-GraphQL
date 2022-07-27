@@ -57,7 +57,7 @@ func erc721TokenMinted(evt *eth.Log, _ *logObserver) {
 	}
 }
 
-// erc721TokenMustExist ensures ERC-721 token existence in the local database - create if not exists.
+// erc721TokenMustExist ensures ERC-721 token existence in the local database - called on token mint.
 func erc721TokenMustExist(contract *common.Address, tokenID *big.Int, blk *eth.Header, evt *eth.Log, lo *logObserver) {
 	log.Debugf("checking %s / #%d", contract.String(), tokenID.Uint64())
 	if repo.TokenKnown(contract, tokenID) {
@@ -78,6 +78,7 @@ func erc721TokenMustExist(contract *common.Address, tokenID *big.Int, blk *eth.H
 
 	// add details
 	tok.CreatedBy = repo.MustTransactionSender(evt.TxHash)
+	tok.IsColBanned = repo.IsCollectionAppropriate(contract)
 
 	if err := repo.TokenLikesViewsRefresh(tok); err != nil {
 		log.Errorf("could not load token views/likes %s/%s; %s", tok.TokenId.String(), tok.Contract.String(), err)
