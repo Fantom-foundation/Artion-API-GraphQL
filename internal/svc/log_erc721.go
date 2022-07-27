@@ -99,7 +99,7 @@ func erc721TokenMustExist(contract *common.Address, tokenID *big.Int, blk *eth.H
 func erc721TokenTransfer(evt *eth.Log, lo *logObserver) {
 	// sanity check: 1 + 3 extra topics for indexed parties; no additional data = 0 bytes
 	if len(evt.Data) != 0 || len(evt.Topics) != 4 {
-		log.Errorf("not ERC721::Transfer() event #%d/#%d; expected no data, %d given; expected 4 topics, %d given",
+		log.Debugf("not ERC721::Transfer() event #%d/#%d; expected no data, %d given; expected 4 topics, %d given",
 			evt.BlockNumber, evt.Index, len(evt.Data), len(evt.Topics))
 		return
 	}
