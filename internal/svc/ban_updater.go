@@ -13,7 +13,7 @@ const (
 
 	banNftRefreshSetSize = 50
 
-	banCollectionRefreshSetSize = 50
+	banCollectionRefreshSetSize = 1000
 )
 
 // banUpdater represents a service responsible for updating tokens ban status
@@ -82,7 +82,7 @@ func (mu *banUpdater) runUpdates() {
 	var after time.Time
 	lastUpdate, err := repo.LastBanUpdate()
 	if lastUpdate == nil {
-		after = time.Unix(0,0)
+		after = time.Unix(0, 0)
 	} else {
 		after = *lastUpdate
 	}
@@ -94,7 +94,7 @@ func (mu *banUpdater) runUpdates() {
 		return
 	}
 	for _, col := range cols {
-		err = repo.TokenMarkCollectionBanned(&col.Address, ! col.IsAppropriate)
+		err = repo.TokenMarkCollectionBanned(&col.Address, !col.IsAppropriate)
 		if err != nil {
 			log.Errorf("setting tokens as collection-banned failed; %s", err)
 		}
