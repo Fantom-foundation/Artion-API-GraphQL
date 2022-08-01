@@ -78,7 +78,7 @@ func erc721TokenMustExist(contract *common.Address, tokenID *big.Int, blk *eth.H
 
 	// add details
 	tok.CreatedBy = repo.MustTransactionSender(evt.TxHash)
-	tok.IsColBanned = repo.IsCollectionAppropriate(contract)
+	tok.IsColBanned = !repo.IsCollectionAppropriate(contract)
 
 	if err := repo.TokenLikesViewsRefresh(tok); err != nil {
 		log.Errorf("could not load token views/likes %s/%s; %s", tok.TokenId.String(), tok.Contract.String(), err)
