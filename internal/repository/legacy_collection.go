@@ -50,7 +50,7 @@ func (p *Proxy) UploadCollectionApplication(app types.CollectionApplication, ima
 // or an empty string, if the name is not available.
 func (p *Proxy) MustCollectionName(adr *common.Address) string {
 	c, err := p.shared.GetLegacyCollection(*adr)
-	if err != nil {
+	if err != nil || c == nil {
 		return adr.String()
 	}
 	if c.Name == "" {
