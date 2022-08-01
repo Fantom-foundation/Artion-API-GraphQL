@@ -14,6 +14,11 @@ import (
 // auctionCreated processes an event for newly created auction on an ERC-721 token.
 // Auction::AuctionCreated(address indexed nftAddress, uint256 indexed tokenId, address payToken)
 func auctionCreated(evt *eth.Log, _ *logObserver) {
+	if !repo.IsObservedContract(&evt.Address) {
+		log.Debugf("event #%d / %d on foreign contract %s skipped", evt.BlockNumber, evt.Index, evt.Address.String())
+		return
+	}
+
 	// sanity check: 1 + 2 topics; 1 x uint256 = 32 bytes
 	if len(evt.Data) != 32 || len(evt.Topics) != 3 {
 		log.Errorf("not Auction::AuctionCreated() event #%d/#%d; expected 32 bytes of data, %d given; expected 3 topics, %d given",

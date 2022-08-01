@@ -57,7 +57,7 @@ func erc721TokenMinted(evt *eth.Log, _ *logObserver) {
 	}
 }
 
-// erc721TokenMustExist ensures ERC-721 token existence in the local database.
+// erc721TokenMustExist ensures ERC-721 token existence in the local database - called on token mint.
 func erc721TokenMustExist(contract *common.Address, tokenID *big.Int, blk *eth.Header, evt *eth.Log, lo *logObserver) {
 	log.Debugf("checking %s / #%d", contract.String(), tokenID.Uint64())
 	if repo.TokenKnown(contract, tokenID) {
@@ -78,6 +78,7 @@ func erc721TokenMustExist(contract *common.Address, tokenID *big.Int, blk *eth.H
 
 	// add details
 	tok.CreatedBy = repo.MustTransactionSender(evt.TxHash)
+	tok.IsColBanned = repo.IsCollectionAppropriate(contract)
 
 	if err := repo.TokenLikesViewsRefresh(tok); err != nil {
 		log.Errorf("could not load token views/likes %s/%s; %s", tok.TokenId.String(), tok.Contract.String(), err)
@@ -98,7 +99,7 @@ func erc721TokenMustExist(contract *common.Address, tokenID *big.Int, blk *eth.H
 func erc721TokenTransfer(evt *eth.Log, lo *logObserver) {
 	// sanity check: 1 + 3 extra topics for indexed parties; no additional data = 0 bytes
 	if len(evt.Data) != 0 || len(evt.Topics) != 4 {
-		log.Errorf("not ERC721::Transfer() event #%d/#%d; expected no data, %d given; expected 4 topics, %d given",
+		log.Debugf("not ERC721::Transfer() event #%d/#%d; expected no data, %d given; expected 4 topics, %d given",
 			evt.BlockNumber, evt.Index, len(evt.Data), len(evt.Topics))
 		return
 	}

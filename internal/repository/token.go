@@ -64,7 +64,7 @@ func (p *Proxy) ExtendLegacyToken(token *types.Token) (*types.Token, error) {
 	return p.shared.ExtendLegacyToken(token)
 }
 
-// TokenKnown checks if the given token exists i the database.
+// TokenKnown checks if the given token exists in the database.
 func (p *Proxy) TokenKnown(contract *common.Address, tokenId *big.Int) bool {
 	return p.db.TokenKnown(contract, tokenId)
 }

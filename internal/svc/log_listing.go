@@ -29,6 +29,11 @@ var (
 // marketNFTListed handles log event for NFT token to get listed for sale on the Marketplace.
 // Marketplace::ItemListed(address indexed owner, address indexed nft, uint256 tokenId, uint256 quantity, address payToken, uint256 pricePerItem, uint256 startingTime)
 func marketNFTListed(evt *eth.Log, _ *logObserver) {
+	if !repo.IsObservedContract(&evt.Address) {
+		log.Debugf("event #%d / %d on foreign contract %s skipped", evt.BlockNumber, evt.Index, evt.Address.String())
+		return
+	}
+
 	// sanity check: 1 + 2 topics; 4 x uint256 + 1 address = 5 x 32 bytes of data = 160 bytes
 	if len(evt.Data) != 160 || len(evt.Topics) != 3 {
 		log.Errorf("not Marketplace::ItemListed() event #%d/#%d; expected 160 bytes of data, %d given; expected 3 topics, %d given",
