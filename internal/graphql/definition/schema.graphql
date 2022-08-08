@@ -7,22 +7,25 @@ schema {
 
 # Entry points for querying the API
 type Query {
-    # version represents the API server version responding to your requests.
+    # version represents the API server version responding to the request.
     version: String!
 
-    # Get primary used Artion contracts addresses.
+    # Get the primary used Artion contracts addresses.
     contracts: Contracts!
 
-    # Get list of token collections categories.
+    # Get the list of token collections categories.
     categories: [Category!]!
 
-    # Get collection by address.
+    # Get a collection by address.
     collection(contract: Address!): Collection
+
+    # Get a collection to be advertised on the home page.
+    advertisedCollection: Collection
 
     # List collections (all, search name or filter mintable by given user).
     collections(search: String, mintableBy: Address, first: Int, after: Cursor, last: Int, before: Cursor): CollectionConnection!
 
-    # Get token by address and id.
+    # Get a token by address and id.
     token(contract: Address!, tokenId: BigInt!): Token
 
     # List all tokens (with defined filter and sorting).
@@ -31,7 +34,7 @@ type Query {
     # List of tokens supported for payments on the marketplace.
     payTokens: [PayToken!]!
 
-    # Get user by address.
+    # Get a user by address.
     user(address: Address!): User!
 
     # List or search users
@@ -40,7 +43,7 @@ type Query {
     # randomTrade resolves a Random ERC-721 NFT Trade by address.
     randomTrade(contract: Address!): RandomTrade
 
-    # Get user authenticated using bearer token.
+    # Get the user authenticated using the bearer token.
     loggedUser: User
 
     # Get currently set shipping address for tokens redeem.
@@ -49,16 +52,16 @@ type Query {
     # Get notification settings of logged user.
     notificationSettings: NotificationSettings
 
-    # Get un-lockable content attached to a NFT token (only token owner).
+    # Get un-lockable content attached to an NFT token (only token owner).
     unlockableContent(contract: Address!, tokenId: BigInt!): String
 
-    # Estimate platform fee and gas needed for token minting.
+    # Estimate the platform fee and gas needed for the token minting.
     estimateMintFeeGas(user: Address!, contract: Address!, tokenUri: String!, royalty: Int!): MintFeeGas!
 
     # Check if the operator has ApprovedForAll permission to manipulate with tokens of given owner.
     isApprovedForAll(contract: Address!, owner: Address!, operator: Address!): Boolean!
 
-    # Search collections, tokens, and users for the given phrase and return list of relevant results.
+    # Search collections, tokens, and users for given phrase and return list of relevant results.
     textSearch(phrase: String!, maxLength: Int = 15): [TextSearchEdge]!
 
     # Check it the logged user is a moderator.

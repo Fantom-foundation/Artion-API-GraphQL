@@ -33,6 +33,14 @@ func (rs *RootResolver) Collection(args struct {
 	return NewCollection(&args.Contract)
 }
 
+// AdvertisedCollection is the address of the NFT collection to be advertised.
+var advertisedCollection = common.HexToAddress("0x5dbc2a8b01b7e37dfd7850237a3330c9939d6457")
+
+// AdvertisedCollection resolves an NFT collection to be advertised on the home page.
+func (rs *RootResolver) AdvertisedCollection() (*Collection, error) {
+	return NewCollection(&advertisedCollection) // TODO: random favourite collection?
+}
+
 // Collections resolve a list of NFT Collection for the given criteria.
 func (rs *RootResolver) Collections(args struct {
 	Search *string
