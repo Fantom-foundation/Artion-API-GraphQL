@@ -1,17 +1,28 @@
 package repository
 
 import (
-	"artion-api-graphql/internal/repository/uri"
+	"artion-api-graphql/internal/config"
+	"artion-api-graphql/internal/logger"
 	"artion-api-graphql/internal/types"
 	"github.com/onsi/gomega"
 	"testing"
 )
 
+func initRepoForTest() {
+	c, _ := config.Load()
+	c.Ipfs.Url = "localhost:5001"
+	c.Node.Url = "https://rpcapi.fantom.network/"
+	c.Ipfs.GatewayBearer = "dummy"
+	c.Ipfs.FileCacheDir = "/tmp/"
+	SetConfig(c)
+	SetLogger(logger.New(c))
+}
+
 func TestVideoThumbnail(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	downloader := &uri.Downloader{}
-	image, err := downloader.GetImage("https://artion.mypinata.cloud/ipfs/QmePhQPfwwCWzqSTpxa2CQFCWLbDwj2PATdL6AFYRw7nFc")
+	initRepoForTest()
+	image, err := R().GetImage("https://artion.mypinata.cloud/ipfs/QmePhQPfwwCWzqSTpxa2CQFCWLbDwj2PATdL6AFYRw7nFc")
 	g.Expect(image.Type).To(gomega.Equal(types.ImageTypeMp4))
 	thumb, err := createThumbnail(*image)
 	g.Expect(err).To(gomega.BeNil())
@@ -25,8 +36,8 @@ func TestVideoThumbnail(t *testing.T) {
 func TestJpgThumbnail(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
-	downloader := &uri.Downloader{}
-	image, err := downloader.GetImage("https://artion.mypinata.cloud/ipfs/QmbcqNsWpQuE56xVKQ226rDM29KM7UegmueqMeXPpq5qwo/140.png")
+	initRepoForTest()
+	image, err := R().GetImage("https://artion.mypinata.cloud/ipfs/QmbcqNsWpQuE56xVKQ226rDM29KM7UegmueqMeXPpq5qwo/140.png")
 	g.Expect(image.Type).To(gomega.Equal(types.ImageTypePng))
 	thumb, err := createThumbnail(*image)
 	g.Expect(err).To(gomega.BeNil())
